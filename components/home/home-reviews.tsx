@@ -2,11 +2,12 @@
 
 import { Star } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { asset } from "@/lib/asset";
 
 const REVIEWS = [
-  { name: "r1Name", country: "r1Country", quote: "r1Quote", photo: "/images/reviews/r1.png" },
-  { name: "r2Name", country: "r2Country", quote: "r2Quote", photo: "/images/reviews/r2.png" },
-  { name: "r3Name", country: "r3Country", quote: "r3Quote", photo: "/images/reviews/r3.png" },
+  { name: "r1Name", country: "r1Country", quote: "r1Quote", photo: asset("/images/reviews/r1.png") },
+  { name: "r2Name", country: "r2Country", quote: "r2Quote", photo: asset("/images/reviews/r2.png") },
+  { name: "r3Name", country: "r3Country", quote: "r3Quote", photo: asset("/images/reviews/r3.png") },
 ] as const;
 
 export function HomeReviews() {

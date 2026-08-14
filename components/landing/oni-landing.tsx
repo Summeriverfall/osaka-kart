@@ -9,6 +9,7 @@ import type { PlanWithTranslation } from "@/lib/plans/types";
 import { formatJpy } from "@/lib/format";
 import { planImage } from "@/lib/media";
 import { bookingHref } from "@/lib/booking/path";
+import { asset } from "@/lib/asset";
 
 type Props = {
   plans: PlanWithTranslation[];
@@ -98,9 +99,11 @@ export function OniLanding({ plans, locale, copy }: Props) {
               <figure key={clip.id}>
                 <img
                   src={
+                  asset(
                     ["/images/reviews/r1.webp", "/images/hero/poster.webp", "/images/social/33.webp"][
                       index
-                    ]
+                    ],
+                  )
                   }
                   alt=""
                 />

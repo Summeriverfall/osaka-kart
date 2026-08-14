@@ -3,6 +3,7 @@
 import { Calendar, ChevronDown, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { HeroVideo } from "@/components/home/hero-video";
+import { asset } from "@/lib/asset";
 import { LOOK_VIDEO, type SiteTheme } from "@/lib/visual-theme";
 import { cn } from "@/lib/utils";
 
@@ -19,9 +20,9 @@ export function HomeHero({ look }: HomeHeroProps) {
   return (
     <section className="relative flex h-screen w-full items-center justify-center overflow-hidden">
       <HeroVideo
-        src={clip.src}
+        src={asset(clip.src)}
         startAt={clip.startAt}
-        poster="/images/hero/poster.jpg"
+        poster={asset("/images/hero/poster.jpg")}
         className="absolute inset-0 z-0 h-full w-full object-cover"
       />
 

@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true },
   basePath: pages ? `/${repo}` : "",
   assetPrefix: pages ? `/${repo}/` : undefined,
+  env: {
+    NEXT_PUBLIC_BASE_PATH: pages ? `/${repo}` : "",
+  },
 };
 
 export default withNextIntl(nextConfig);

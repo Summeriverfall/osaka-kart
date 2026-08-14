@@ -3,14 +3,15 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
+import { asset } from "@/lib/asset";
 import { SITE_THEMES, type SiteTheme } from "@/lib/visual-theme";
 
 const PREVIEWS: Record<SiteTheme, string> = {
-  neon: "/images/plans/standard.png",
-  hud: "/images/hero/poster.jpg",
-  acid: "/images/reviews/r1.png",
-  oni: "/images/reviews/r2.png",
-  glitch: "/images/reviews/r3.png",
+  neon: asset("/images/plans/standard.png"),
+  hud: asset("/images/hero/poster.jpg"),
+  acid: asset("/images/reviews/r1.png"),
+  oni: asset("/images/reviews/r2.png"),
+  glitch: asset("/images/reviews/r3.png"),
 };
 
 const LEAD: Record<

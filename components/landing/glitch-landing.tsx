@@ -9,6 +9,7 @@ import type { PlanWithTranslation } from "@/lib/plans/types";
 import { formatJpy } from "@/lib/format";
 import { planImage } from "@/lib/media";
 import { bookingHref } from "@/lib/booking/path";
+import { asset } from "@/lib/asset";
 
 type Props = {
   plans: PlanWithTranslation[];
@@ -62,9 +63,11 @@ export function GlitchLanding({ plans, locale, copy }: Props) {
             <figure key={clip.id} className={index === 0 ? "big" : undefined}>
               <img
                 src={
-                  ["/images/hero/poster.webp", "/images/social/22.webp", "/images/social/s4.webp"][
-                    index
-                  ]
+                  asset(
+                    ["/images/hero/poster.webp", "/images/social/22.webp", "/images/social/s4.webp"][
+                      index
+                    ],
+                  )
                 }
                 alt=""
               />

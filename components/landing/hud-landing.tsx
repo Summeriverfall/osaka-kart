@@ -9,6 +9,7 @@ import type { LandingCopy } from "@/components/landing/copy";
 import type { PlanWithTranslation } from "@/lib/plans/types";
 import { Link } from "@/i18n/navigation";
 import { bookingHref } from "@/lib/booking/path";
+import { asset } from "@/lib/asset";
 
 type Props = {
   plans: PlanWithTranslation[];
@@ -117,11 +118,13 @@ export function HudLanding({ plans, locale, copy }: Props) {
                 <article key={clip.id}>
                   <img
                     src={
-                      [
-                        "/images/videos/cover-1.jpg",
-                        "/images/social/kadingche.webp",
-                        "/images/social/s4.webp",
-                      ][index]
+                      asset(
+                        [
+                          "/images/videos/cover-1.jpg",
+                          "/images/social/kadingche.webp",
+                          "/images/social/s4.webp",
+                        ][index],
+                      )
                     }
                     alt=""
                   />

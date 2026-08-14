@@ -1,6 +1,7 @@
 "use client";
 
 import { HeroVideo } from "@/components/home/hero-video";
+import { asset } from "@/lib/asset";
 import { LOOK_VIDEO, type SiteTheme } from "@/lib/visual-theme";
 
 type HeroMediaProps = {
@@ -13,9 +14,9 @@ export function HeroMedia({ theme }: HeroMediaProps) {
   return (
     <div className="hero-media" aria-hidden>
       <HeroVideo
-        src={clip.src}
+        src={asset(clip.src)}
         startAt={clip.startAt}
-        poster="/images/hero/poster.webp"
+        poster={asset("/images/hero/poster.webp")}
         className="absolute inset-0 z-0 h-full w-full object-cover"
       />
 

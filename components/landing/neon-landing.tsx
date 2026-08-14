@@ -8,6 +8,7 @@ import { LandingMore } from "@/components/landing/landing-more";
 import { HtmlTheme } from "@/components/layout/html-theme";
 import type { LandingCopy } from "@/components/landing/copy";
 import type { PlanWithTranslation } from "@/lib/plans/types";
+import { asset } from "@/lib/asset";
 import { Link } from "@/i18n/navigation";
 import { bookingHref } from "@/lib/booking/path";
 
@@ -108,11 +109,13 @@ export function NeonLanding({ plans, locale, copy }: Props) {
               <article key={clip.id} className="neon-glass overflow-hidden">
                 <img
                   src={
-                    [
-                      "/images/videos/cover-1.jpg",
-                      "/images/videos/cover-2.png",
-                      "/images/social/yejiankadingche.webp",
-                    ][index]
+                    asset(
+                      [
+                        "/images/videos/cover-1.jpg",
+                        "/images/videos/cover-2.png",
+                        "/images/social/yejiankadingche.webp",
+                      ][index],
+                    )
                   }
                   alt=""
                   className="neon-video-frame"

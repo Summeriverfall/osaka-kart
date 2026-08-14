@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { MonthCalendar } from "@/components/booking/month-calendar";
 import { PRESS_CARDS, PRESS_OUTLETS, SITE_CONTACT, SOCIAL_CARDS } from "@/lib/contact";
+import { asset } from "@/lib/asset";
 import { formatJpy } from "@/lib/format";
 import { bookingHref } from "@/lib/booking/path";
 import { useBookingStore } from "@/stores/booking-store";
@@ -47,7 +48,7 @@ export function LandingMore({ plans, locale, theme }: LandingMoreProps) {
           <div className="press-track">
             {[...PRESS_CARDS, ...PRESS_CARDS].map((item, index) => (
               <article key={`${item.img}-${index}`}>
-                <img src={item.img} alt="" />
+                <img src={asset(item.img)} alt="" />
                 <p>{press(item.sourceKey)}</p>
                 <h3>{press(item.titleKey)}</h3>
               </article>
@@ -63,7 +64,7 @@ export function LandingMore({ plans, locale, theme }: LandingMoreProps) {
         <div className="social-grid">
           {SOCIAL_CARDS.map((card) => (
             <figure key={card.nameKey}>
-              <img src={card.img} alt="" />
+              <img src={asset(card.img)} alt="" />
               <figcaption>
                 <b>OSAKA</b>
                 <span>KART</span>

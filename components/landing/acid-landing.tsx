@@ -10,6 +10,7 @@ import type { LandingCopy } from "@/components/landing/copy";
 import type { PlanWithTranslation } from "@/lib/plans/types";
 import { Link } from "@/i18n/navigation";
 import { bookingHref } from "@/lib/booking/path";
+import { asset } from "@/lib/asset";
 
 type Props = {
   plans: PlanWithTranslation[];
@@ -102,11 +103,13 @@ export function AcidLanding({ plans, locale, copy }: Props) {
             <article key={clip.id} className={index === 1 ? "flip" : undefined}>
               <img
                 src={
-                  [
-                    "/images/social/22.webp",
-                    "/images/social/bianzhuang.webp",
-                    "/images/plans/standard.webp",
-                  ][index]
+                  asset(
+                    [
+                      "/images/social/22.webp",
+                      "/images/social/bianzhuang.webp",
+                      "/images/plans/standard.webp",
+                    ][index],
+                  )
                 }
                 alt=""
               />

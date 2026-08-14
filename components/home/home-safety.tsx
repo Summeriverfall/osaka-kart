@@ -2,6 +2,7 @@
 
 import { HardHat, Shield, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { asset } from "@/lib/asset";
 
 export function HomeSafety() {
   const t = useTranslations("Safety");
@@ -10,19 +11,19 @@ export function HomeSafety() {
       icon: HardHat,
       title: t("s1Title"),
       body: t("s1Body"),
-      photo: "/images/safety/helmet.png",
+      photo: asset("/images/safety/helmet.png"),
     },
     {
       icon: Shield,
       title: t("s2Title"),
       body: t("s2Body"),
-      photo: "/images/plans/standard.png",
+      photo: asset("/images/plans/standard.png"),
     },
     {
       icon: UserRound,
       title: t("s3Title"),
       body: t("s3Body"),
-      photo: "/images/plans/costume.png",
+      photo: asset("/images/plans/costume.png"),
     },
   ];
 

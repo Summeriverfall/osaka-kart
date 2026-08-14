@@ -3,25 +3,26 @@
 import { useState } from "react";
 import { Play, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { asset } from "@/lib/asset";
 
 const CLIPS = [
   {
     id: "1",
     titleKey: "v1" as const,
-    src: "/videos/street-run.mp4",
-    cover: "/images/reviews/r1.png",
+    src: asset("/videos/street-run.mp4"),
+    cover: asset("/images/reviews/r1.png"),
   },
   {
     id: "2",
     titleKey: "v2" as const,
-    src: "/videos/hero-bg.mp4",
-    cover: "/images/hero/poster.jpg",
+    src: asset("/videos/hero-bg.mp4"),
+    cover: asset("/images/hero/poster.jpg"),
   },
   {
     id: "3",
     titleKey: "v3" as const,
-    src: "/videos/street-run.mp4",
-    cover: "/images/reviews/r3.png",
+    src: asset("/videos/street-run.mp4"),
+    cover: asset("/images/reviews/r3.png"),
   },
 ];
 

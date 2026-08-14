@@ -3,6 +3,7 @@
 import { Calendar } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { asset } from "@/lib/asset";
 
 export function HomeCta() {
   const t = useTranslations("CtaBand");
@@ -10,7 +11,7 @@ export function HomeCta() {
   return (
     <section id="cta" className="relative overflow-hidden px-4 py-24">
       <img
-        src="/images/reviews/r2.png"
+        src={asset("/images/reviews/r2.png")}
         alt=""
         className="absolute inset-0 h-full w-full object-cover"
       />
