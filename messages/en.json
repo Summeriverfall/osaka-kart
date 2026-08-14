@@ -1,0 +1,209 @@
+{
+  "Metadata": {
+    "title": "OSAKA KART",
+    "description": "Street-legal karting in Osaka"
+  },
+  "Nav": {
+    "home": "Home",
+    "plans": "Plans",
+    "faq": "FAQ",
+    "videos": "Videos",
+    "booking": "BOOK NOW",
+    "calendar": "Dates",
+    "menu": "Menu"
+  },
+  "Gateway": {
+    "kicker": "Choose a look",
+    "title": "Five looks. One ride.",
+    "lead": "Same streets, five original layouts. Pick the world that fits you.",
+    "neon": "Neon",
+    "hud": "HUD",
+    "acid": "Acid",
+    "oni": "Oni",
+    "glitch": "Glitch",
+    "neonLead": "Neon Night",
+    "hudLead": "Circuit HUD",
+    "acidLead": "Acid Street",
+    "oniLead": "Oni Alley",
+    "glitchLead": "Signal Lost",
+    "enter": "Enter",
+    "changeLook": "Change look"
+  },
+  "Hero": {
+    "title": "RIDE THE STREETS",
+    "titleRest": "OF OSAKA",
+    "subtitle": "Street legal karting in the heart of Japan",
+    "cta": "CHOOSE YOUR PLAN",
+    "rating": "4.9 (2,000+ reviews)",
+    "scroll": "Scroll"
+  },
+  "PlansHome": {
+    "title": "Choose Your Plan",
+    "select": "Select"
+  },
+  "VideosHome": {
+    "title": "Real Experience",
+    "v1": "Night Dotonbori",
+    "v2": "Namba start",
+    "v3": "Convoy lights"
+  },
+  "ReviewsHome": {
+    "title": "What Riders Say",
+    "r1Name": "Alex M.",
+    "r1Country": "USA",
+    "r1Quote": "The streets look completely different from a kart. Best night in Osaka.",
+    "r2Name": "Mei L.",
+    "r2Country": "Singapore",
+    "r2Quote": "Clear briefing, friendly guide, and photos we actually want to keep.",
+    "r3Name": "Jonas K.",
+    "r3Country": "Germany",
+    "r3Quote": "Felt safe at street speed. The neon run is the whole trip."
+  },
+  "Safety": {
+    "title": "Safety First",
+    "s1Title": "Helmet",
+    "s1Body": "Full-face helmet and racing suit are included and fitted before you roll.",
+    "s2Title": "Insurance",
+    "s2Body": "Coverage is part of every plan. We brief the rules before the convoy starts.",
+    "s3Title": "Guide",
+    "s3Body": "A lead kart sets the pace. Follow the signals — first-timers are welcome."
+  },
+  "Faq": {
+    "title": "Frequently Asked Questions",
+    "q1": "Do I need a license?",
+    "a1": "Yes. Bring a valid license or a 1949 Geneva International Driving Permit. No license, no ride.",
+    "q2": "Are costumes included?",
+    "a2": "A racing suit and helmet are included. Themed costumes can be added at booking.",
+    "q3": "Where do we meet?",
+    "a3": "Namba area, Osaka. The exact pin is sent after you book.",
+    "q4": "What if it rains?",
+    "a4": "Light rain usually runs. Severe weather is rescheduled. We will message you.",
+    "q5": "How old do I need to be?",
+    "a5": "Riders must be 18 or older and able to follow the guide on public roads."
+  },
+  "Meet": {
+    "title": "Meeting Point",
+    "address": "Namba, Chuo-ku, Osaka",
+    "station": "Namba Station",
+    "walk": "About 5 min walk from Namba Station."
+  },
+  "CtaBand": {
+    "title": "Ready to Drive?",
+    "subtitle": "Pick a plan, lock a slot, and take the neon streets.",
+    "button": "BOOK YOUR RIDE"
+  },
+  "Footer": {
+    "copyright": "© 2026 OSAKA KART. All rights reserved.",
+    "company": "OSAKA KART · Osaka, Japan",
+    "social": "Follow"
+  },
+  "Help": {
+    "title": "Help",
+    "licenseTitle": "License requirements",
+    "licenseLead": "You must show a valid license at check-in. Rules vary by country.",
+    "us": "United States: state driver license + 1949 Geneva IDP recommended.",
+    "cn": "China: Chinese license is not valid on Japanese public roads. Bring a 1949 Geneva IDP with the original license.",
+    "jp": "Japan: a valid Japanese license is accepted.",
+    "uk": "United Kingdom: photocard license. Confirm IDP needs for your issue date.",
+    "eu": "EU/EEA: national license. An IDP can help staff verify details.",
+    "safetyTitle": "Safety notes",
+    "safetyBody": "Closed-toe shoes, follow the lead kart, no racing, and stop if the guide signals. Helmets stay on while the kart is moving."
+  },
+  "Plan": {
+    "eyebrow": "Choose your experience",
+    "title": "Plans",
+    "lead": "All prices include tax.",
+    "select": "Select",
+    "duration": "Duration",
+    "distance": "Distance",
+    "minutes": "{n} min",
+    "km": "{n} km",
+    "perPerson": "/ person",
+    "includes": "What's included",
+    "route": "Route",
+    "flow": "How it works",
+    "notes": "Notes",
+    "summary": "Your ride",
+    "continue": "Book this plan",
+    "empty": "No plans available.",
+    "notFound": "This plan is not available.",
+    "flow1Title": "Check in",
+    "flow1Body": "Arrive at the Namba meeting point, complete paperwork, and get fitted.",
+    "flow2Title": "Safety briefing",
+    "flow2Body": "A guide walks you through street rules, signals, and the convoy.",
+    "flow3Title": "Street ride",
+    "flow3Body": "Follow the lead kart through neon streets at a guided pace.",
+    "flow4Title": "Return",
+    "flow4Body": "Back to base, return the gear, and keep your photos or GoPro clip."
+  },
+  "Booking": {
+    "kicker": "Reserve a slot",
+    "title": "Booking",
+    "lead": "All prices include tax. Pick a plan, date, and time.",
+    "plan": "Plan",
+    "riders": "Riders",
+    "date": "Date",
+    "time": "Time",
+    "addons": "Add-ons",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "license": "I have a valid license or 1949 Geneva IDP, and I am 18 or older.",
+    "total": "Total",
+    "taxIncluded": "tax included",
+    "submit": "Submit booking",
+    "back": "Back",
+    "call": "Call to book",
+    "mail": "Email to book",
+    "whatsapp": "WhatsApp"
+  },
+  "Press": {
+    "title": "In the press",
+    "s1": "Osaka Street Diary",
+    "s2": "Night Run Mag",
+    "s3": "City Kart Weekly",
+    "s4": "Travel Frame",
+    "s5": "Neon Dispatch",
+    "s6": "Bay Loop",
+    "n1": "Street-legal karts cutting through Dotonbori after dark.",
+    "n2": "Why Osaka is the only city that lets you drive this.",
+    "n3": "Costume, convoy, camera — the ride tourists film first.",
+    "n4": "A night loop from Namba that feels like a movie chase.",
+    "n5": "Guides set the pace. You keep the photos.",
+    "n6": "Tsutenkaku lights, legal plates, one convoy."
+  },
+  "Social": {
+    "title": "Social",
+    "s1": "Tsutenkaku loop",
+    "s2": "Night convoy",
+    "s3": "Costume run",
+    "s4": "Crew lights",
+    "s5": "Bay stretch",
+    "s6": "Dotonbori glow"
+  },
+  "Calendar": {
+    "title": "Pick a date",
+    "noteTitle": "Note",
+    "noteBody": "Prices shown on the calendar are per person and include tax. Early slots fill first. Online booking uses the listed fare; for a private quote, call or email the desk.",
+    "open": "Open",
+    "busy": "Filling fast",
+    "ask": "Ask staff",
+    "select": "Continue with this date",
+    "needDate": "Select a date"
+  },
+  "Contact": {
+    "title": "Book by phone or email",
+    "hours": "Open daily {hours}",
+    "online": "Book online"
+  },
+  "Success": {
+    "kicker": "Confirmed",
+    "title": "We have your booking",
+    "body": "A meeting pin will follow by email. Bring your license on the day.",
+    "ref": "Reference",
+    "plan": "Plan",
+    "when": "When",
+    "total": "Total",
+    "back": "Back to home"
+  }
+}
