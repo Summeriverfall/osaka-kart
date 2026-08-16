@@ -142,26 +142,33 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
+  min-height: 3.15rem;
+  padding: 0.85rem 1.7rem;
   text-decoration: none;
-  border-radius: var(--cta-radius);
+  border: 0;
+  border-radius: 0.8rem;
   background-image: linear-gradient(
     90deg,
     var(--neon-pink),
     var(--neon-purple)
   );
-  padding: 0.75rem 2rem;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
   color: #fff;
-  box-shadow: 0 0 20px rgb(var(--glow-a) / 50%);
+  box-shadow: 0 10px 28px rgb(var(--glow-a) / 38%);
+  cursor: pointer;
   transition:
     transform 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
 }
 
 .cta-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 28px rgb(var(--glow-a) / 70%);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgb(var(--glow-a) / 55%);
+  filter: brightness(1.06);
 }
 
 .lang-switcher-trigger {
@@ -172,8 +179,8 @@
   background: color-mix(in srgb, var(--card-surface) 80%, transparent);
   color: #f1f1f5;
   border-radius: var(--cta-radius);
-  padding: 0.4rem 0.7rem;
-  font-size: 0.8rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   cursor: pointer;

@@ -7,33 +7,40 @@
     "home": "Home",
     "plans": "Plans",
     "faq": "FAQ",
-    "videos": "Videos",
-    "booking": "BOOK NOW",
-    "calendar": "Dates",
+    "videos": "Gallery",
+    "booking": "Book now",
+    "calendar": "Book",
     "menu": "Menu"
   },
   "Gateway": {
-    "kicker": "Choose a look",
-    "title": "Five looks. One ride.",
-    "lead": "Same streets, five original layouts. Pick the world that fits you.",
+    "kicker": "Street-legal karting in Osaka",
+    "title": "One ride. Four ways to see it.",
+    "lead": "Same streets, price, and meeting point. Choose a look, then pick a plan and a date.",
+    "what": "Licensed road plates. A guide leads you through Namba and Dotonbori.",
+    "from": "From {price}, tax included",
+    "need": "Valid license required · Age 18+",
     "neon": "Neon",
     "hud": "HUD",
-    "acid": "Acid",
+    "acid": "Poster",
     "oni": "Oni",
-    "glitch": "Glitch",
+    "glitch": "Signal",
     "neonLead": "Neon Night",
     "hudLead": "Circuit HUD",
     "acidLead": "Acid Street",
     "oniLead": "Oni Alley",
     "glitchLead": "Signal Lost",
-    "enter": "Enter",
+    "neonHint": "Cinematic full-screen night",
+    "acidHint": "Street-poster magazine",
+    "oniHint": "Lanterns and backstreets",
+    "glitchHint": "Offset, late-night signal",
+    "enter": "Enter this look",
     "changeLook": "Change look"
   },
   "Hero": {
-    "title": "RIDE THE STREETS",
-    "titleRest": "OF OSAKA",
-    "subtitle": "Street legal karting in the heart of Japan",
-    "cta": "CHOOSE YOUR PLAN",
+    "title": "Drive Osaka",
+    "titleRest": "on a street-legal kart",
+    "subtitle": "A guide leads. Suit, helmet, and insurance are in the price. Pick a plan, pick a date.",
+    "cta": "See plans and prices",
     "rating": "4.9 (2,000+ reviews)",
     "scroll": "Scroll"
   },
@@ -42,7 +49,8 @@
     "select": "Select"
   },
   "VideosHome": {
-    "title": "Real Experience",
+    "title": "On the street",
+    "lead": "Public roads, not a closed track.",
     "v1": "Night Dotonbori",
     "v2": "Namba start",
     "v3": "Convoy lights"
@@ -60,13 +68,13 @@
     "r3Quote": "Felt safe at street speed. The neon run is the whole trip."
   },
   "Safety": {
-    "title": "Safety First",
-    "s1Title": "Helmet",
-    "s1Body": "Full-face helmet and racing suit are included and fitted before you roll.",
-    "s2Title": "Insurance",
-    "s2Body": "Coverage is part of every plan. We brief the rules before the convoy starts.",
-    "s3Title": "Guide",
-    "s3Body": "A lead kart sets the pace. Follow the signals — first-timers are welcome."
+    "title": "Before you roll",
+    "s1Title": "Street legal",
+    "s1Body": "The karts carry Japanese road plates. You follow a convoy on public streets, not a closed circuit.",
+    "s2Title": "Gear and insurance included",
+    "s2Body": "Helmet, racing suit, and coverage are in the listed price. We fit you before you leave.",
+    "s3Title": "A guide sets the pace",
+    "s3Body": "Follow the lead kart and the hand signals. First-timers are welcome."
   },
   "Faq": {
     "title": "Frequently Asked Questions",
@@ -111,9 +119,9 @@
   },
   "Plan": {
     "eyebrow": "Choose your experience",
-    "title": "Plans",
-    "lead": "All prices include tax.",
-    "select": "Select",
+    "title": "Choose a plan",
+    "lead": "Three night runs. Prices include tax. A valid license is required. Tap a card, then pick a date below.",
+    "select": "Choose this plan",
     "duration": "Duration",
     "distance": "Distance",
     "minutes": "{n} min",
@@ -124,7 +132,8 @@
     "flow": "How it works",
     "notes": "Notes",
     "summary": "Your ride",
-    "continue": "Book this plan",
+    "continue": "Next: pick a date",
+    "selected": "Selected",
     "empty": "No plans available.",
     "notFound": "This plan is not available.",
     "flow1Title": "Check in",
@@ -158,7 +167,7 @@
     "whatsapp": "WhatsApp"
   },
   "Press": {
-    "title": "In the press",
+    "title": "Street notes",
     "s1": "Osaka Street Diary",
     "s2": "Night Run Mag",
     "s3": "City Kart Weekly",
@@ -173,7 +182,7 @@
     "n6": "Tsutenkaku lights, legal plates, one convoy."
   },
   "Social": {
-    "title": "Social",
+    "title": "From the run",
     "s1": "Tsutenkaku loop",
     "s2": "Night convoy",
     "s3": "Costume run",
@@ -183,18 +192,33 @@
   },
   "Calendar": {
     "title": "Pick a date",
-    "noteTitle": "Note",
-    "noteBody": "Prices shown on the calendar are per person and include tax. Early slots fill first. Online booking uses the listed fare; for a private quote, call or email the desk.",
+    "noteTitle": "Booking note",
+    "noteBody": "Prices in the grid are per person and include tax. Choose a plan, then a day. Morning slots fill first.",
     "open": "Open",
-    "busy": "Filling fast",
-    "ask": "Ask staff",
-    "select": "Continue with this date",
-    "needDate": "Select a date"
+    "busy": "Filling",
+    "ask": "Ask us",
+    "select": "Continue to booking",
+    "needDate": "Tap a date on the calendar",
+    "picked": "Selected {date}",
+    "planLabel": "This plan"
   },
   "Contact": {
-    "title": "Book by phone or email",
+    "title": "How to book",
     "hours": "Open daily {hours}",
-    "online": "Book online"
+    "online": "Book online",
+    "whatsappHint": "Usually the fastest reply"
+  },
+  "Shop": {
+    "legal": "Street legal",
+    "tax": "Tax included",
+    "license": "License needed",
+    "age": "18+",
+    "faqLead": "The questions people ask before they ride. License rules differ by country.",
+    "moreHelp": "License notes by country",
+    "reviewLead": "What riders take away.",
+    "visitLead": "We meet in Namba. The exact pin is sent after you book.",
+    "nextDate": "Plan selected. Next, pick a date.",
+    "summary": "Your booking"
   },
   "Success": {
     "kicker": "Confirmed",

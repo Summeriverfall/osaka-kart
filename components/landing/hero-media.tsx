@@ -27,17 +27,9 @@ export function HeroMedia({ theme }: HeroMediaProps) {
         </>
       )}
 
-      {theme === "hud" && (
-        <>
-          <div className="absolute inset-0 z-[1] bg-gradient-to-r from-[#020617]/90 via-[#020617]/40 to-[#022c22]/55" />
-          <div className="hero-hud-scan" />
-          <div className="hero-hud-frame" />
-        </>
-      )}
-
       {theme === "acid" && (
         <>
-          <div className="absolute inset-0 z-[1] bg-gradient-to-tr from-[#090109]/92 via-[#ff00a8]/30 to-[#1a2a00]/45" />
+          <div className="absolute inset-0 z-[1] bg-gradient-to-t from-[#12080e]/92 via-[#12080e]/55 to-[#12080e]/35" />
           <div className="hero-acid-slash" />
         </>
       )}

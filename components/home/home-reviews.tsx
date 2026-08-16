@@ -36,7 +36,7 @@ export function HomeReviews() {
                     <Star key={index} className="h-4 w-4 fill-current" />
                   ))}
                 </div>
-                <p className="mt-4 text-sm leading-relaxed text-gray-200">
+                <p className="mt-4 text-base leading-relaxed text-gray-100">
                   “{t(item.quote)}”
                 </p>
                 <div className="mt-5 flex items-center gap-3">
@@ -47,7 +47,7 @@ export function HomeReviews() {
                   />
                   <div>
                     <p className="font-semibold">{t(item.name)}</p>
-                    <p className="text-xs text-gray-400">{t(item.country)}</p>
+                    <p className="text-sm text-gray-300">{t(item.country)}</p>
                   </div>
                 </div>
               </div>

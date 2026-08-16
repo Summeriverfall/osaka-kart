@@ -30,10 +30,10 @@ export function HomeFaq() {
         >
           {items.map((item, index) => (
             <AccordionItem key={item.q} value={`q${index}`}>
-              <AccordionTrigger className="text-[#F1F1F5] hover:no-underline hover:text-[var(--neon-pink)]">
+              <AccordionTrigger className="text-lg text-[#F1F1F5] hover:no-underline hover:text-[var(--neon-pink)]">
                 {item.q}
               </AccordionTrigger>
-              <AccordionContent className="text-gray-400">{item.a}</AccordionContent>
+              <AccordionContent className="text-base leading-7 text-gray-200">{item.a}</AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>

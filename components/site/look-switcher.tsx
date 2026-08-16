@@ -13,7 +13,7 @@ export function LookSwitcher({ current }: LookSwitcherProps) {
   const t = useTranslations("Gateway");
 
   return (
-    <div className="flex max-w-[16rem] flex-wrap items-center justify-end gap-1 rounded-full border border-white/10 bg-black/40 p-1 text-[0.62rem] font-semibold tracking-wide sm:max-w-none">
+    <div className="flex max-w-[16rem] flex-wrap items-center justify-end gap-1 rounded-full border border-white/10 bg-black/40 p-1 text-sm font-semibold tracking-wide sm:max-w-none">
       {SITE_THEMES.map((look) => (
         <Link
           key={look}

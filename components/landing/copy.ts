@@ -27,6 +27,7 @@ export async function getLandingCopy() {
       titleRest: hero("titleRest"),
       subtitle: hero("subtitle"),
       cta: hero("cta"),
+      rating: hero("rating"),
     },
     nav: {
       plans: nav("plans"),
@@ -38,7 +39,6 @@ export async function getLandingCopy() {
     changeLook: gateway("changeLook"),
     look: {
       neon: gateway("neonLead"),
-      hud: gateway("hudLead"),
       acid: gateway("acidLead"),
       oni: gateway("oniLead"),
       glitch: gateway("glitchLead"),
@@ -50,6 +50,7 @@ export async function getLandingCopy() {
       { id: "03", title: safety("s3Title"), body: safety("s3Body") },
     ],
     videosTitle: videos("title"),
+    videosLead: videos("lead"),
     videos: [
       { id: "1", title: videos("v1") },
       { id: "2", title: videos("v2") },
@@ -61,6 +62,7 @@ export async function getLandingCopy() {
       { q: faq("q2"), a: faq("a2") },
       { q: faq("q3"), a: faq("a3") },
       { q: faq("q4"), a: faq("a4") },
+      { q: faq("q5"), a: faq("a5") },
     ],
     access: {
       title: meet("title"),
@@ -69,9 +71,9 @@ export async function getLandingCopy() {
     },
     reviewsTitle: reviews("title"),
     reviews: [
-      { quote: reviews("r1Quote"), meta: reviews("r1Country") },
-      { quote: reviews("r2Quote"), meta: reviews("r2Country") },
-      { quote: reviews("r3Quote"), meta: reviews("r3Country") },
+      { quote: reviews("r1Quote"), name: reviews("r1Name"), meta: reviews("r1Country") },
+      { quote: reviews("r2Quote"), name: reviews("r2Name"), meta: reviews("r2Country") },
+      { quote: reviews("r3Quote"), name: reviews("r3Name"), meta: reviews("r3Country") },
     ],
     plan: {
       title: plan("title"),
@@ -93,6 +95,7 @@ export async function getLandingCopy() {
       route: plan("route"),
       notes: plan("notes"),
       continue: plan("continue"),
+      selected: plan("selected"),
       booking: nav("booking"),
       comingSoon: plan("lead"),
     },

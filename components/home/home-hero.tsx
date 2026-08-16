@@ -104,7 +104,6 @@ export function HomeHero({ look }: HomeHeroProps) {
 
 const LEAD = {
   neon: "neonLead",
-  hud: "hudLead",
   acid: "acidLead",
   oni: "oniLead",
   glitch: "glitchLead",
