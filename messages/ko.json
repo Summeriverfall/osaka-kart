@@ -244,6 +244,8 @@
     "lead": "결제 수단을 선택해 예약을 확정하세요.",
     "methods": "결제 수단",
     "card": "카드",
+    "cardVia": "Stripe",
+    "cardNote": "카드 결제는 Stripe로 처리됩니다.",
     "paypay": "PayPay",
     "apple": "Apple Pay",
     "alipay": "Alipay",

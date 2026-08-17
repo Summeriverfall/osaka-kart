@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { CreditCard, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { formatJpy } from "@/lib/format";
@@ -10,6 +10,7 @@ import {
   BOOKING_RESULT_KEY,
   type BookingResult,
 } from "@/stores/booking-store";
+import { PayMethodMark, type PayMethod } from "@/components/booking/pay-icons";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteNav } from "@/components/site/site-nav";
 import { cn } from "@/lib/utils";
@@ -17,8 +18,6 @@ import { cn } from "@/lib/utils";
 type PayViewProps = {
   locale: string;
 };
-
-type PayMethod = "card" | "paypay" | "apple" | "alipay" | "wechat" | "stripe";
 
 export function PayView({ locale }: PayViewProps) {
   const t = useTranslations("Pay");
@@ -104,14 +103,16 @@ export function PayView({ locale }: PayViewProps) {
                     className={cn("pay-method", method === id && "is-on")}
                     onClick={() => setMethod(id)}
                   >
-                    {id === "card" ? <CreditCard className="size-4" /> : null}
-                    {label}
+                    <PayMethodMark id={id} />
+                    <span className="pay-method-name">{label}</span>
+                    {id === "card" ? <span className="pay-method-hint">{t("cardVia")}</span> : null}
                   </button>
                 ))}
               </div>
 
               {method === "card" ? (
                 <div className="pay-card-fields">
+                  <p className="pay-card-note">{t("cardNote")}</p>
                   <label>
                     <span>{t("number")}</span>
                     <input

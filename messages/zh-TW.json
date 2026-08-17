@@ -244,6 +244,8 @@
     "lead": "選擇付款方式，完成後即鎖定預約。",
     "methods": "付款方式",
     "card": "信用卡",
+    "cardVia": "Stripe",
+    "cardNote": "信用卡由 Stripe 加密收款。",
     "paypay": "PayPay",
     "apple": "Apple Pay",
     "alipay": "支付寶",

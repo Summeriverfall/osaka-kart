@@ -244,6 +244,8 @@
     "lead": "Choose a method to confirm your booking.",
     "methods": "Payment method",
     "card": "Card",
+    "cardVia": "via Stripe",
+    "cardNote": "Card payments are processed by Stripe.",
     "paypay": "PayPay",
     "apple": "Apple Pay",
     "alipay": "Alipay",

@@ -244,6 +244,8 @@
     "lead": "支払い方法を選んで予約を確定します。",
     "methods": "支払い方法",
     "card": "カード",
+    "cardVia": "Stripe",
+    "cardNote": "クレジットカードは Stripe で決済します。",
     "paypay": "PayPay",
     "apple": "Apple Pay",
     "alipay": "Alipay",
