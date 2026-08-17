@@ -18,7 +18,7 @@ type PayViewProps = {
   locale: string;
 };
 
-type PayMethod = "card" | "paypay" | "apple";
+type PayMethod = "card" | "paypay" | "apple" | "alipay" | "wechat" | "stripe";
 
 export function PayView({ locale }: PayViewProps) {
   const t = useTranslations("Pay");
@@ -91,6 +91,9 @@ export function PayView({ locale }: PayViewProps) {
                     ["card", t("card")],
                     ["paypay", t("paypay")],
                     ["apple", t("apple")],
+                    ["alipay", t("alipay")],
+                    ["wechat", t("wechat")],
+                    ["stripe", t("stripe")],
                   ] as const
                 ).map(([id, label]) => (
                   <button
@@ -169,7 +172,17 @@ export function PayView({ locale }: PayViewProps) {
                 <p className="pay-wallet-note">{t("walletNote")}</p>
               )}
 
-              <button type="submit" className={cn("cta-btn pay-submit", method === "apple" && "pay-apple")} disabled={busy}>
+              <button
+                type="submit"
+                className={cn(
+                  "cta-btn pay-submit",
+                  method === "apple" && "pay-apple",
+                  method === "alipay" && "pay-alipay",
+                  method === "wechat" && "pay-wechat",
+                  method === "stripe" && "pay-stripe",
+                )}
+                disabled={busy}
+              >
                 {t("payNow", { price: formatJpy(result.totalJpy, locale) })}
               </button>
             </form>

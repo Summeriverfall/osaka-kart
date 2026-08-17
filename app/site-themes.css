@@ -2116,15 +2116,25 @@ html {
 }
 
 .book-receipt div {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.55rem 0.85rem;
+  align-items: baseline;
   padding-bottom: 0.6rem;
   border-bottom: 1px solid rgb(255 255 255 / 10%);
 }
 
 .book-receipt dt {
   opacity: 0.6;
+  white-space: nowrap;
+}
+
+.book-receipt dd {
+  margin: 0;
+  min-width: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 [data-theme="hud"] .book-field input,
@@ -4895,6 +4905,8 @@ html {
 /* Checkout */
 .pay-page {
   min-height: 100dvh;
+  max-width: 100%;
+  overflow-x: clip;
   background:
     radial-gradient(circle at 10% 0%, rgb(255 46 147 / 16%), transparent 32%),
     radial-gradient(circle at 90% 100%, rgb(168 85 247 / 14%), transparent 28%),
@@ -4904,9 +4916,11 @@ html {
 }
 
 .pay-main {
-  max-width: 58rem;
+  box-sizing: border-box;
+  max-width: min(58rem, 100%);
   margin: 0 auto;
   padding: 2.4rem 1.15rem 4rem;
+  min-width: 0;
 }
 
 .pay-kicker {
@@ -4932,11 +4946,13 @@ html {
   display: grid;
   gap: 1.2rem;
   margin-top: 1.8rem;
+  min-width: 0;
+  width: 100%;
 }
 
 @media (min-width: 880px) {
   .pay-grid {
-    grid-template-columns: 1.2fr 0.8fr;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
     align-items: start;
   }
 }
@@ -4944,6 +4960,9 @@ html {
 .pay-panel,
 .pay-summary,
 .pay-empty {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
   padding: 1.3rem 1.25rem 1.4rem;
   border-radius: 1rem;
   border: 1px solid rgb(255 255 255 / 12%);
@@ -4967,23 +4986,36 @@ html {
 
 .pay-methods {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.45rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 520px) {
+  .pay-methods {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .pay-method {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
+  gap: 0.28rem;
+  min-width: 0;
+  width: 100%;
   min-height: 2.8rem;
-  padding: 0.45rem 0.4rem;
+  padding: 0.4rem 0.22rem;
   border-radius: 0.7rem;
   border: 1px solid rgb(255 255 255 / 16%);
   background: transparent;
   color: inherit;
-  font-size: 0.82rem;
+  font-size: clamp(0.62rem, 2.7vw, 0.82rem);
   font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  white-space: normal;
   cursor: pointer;
 }
 
@@ -4996,18 +5028,24 @@ html {
   display: grid;
   gap: 0.8rem;
   margin-top: 1rem;
+  min-width: 0;
 }
 
 .pay-card-fields label,
 .pay-card-row label {
   display: grid;
   gap: 0.35rem;
+  min-width: 0;
   font-size: 0.88rem;
 }
 
 .pay-card-fields input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 2.8rem;
-  padding: 0.55rem 0.75rem;
+  padding: 0.55rem 0.7rem;
   border-radius: 0.7rem;
   border: 1px solid rgb(255 255 255 / 16%);
   background: rgb(0 0 0 / 28%);
@@ -5016,8 +5054,9 @@ html {
 
 .pay-card-row {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 0.7rem;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 0.55rem;
+  min-width: 0;
 }
 
 .pay-wallet-note {
@@ -5027,11 +5066,31 @@ html {
 
 .pay-submit {
   width: 100%;
+  max-width: 100%;
   margin-top: 1.15rem;
+  box-sizing: border-box;
 }
 
 .pay-apple {
   background: #111 !important;
+  background-image: none !important;
+  color: #fff !important;
+}
+
+.pay-alipay {
+  background: #1677ff !important;
+  background-image: none !important;
+  color: #fff !important;
+}
+
+.pay-wechat {
+  background: #07c160 !important;
+  background-image: none !important;
+  color: #fff !important;
+}
+
+.pay-stripe {
+  background: #635bff !important;
   background-image: none !important;
   color: #fff !important;
 }
@@ -5045,5 +5104,25 @@ html {
   display: grid;
   gap: 1rem;
   justify-items: start;
+}
+
+@media (max-width: 639px) {
+  .pay-main {
+    padding: 1.6rem 0.85rem 3.4rem;
+  }
+
+  .pay-panel,
+  .pay-summary,
+  .pay-empty {
+    padding: 1.05rem 0.85rem 1.15rem;
+  }
+
+  .pay-method svg {
+    display: none;
+  }
+
+  .pay-card-row {
+    grid-template-columns: 1fr;
+  }
 }
 

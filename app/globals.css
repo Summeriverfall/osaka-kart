@@ -105,11 +105,13 @@
   html {
     @apply font-sans;
     color-scheme: dark;
+    touch-action: manipulation;
   }
 
   body {
     background-color: #0a0a0f;
     @apply bg-background text-foreground antialiased;
+    touch-action: manipulation;
     background-attachment: fixed;
     background-image:
       radial-gradient(
@@ -122,6 +124,25 @@
         rgb(var(--glow-b) / 10%),
         transparent 50%
       );
+  }
+}
+
+a,
+button,
+[role="button"],
+label,
+summary,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+@media (max-width: 900px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
   }
 }
 
