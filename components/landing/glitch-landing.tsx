@@ -2,11 +2,14 @@ import { SiteNav } from "@/components/landing/site-nav";
 import { PlanShowcase } from "@/components/landing/plan-showcase";
 import { HeroMedia } from "@/components/landing/hero-media";
 import { HeroScroll } from "@/components/landing/hero-scroll";
+import { HeroTitle } from "@/components/landing/hero-title";
 import { HeroTrust } from "@/components/landing/hero-trust";
 import { FloatBook } from "@/components/landing/float-book";
 import { LandingCommerce } from "@/components/landing/landing-commerce";
 import { HtmlTheme } from "@/components/layout/html-theme";
+import { SiteFooter } from "@/components/site/site-footer";
 import type { LandingCopy } from "@/components/landing/copy";
+import { FEATURE_IMAGES } from "@/lib/media";
 import type { PlanWithTranslation } from "@/lib/plans/types";
 
 type Props = {
@@ -21,11 +24,8 @@ export function GlitchLanding({ plans, locale, copy }: Props) {
       <HtmlTheme theme="glitch" />
       <SiteNav
         theme="glitch"
-        changeLook={copy.changeLook}
         plans={copy.nav.plans}
-        videos={copy.nav.videos}
         faq={copy.nav.faq}
-        booking={copy.nav.booking}
         calendar={copy.nav.calendar}
       />
 
@@ -33,10 +33,11 @@ export function GlitchLanding({ plans, locale, copy }: Props) {
         <HeroMedia theme="glitch" />
         <div className="glitch-hero-type">
           <p className="glitch-kicker">{copy.look.glitch}</p>
-          <h1>
-            {copy.hero.title}
-            <span>{copy.hero.titleRest}</span>
-          </h1>
+          <HeroTitle
+            title={copy.hero.title}
+            titleRest={copy.hero.titleRest}
+            restClassName="glitch-title-rest"
+          />
           <p>{copy.hero.subtitle}</p>
           <HeroTrust />
           <a href="#plans" className="cta-btn cta-btn-solid">
@@ -47,8 +48,9 @@ export function GlitchLanding({ plans, locale, copy }: Props) {
       </section>
 
       <section className="glitch-split">
-        {copy.features.map((item) => (
+        {copy.features.map((item, index) => (
           <article key={item.id}>
+            <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" />
             <span>{item.id}</span>
             <h2>{item.title}</h2>
             <p>{item.body}</p>
@@ -64,7 +66,7 @@ export function GlitchLanding({ plans, locale, copy }: Props) {
       </section>
 
       <LandingCommerce plans={plans} locale={locale} theme="glitch" copy={copy} />
-      <footer className="glitch-foot">{copy.footer}</footer>
+      <SiteFooter />
       <FloatBook theme="glitch" label={copy.nav.booking} />
     </div>
   );

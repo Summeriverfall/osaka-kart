@@ -8,7 +8,8 @@ import { cn } from "@/lib/utils";
 const LOCALE_LABELS: Record<AppLocale, string> = {
   en: "EN",
   ja: "日",
-  "zh-CN": "中",
+  "zh-TW": "繁",
+  ko: "한",
 };
 
 export function LocaleSwitcher() {
@@ -23,13 +24,13 @@ export function LocaleSwitcher() {
   }
 
   return (
-    <div className="flex items-center gap-1 rounded-full border border-white/10 bg-[#12121A]/80 p-1">
+    <div className="flex max-w-[min(100%,14.5rem)] items-center gap-0.5 overflow-x-auto rounded-full border border-white/10 bg-[#12121A]/80 p-1">
       {routing.locales.map((code) => (
         <button
           key={code}
           type="button"
           className={cn(
-            "rounded-full px-2.5 py-1 text-xs font-semibold tracking-wide",
+            "shrink-0 rounded-full px-2 py-1 text-[0.7rem] font-semibold tracking-wide",
             locale === code
               ? "bg-neon-pink text-white"
               : "text-gray-300 hover:text-white",

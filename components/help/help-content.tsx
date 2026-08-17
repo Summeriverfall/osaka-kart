@@ -20,6 +20,7 @@ export function HelpContent() {
           <ul>
             <li>{t("us")}</li>
             <li>{t("cn")}</li>
+            <li>{t("kr")}</li>
             <li>{t("jp")}</li>
             <li>{t("uk")}</li>
             <li>{t("eu")}</li>

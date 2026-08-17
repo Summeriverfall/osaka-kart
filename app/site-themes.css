@@ -471,7 +471,20 @@ html {
 }
 
 .neon-features .neon-glass {
-  padding: 1.4rem;
+  padding: 0 0 1.35rem;
+  overflow: hidden;
+}
+
+.neon-features .feature-shot {
+  border-radius: 0;
+  margin: 0 0 0.95rem;
+}
+
+.neon-features .neon-index,
+.neon-features h3,
+.neon-features p:last-child {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
 }
 
 .neon-index {
@@ -1344,6 +1357,14 @@ html {
   font-family: var(--font-poster), sans-serif;
   font-size: 2rem;
   line-height: 1;
+}
+
+.acid-poster .feature-shot {
+  margin: -1.4rem -1.4rem 0.9rem;
+  width: calc(100% + 2.8rem);
+  max-width: none;
+  max-height: 168px;
+  border-radius: 0;
 }
 
 .acid-poster h3 {
@@ -2535,8 +2556,7 @@ html {
   text-shadow: 4px 0 #ff2bd6, -4px 0 #00ff9c;
 }
 
-.glitch-hero-type h1 span {
-  display: block;
+.glitch-hero-type h1 .glitch-title-rest {
   color: #00ff9c;
 }
 
@@ -2554,6 +2574,14 @@ html {
 .glitch-split article {
   padding: 2rem 1.2rem;
   border: 1px solid rgb(0 255 156 / 25%);
+}
+
+.glitch-split .feature-shot {
+  margin: -2rem -1.2rem 1rem;
+  width: calc(100% + 2.4rem);
+  max-width: none;
+  max-height: 170px;
+  border-radius: 0;
 }
 
 .glitch-split .shift-1 {
@@ -3522,8 +3550,7 @@ html {
   color: #fff8ea;
 }
 
-.oni-hero-panel h1 span {
-  display: block;
+.oni-hero-panel h1 .oni-title-rest {
   color: #e0c070;
 }
 
@@ -3586,6 +3613,18 @@ html {
   background: #1c1010;
   border: 1px solid rgb(224 192 112 / 22%);
   border-radius: 0.75rem;
+}
+
+.oni-features article {
+  overflow: hidden;
+}
+
+.oni-features .feature-shot {
+  margin: -1.35rem -1.25rem 0.9rem;
+  width: calc(100% + 2.5rem);
+  max-width: none;
+  max-height: 160px;
+  border-radius: 0;
 }
 
 .oni-features span {
@@ -4112,9 +4151,6 @@ html {
 }
 
 .site-bar-logo {
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
   text-decoration: none;
   color: inherit;
 }
@@ -4151,10 +4187,6 @@ html {
 @media (min-width: 860px) {
   .site-bar-nav {
     display: flex;
-  }
-
-  .site-bar-menu {
-    display: none;
   }
 }
 
@@ -4206,6 +4238,7 @@ html {
   font-size: 1.14rem;
   line-height: 1.7;
   color: rgb(255 255 255 / 88%);
+  text-wrap: wrap;
 }
 
 .hero-trust {

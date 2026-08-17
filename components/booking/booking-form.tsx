@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { formatJpy } from "@/lib/format";
+import { addonImage } from "@/lib/media";
+import { cn } from "@/lib/utils";
 import { MonthCalendar } from "@/components/booking/month-calendar";
 import { BOOKING_SLOTS } from "@/lib/booking/slots";
 import {
@@ -163,22 +165,28 @@ export function BookingForm({
 
       <fieldset className="book-field">
         <legend>{t("addons")}</legend>
-        <div className="book-addons">
-          {addons.map((addon) => (
-            <label key={addon.id}>
-              <input
-                type="checkbox"
-                checked={selectedAddons.includes(addon.slug)}
-                onChange={() => toggleAddon(addon.slug)}
-              />
-              <span>
-                {addon.translation.name}
-                <small>
-                  {formatJpy(addon.price_jpy, locale)} · {addon.translation.description}
-                </small>
-              </span>
-            </label>
-          ))}
+        <div className="addon-board">
+          {addons.map((addon) => {
+            const on = selectedAddons.includes(addon.slug);
+            return (
+              <label key={addon.id} className={cn("addon-card", on && "is-on")}>
+                <input
+                  type="checkbox"
+                  checked={on}
+                  onChange={() => toggleAddon(addon.slug)}
+                />
+                <img src={addonImage(addon.slug)} alt="" />
+                <span className="addon-card-copy">
+                  <span className="addon-card-top">
+                    <strong>{addon.translation.name}</strong>
+                    <b>{formatJpy(addon.price_jpy, locale)}</b>
+                  </span>
+                  <small>{addon.translation.description}</small>
+                  <em>{on ? t("addonOn") : t("addonAdd")}</em>
+                </span>
+              </label>
+            );
+          })}
         </div>
       </fieldset>
 

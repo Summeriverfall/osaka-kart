@@ -47,13 +47,19 @@ function toTranslation(row: TranslationRow): PlanTranslation {
 }
 
 function pickTranslation(rows: TranslationRow[], locale: string) {
-  const match =
-    rows.find((row) => row.locale === locale) ??
-    rows.find((row) => row.locale === "en") ??
-    rows[0];
+  const order =
+    locale === "zh-TW" || locale === "zh-CN" || locale === "zh-Hant"
+      ? ["zh-TW", "zh-CN", "en"]
+      : [locale, "en"];
 
-  if (!match) return null;
-  return toTranslation(match);
+  for (const code of order) {
+    const match = rows.find((row) => row.locale === code);
+    if (match) return toTranslation(match);
+  }
+
+  const first = rows[0];
+  if (!first) return null;
+  return toTranslation(first);
 }
 
 function toPlan(
@@ -191,10 +197,14 @@ export async function getAddons(
           | { locale: string; name: string; description: string | null }
           | null,
       );
+      const order =
+        locale === "zh-TW" || locale === "zh-CN"
+          ? ["zh-TW", "zh-CN", "en"]
+          : [locale, "en"];
       const match =
-        rows.find((item) => item.locale === locale) ??
-        rows.find((item) => item.locale === "en") ??
-        rows[0];
+        order
+          .map((code) => rows.find((item) => item.locale === code))
+          .find(Boolean) ?? rows[0];
       if (!match) return [];
       return [
         {

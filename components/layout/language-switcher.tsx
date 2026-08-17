@@ -14,7 +14,8 @@ const LOCALE_META: Record<
 > = {
   en: { short: "EN", native: "English" },
   ja: { short: "日", native: "日本語" },
-  "zh-CN": { short: "中", native: "简体中文" },
+  "zh-TW": { short: "繁", native: "繁體中文" },
+  ko: { short: "한", native: "한국어" },
 };
 
 export function LanguageSwitcher() {

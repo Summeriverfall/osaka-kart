@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { BrandMark } from "@/components/site/brand-mark";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 
 const navItems = [
@@ -16,12 +17,7 @@ export async function Navbar() {
   return (
     <header className="nav-bar sticky top-0 z-50">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link
-          href="/"
-          className="neon-text shrink-0 text-lg font-bold tracking-[0.18em]"
-        >
-          OSAKA KART
-        </Link>
+        <BrandMark />
 
         <nav className="hidden items-center gap-8 md:flex">
           {navItems.map((item) => (

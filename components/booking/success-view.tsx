@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatJpy } from "@/lib/format";
+import { siteHome, useSiteLook } from "@/lib/site-look";
 import {
   BOOKING_RESULT_KEY,
   type BookingResult,
@@ -17,6 +18,7 @@ type SuccessViewProps = {
 
 export function SuccessView({ locale }: SuccessViewProps) {
   const t = useTranslations("Success");
+  const look = useSiteLook();
   const [result, setResult] = useState<BookingResult | null>(null);
 
   useEffect(() => {
@@ -59,7 +61,7 @@ export function SuccessView({ locale }: SuccessViewProps) {
             </div>
           </dl>
         )}
-        <Link href="/" className="cta-btn mt-8 inline-flex px-6 py-3">
+        <Link href={siteHome(look)} className="cta-btn mt-8 inline-flex px-6 py-3">
           {t("back")}
         </Link>
       </main>

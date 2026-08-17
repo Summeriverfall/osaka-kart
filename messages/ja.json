@@ -1,6 +1,6 @@
 {
   "Metadata": {
-    "title": "OSAKA KART",
+    "title": "Furture Kart Osaka",
     "description": "大阪の公道カート"
   },
   "Nav": {
@@ -101,8 +101,8 @@
     "button": "今すぐ予約"
   },
   "Footer": {
-    "copyright": "© 2026 OSAKA KART. All rights reserved.",
-    "company": "OSAKA KART · 大阪",
+    "copyright": "© 2026 Furture Kart Osaka. All rights reserved.",
+    "company": "Furture Kart Osaka · 大阪",
     "social": "フォロー"
   },
   "Help": {
@@ -111,6 +111,7 @@
     "licenseLead": "受付で有効な免許の提示が必要です。国によって扱いが異なります。",
     "us": "アメリカ：州の運転免許 + 1949年ジュネーブ条約の国際免許を推奨。",
     "cn": "中国：中国の免許だけでは日本の公道を走れません。原本と1949年ジュネーブ条約の国際免許を持参。",
+    "kr": "韓国：韓国の免許だけでは日本の公道を走れません。原本と1949年ジュネーブ条約の国際免許を持参。",
     "jp": "日本：有効な日本の免許を提示。",
     "uk": "イギリス：フォトカード免許。発行時期により国際免許が必要な場合があります。",
     "eu": "EU/EEA：各国の免許。確認用に国際免許があるとスムーズです。",
@@ -164,7 +165,9 @@
     "back": "戻る",
     "call": "電話で予約",
     "mail": "メールで予約",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "addonAdd": "追加する",
+    "addonOn": "追加済み"
   },
   "Press": {
     "title": "ストリートノート",

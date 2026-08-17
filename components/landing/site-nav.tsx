@@ -1,30 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { Mail, Menu, Phone, X } from "lucide-react";
+import { BrandMark } from "@/components/site/brand-mark";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
+import { SITE_CONTACT } from "@/lib/contact";
 import type { SiteTheme } from "@/lib/visual-theme";
 import { cn } from "@/lib/utils";
 
 type SiteNavProps = {
   theme: SiteTheme;
-  changeLook: string;
   plans: string;
-  videos: string;
   faq: string;
-  booking: string;
   calendar: string;
 };
 
-export function SiteNav({
-  theme,
-  changeLook,
-  plans,
-  faq,
-  booking,
-  calendar,
-}: SiteNavProps) {
+export function SiteNav({ theme, plans, faq, calendar }: SiteNavProps) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -51,6 +42,19 @@ export function SiteNav({
     </>
   );
 
+  const contact = (
+    <div className="site-bar-contact-list">
+      <a href={SITE_CONTACT.tel} onClick={() => setOpen(false)}>
+        <Phone className="size-4" />
+        {SITE_CONTACT.phone}
+      </a>
+      <a href={SITE_CONTACT.mailto} onClick={() => setOpen(false)}>
+        <Mail className="size-4" />
+        {SITE_CONTACT.email}
+      </a>
+    </div>
+  );
+
   return (
     <header
       className={cn(
@@ -59,18 +63,11 @@ export function SiteNav({
         scrolled && "is-scrolled",
       )}
     >
-      <a href="#top" className="site-bar-logo">
-        OSAKA KART
-      </a>
+      <BrandMark className="site-bar-logo" look={theme} />
       <nav className="site-bar-nav">{links}</nav>
       <div className="site-bar-end">
-        <Link href="/" className="looks-link">
-          {changeLook}
-        </Link>
+        <div className="site-bar-contact">{contact}</div>
         <LocaleSwitcher />
-        <a href="#book" className="cta-btn cta-btn-solid site-bar-cta">
-          {booking}
-        </a>
         <button
           type="button"
           className="site-bar-menu"
@@ -84,12 +81,7 @@ export function SiteNav({
       {open ? (
         <div className="site-bar-sheet">
           {links}
-          <Link href="/" onClick={() => setOpen(false)}>
-            {changeLook}
-          </Link>
-          <a href="#book" className="cta-btn cta-btn-solid" onClick={() => setOpen(false)}>
-            {booking}
-          </a>
+          {contact}
         </div>
       ) : null}
     </header>

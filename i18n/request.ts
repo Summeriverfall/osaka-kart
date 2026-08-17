@@ -5,7 +5,8 @@ import { routing } from "./routing";
 const messageImports = {
   en: () => import("../messages/en.json"),
   ja: () => import("../messages/ja.json"),
-  "zh-CN": () => import("../messages/zh-CN.json"),
+  "zh-TW": () => import("../messages/zh-TW.json"),
+  ko: () => import("../messages/ko.json"),
 } as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {

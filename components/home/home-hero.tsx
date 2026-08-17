@@ -68,8 +68,8 @@ export function HomeHero({ look }: HomeHeroProps) {
             (look === "neon" || look === "acid") && "neon-text",
           )}
         >
-          {t("title")}
-          <br className="hidden md:block" /> {t("titleRest")}
+          <span className="title-line">{t("title")}</span>{" "}
+          <span className="title-line">{t("titleRest")}</span>
         </h1>
         <div className="mt-6 flex items-center justify-center gap-2">
           <div className="flex text-yellow-400">

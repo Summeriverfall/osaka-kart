@@ -2,11 +2,14 @@ import { SiteNav } from "@/components/landing/site-nav";
 import { PlanShowcase } from "@/components/landing/plan-showcase";
 import { HeroMedia } from "@/components/landing/hero-media";
 import { HeroScroll } from "@/components/landing/hero-scroll";
+import { HeroTitle } from "@/components/landing/hero-title";
 import { HeroTrust } from "@/components/landing/hero-trust";
 import { FloatBook } from "@/components/landing/float-book";
 import { LandingCommerce } from "@/components/landing/landing-commerce";
 import { HtmlTheme } from "@/components/layout/html-theme";
+import { SiteFooter } from "@/components/site/site-footer";
 import type { LandingCopy } from "@/components/landing/copy";
+import { FEATURE_IMAGES } from "@/lib/media";
 import type { PlanWithTranslation } from "@/lib/plans/types";
 
 type Props = {
@@ -22,26 +25,19 @@ export function NeonLanding({ plans, locale, copy }: Props) {
       <div className="neon-grain" aria-hidden />
       <SiteNav
         theme="neon"
-        changeLook={copy.changeLook}
         plans={copy.nav.plans}
-        videos={copy.nav.videos}
         faq={copy.nav.faq}
-        booking={copy.nav.booking}
         calendar={copy.nav.calendar}
       />
 
       <section className="neon-hero">
         <HeroMedia theme="neon" />
         <div className="relative z-10 mx-auto max-w-3xl px-4 text-center">
-          <h1 className="hero-title neon-text">
-            {copy.hero.title}
-            {copy.hero.titleRest ? (
-              <>
-                <br />
-                {copy.hero.titleRest}
-              </>
-            ) : null}
-          </h1>
+          <HeroTitle
+            className="hero-title neon-text"
+            title={copy.hero.title}
+            titleRest={copy.hero.titleRest}
+          />
           <p className="hero-sub">{copy.hero.subtitle}</p>
           <HeroTrust />
           <a href="#plans" className="cta-btn cta-btn-solid mt-8">
@@ -55,8 +51,9 @@ export function NeonLanding({ plans, locale, copy }: Props) {
         <div className="neon-wrap">
           <h2 className="neon-h2">{copy.featuresTitle}</h2>
           <div className="neon-features">
-            {copy.features.map((item) => (
+            {copy.features.map((item, index) => (
               <article key={item.id} className="neon-glass">
+                <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" />
                 <p className="neon-index">{item.id}</p>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
@@ -76,7 +73,7 @@ export function NeonLanding({ plans, locale, copy }: Props) {
       </section>
 
       <LandingCommerce plans={plans} locale={locale} theme="neon" copy={copy} />
-      <footer className="neon-foot">{copy.footer}</footer>
+      <SiteFooter />
       <FloatBook theme="neon" label={copy.nav.booking} />
     </div>
   );

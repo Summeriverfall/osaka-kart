@@ -8,7 +8,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), "PingFang TC", "Microsoft JhengHei", "Malgun Gothic", ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --font-heading: var(--font-sans);
   --color-neon-pink: var(--neon-pink);
@@ -234,5 +234,291 @@
   border-radius: 1rem;
   border: 1px solid rgb(255 255 255 / 10%);
   background: #12121a;
+}
+
+/* Fill the line. Do not use text-wrap:balance. Avoid 1-glyph leftover lines. */
+html {
+  text-wrap: wrap;
+  overflow-wrap: break-word;
+}
+
+html[lang="ko"] {
+  word-break: keep-all;
+}
+
+html[lang="ja"],
+html[lang="zh-TW"] {
+  line-break: strict;
+}
+
+body,
+p,
+li,
+h1,
+h2,
+h3,
+h4,
+blockquote,
+figcaption,
+td,
+th,
+dd,
+dt,
+label,
+button,
+a,
+.hero-sub,
+.acid-sub,
+.acid-lead,
+.neon-lead,
+.gateway-lead,
+.gateway-what,
+.plan-card-desc {
+  text-wrap: wrap;
+}
+
+.u-nowrap {
+  white-space: nowrap;
+}
+
+.title-line {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: wrap;
+}
+
+.hero-trust li,
+.gateway-facts span {
+  white-space: nowrap;
+}
+
+html[lang="ko"] :is(h1, h2, h3, .acid-mega, .hero-title),
+html[lang="zh-TW"] :is(h1, h2, h3, .acid-mega, .hero-title),
+html[lang="ja"] :is(h1, h2, h3, .acid-mega, .hero-title) {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  line-height: 1.18;
+}
+
+html[lang="ko"] .acid-mega,
+html[lang="zh-TW"] .acid-mega,
+html[lang="ja"] .acid-mega,
+html[lang="ko"] .hero-title,
+html[lang="zh-TW"] .hero-title,
+html[lang="ja"] .hero-title,
+html[lang="ko"] .oni-hero-panel h1,
+html[lang="zh-TW"] .oni-hero-panel h1,
+html[lang="ja"] .oni-hero-panel h1,
+html[lang="ko"] .glitch-hero-type h1,
+html[lang="zh-TW"] .glitch-hero-type h1,
+html[lang="ja"] .glitch-hero-type h1,
+html[lang="ko"] .gateway-main h1,
+html[lang="zh-TW"] .gateway-main h1,
+html[lang="ja"] .gateway-main h1 {
+  font-size: clamp(1.7rem, 5.4vw, 3.1rem);
+}
+
+.brand-mark {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-decoration: none;
+  color: inherit;
+  line-height: 1.05;
+  min-width: 0;
+}
+
+.brand-mark span {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.brand-mark strong {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--neon-pink);
+}
+
+.site-bar-contact {
+  display: none;
+}
+
+.site-bar-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.site-bar-contact-list a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+.site-foot {
+  padding: 2.4rem 1.15rem 5.5rem;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+
+.site-foot-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.site-foot-company,
+.site-foot-follow,
+.site-foot-copy {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgb(255 255 255 / 55%);
+}
+
+.site-foot-copy {
+  font-size: 0.72rem;
+}
+
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.social-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  color: #f1f1f5;
+  background: rgb(255 255 255 / 6%);
+}
+
+.social-links a:hover {
+  color: var(--neon-pink);
+  border-color: color-mix(in srgb, var(--neon-pink) 50%, transparent);
+}
+
+.social-links svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.feature-shot {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 0.8rem;
+  margin-bottom: 0.85rem;
+}
+
+.addon-board {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.addon-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 5.6rem 1fr;
+  gap: 0.85rem;
+  align-items: stretch;
+  padding: 0.7rem;
+  border-radius: 1rem;
+  border: 1px solid rgb(255 255 255 / 12%);
+  background: rgb(255 255 255 / 5%);
+  cursor: pointer;
+}
+
+.addon-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.addon-card img {
+  width: 100%;
+  height: 5.6rem;
+  object-fit: cover;
+  border-radius: 0.7rem;
+}
+
+.addon-card-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.addon-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  align-items: baseline;
+}
+
+.addon-card-top strong,
+.addon-card-top b {
+  word-break: keep-all;
+}
+
+.addon-card-top b {
+  color: var(--neon-pink);
+}
+
+.addon-card small {
+  opacity: 0.72;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.addon-card em {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgb(255 255 255 / 55%);
+}
+
+.addon-card.is-on {
+  border-color: color-mix(in srgb, var(--neon-pink) 70%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--neon-pink) 40%, transparent);
+  background: rgb(255 46 147 / 10%);
+}
+
+.addon-card.is-on em {
+  color: var(--neon-pink);
+}
+
+@media (min-width: 1100px) {
+  .site-bar-contact {
+    display: block;
+  }
+
+  .site-bar-contact .site-bar-contact-list {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .site-bar-menu {
+    display: none;
+  }
 }
 

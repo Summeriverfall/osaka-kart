@@ -240,6 +240,13 @@ const addonTranslations = {
   },
 } as const;
 
+function localeFallbacks(locale: string): string[] {
+  if (locale === "zh-TW" || locale === "zh-CN" || locale === "zh-Hant") {
+    return ["zh-TW", "zh-CN", "en"];
+  }
+  return [locale, "en"];
+}
+
 function pickTranslation(
   rows: PlanTranslation[] | undefined,
   locale: string,
@@ -248,11 +255,12 @@ function pickTranslation(
     throw new Error("Missing plan translation");
   }
 
-  return (
-    rows.find((row) => row.locale === locale) ??
-    rows.find((row) => row.locale === "en") ??
-    rows[0]
-  );
+  for (const code of localeFallbacks(locale)) {
+    const match = rows.find((row) => row.locale === code);
+    if (match) return match;
+  }
+
+  return rows[0];
 }
 
 export function getSeedPlans(locale: string): PlanWithTranslation[] {

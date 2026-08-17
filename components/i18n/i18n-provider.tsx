@@ -16,12 +16,14 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing, type AppLocale } from "@/i18n/routing";
 import en from "@/messages/en.json";
 import ja from "@/messages/ja.json";
-import zhCN from "@/messages/zh-CN.json";
+import ko from "@/messages/ko.json";
+import zhTW from "@/messages/zh-TW.json";
 
 const ALL_MESSAGES = {
   en,
   ja,
-  "zh-CN": zhCN,
+  "zh-TW": zhTW,
+  ko,
 } as const;
 
 type Messages = (typeof ALL_MESSAGES)[AppLocale];
@@ -111,7 +113,8 @@ function LocaleSwitchBridge({
 export const LOCALE_LABELS: Record<AppLocale, string> = {
   en: "EN",
   ja: "日",
-  "zh-CN": "中",
+  "zh-TW": "繁",
+  ko: "한",
 };
 
 export { routing };

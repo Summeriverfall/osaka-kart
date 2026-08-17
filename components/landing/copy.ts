@@ -36,7 +36,6 @@ export async function getLandingCopy() {
       booking: nav("booking"),
       calendar: nav("calendar"),
     },
-    changeLook: gateway("changeLook"),
     look: {
       neon: gateway("neonLead"),
       acid: gateway("acidLead"),

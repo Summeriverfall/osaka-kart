@@ -1,17 +1,32 @@
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const out = join(process.cwd(), "out");
+
 const html = `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="refresh" content="0;url=./en/" />
     <link rel="canonical" href="./en/" />
-    <title>OSAKA KART</title>
+    <title>Furture Kart Osaka</title>
   </head>
   <body>
-    <a href="./en/">Enter OSAKA KART</a>
+    <a href="./en/">Enter Furture Kart Osaka</a>
+  </body>
+</html>
+`;
+
+const zhHansRedirect = `<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content="0;url=../zh-TW/" />
+    <link rel="canonical" href="../zh-TW/" />
+    <title>Furture Kart Osaka</title>
+  </head>
+  <body>
+    <a href="../zh-TW/">繁體中文</a>
   </body>
 </html>
 `;
@@ -19,4 +34,6 @@ const html = `<!doctype html>
 writeFileSync(join(out, "index.html"), html);
 writeFileSync(join(out, "404.html"), html);
 writeFileSync(join(out, ".nojekyll"), "");
+mkdirSync(join(out, "zh-CN"), { recursive: true });
+writeFileSync(join(out, "zh-CN", "index.html"), zhHansRedirect);
 console.log("GitHub Pages fallback files written");

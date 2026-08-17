@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { BrandMark } from "@/components/site/brand-mark";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import { asset } from "@/lib/asset";
 import { formatJpy } from "@/lib/format";
@@ -39,7 +40,7 @@ export function GatewayView({ fromPrice, locale }: GatewayViewProps) {
   return (
     <div className="gateway-root" data-theme="portal">
       <header className="gateway-top">
-        <p>OSAKA KART</p>
+        <BrandMark />
         <LocaleSwitcher />
       </header>
 
