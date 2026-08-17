@@ -37,9 +37,9 @@
     "changeLook": "Change look"
   },
   "Hero": {
-    "title": "Drive Osaka",
-    "titleRest": "on a street-legal kart",
-    "subtitle": "A guide leads. Suit, helmet, and insurance are in the price. Pick a plan, pick a date.",
+    "title": "Tonight, into the neon",
+    "titleRest": "Dotonbori under the wheels",
+    "subtitle": "Street-legal plates. A guide leads through Namba. Suit, helmet, and insurance included.",
     "cta": "See plans and prices",
     "rating": "4.9 (2,000+ reviews)",
     "scroll": "Scroll"
@@ -170,7 +170,7 @@
     "addonOn": "Added"
   },
   "Press": {
-    "title": "Street notes",
+    "title": "In the news",
     "s1": "Osaka Street Diary",
     "s2": "Night Run Mag",
     "s3": "City Kart Weekly",
@@ -226,11 +226,34 @@
   "Success": {
     "kicker": "Confirmed",
     "title": "We have your booking",
-    "body": "A meeting pin will follow by email. Bring your license on the day.",
+    "body": "Review the details, then pay to lock the slot. A meeting pin will follow by email.",
     "ref": "Reference",
     "plan": "Plan",
     "when": "When",
     "total": "Total",
-    "back": "Back to home"
+    "back": "Back to home",
+    "pay": "Continue to payment",
+    "paidKicker": "Paid",
+    "paidTitle": "Payment complete",
+    "paidBody": "A meeting pin will follow by email. Bring your license on the day."
+  },
+  "Pay": {
+    "kicker": "Checkout",
+    "title": "Payment",
+    "lead": "Choose a method to confirm your booking.",
+    "methods": "Payment method",
+    "card": "Card",
+    "paypay": "PayPay",
+    "apple": "Apple Pay",
+    "number": "Card number",
+    "expiry": "Expiry",
+    "cvc": "CVC",
+    "holder": "Name on card",
+    "payNow": "Pay {price}",
+    "secure": "Encrypted checkout",
+    "empty": "No booking is waiting for payment.",
+    "book": "Go to booking",
+    "order": "Order summary",
+    "walletNote": "Tap below to finish with this wallet."
   }
 }

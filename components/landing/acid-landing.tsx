@@ -5,11 +5,11 @@ import { HeroScroll } from "@/components/landing/hero-scroll";
 import { HeroTitle } from "@/components/landing/hero-title";
 import { HeroTrust } from "@/components/landing/hero-trust";
 import { FloatBook } from "@/components/landing/float-book";
-import { LandingCommerce } from "@/components/landing/landing-commerce";
+import { LandingCommerce, LandingGallery } from "@/components/landing/landing-commerce";
+import { PageRails } from "@/components/landing/page-rails";
 import { HtmlTheme } from "@/components/layout/html-theme";
 import { SiteFooter } from "@/components/site/site-footer";
 import type { LandingCopy } from "@/components/landing/copy";
-import { FEATURE_IMAGES } from "@/lib/media";
 import type { PlanWithTranslation } from "@/lib/plans/types";
 
 type Props = {
@@ -22,6 +22,7 @@ export function AcidLanding({ plans, locale, copy }: Props) {
   return (
     <div className="landing-root acid-root" data-theme="acid" id="top">
       <HtmlTheme theme="acid" />
+      <PageRails theme="acid" />
       <SiteNav
         theme="acid"
         plans={copy.nav.plans}
@@ -47,22 +48,10 @@ export function AcidLanding({ plans, locale, copy }: Props) {
         <HeroScroll theme="acid" label={copy.nav.plans} />
       </section>
 
-      <section className="acid-section">
-        <h2 className="acid-h2">{copy.featuresTitle}</h2>
-        <div className="acid-posters">
-          {copy.features.map((item, index) => (
-            <article key={item.id} className={index === 1 ? "acid-poster alt" : "acid-poster"}>
-              <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" />
-              <span>{item.id}</span>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      <LandingGallery copy={copy} />
 
       <section id="plans" className="acid-section">
-        <p className="shop-kicker">01</p>
+        <p className="shop-kicker">02</p>
         <h2 className="acid-h2">{copy.plan.title}</h2>
         <p className="acid-lead">{copy.plan.lead}</p>
         <PlanShowcase plans={plans} locale={locale} labels={copy.labels} />

@@ -35,10 +35,10 @@ export function SuccessView({ locale }: SuccessViewProps) {
       <SiteNav />
       <main className="mx-auto max-w-xl px-4 py-20">
         <p className="text-xs tracking-[0.2em] text-neon-pink uppercase">
-          {t("kicker")}
+          {result?.paid ? t("paidKicker") : t("kicker")}
         </p>
-        <h1 className="mt-3 text-4xl font-black">{t("title")}</h1>
-        <p className="mt-4 text-gray-300">{t("body")}</p>
+        <h1 className="mt-3 text-4xl font-black">{result?.paid ? t("paidTitle") : t("title")}</h1>
+        <p className="mt-4 text-gray-300">{result?.paid ? t("paidBody") : t("body")}</p>
         {result && (
           <dl className="book-receipt mt-8">
             <div>
@@ -61,9 +61,19 @@ export function SuccessView({ locale }: SuccessViewProps) {
             </div>
           </dl>
         )}
-        <Link href={siteHome(look)} className="cta-btn mt-8 inline-flex px-6 py-3">
-          {t("back")}
-        </Link>
+        <div className="mt-8 flex flex-col gap-3">
+          {result && !result.paid ? (
+            <Link href="/pay" className="cta-btn inline-flex px-6 py-3">
+              {t("pay")}
+            </Link>
+          ) : null}
+          <Link
+            href={siteHome(look)}
+            className={result && !result.paid ? "cta-btn cta-btn-ghost inline-flex px-6 py-3" : "cta-btn mt-8 inline-flex px-6 py-3"}
+          >
+            {t("back")}
+          </Link>
+        </div>
       </main>
       <SiteFooter />
     </div>

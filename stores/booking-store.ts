@@ -47,4 +47,5 @@ export type BookingResult = BookingDraft & {
   ref: string;
   planName: string;
   totalJpy: number;
+  paid?: boolean;
 };

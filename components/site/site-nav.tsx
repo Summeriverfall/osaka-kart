@@ -63,32 +63,31 @@ export function SiteNav({ look }: SiteNavProps) {
           : "bg-transparent",
       )}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
         <BrandMark look={currentLook} />
-        <nav className="hidden items-center gap-8 md:flex">
-          {items.map((item) =>
-            onLanding ? (
-              <a
-                key={item.key}
-                href={item.hash}
-                className="text-sm text-[#F1F1F5] hover:text-neon-pink"
-              >
-                {t(item.key)}
-              </a>
-            ) : (
-              <Link
-                key={item.key}
-                href={item.href}
-                className="text-sm text-[#F1F1F5] hover:text-neon-pink"
-              >
-                {t(item.key)}
-              </Link>
-            ),
-          )}
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <div className="site-bar-contact">{contact}</div>
+        <div className="site-bar-contact">{contact}</div>
+        <div className="ml-auto flex items-center gap-2">
+          <nav className="hidden items-center gap-8 md:flex">
+            {items.map((item) =>
+              onLanding ? (
+                <a
+                  key={item.key}
+                  href={item.hash}
+                  className="text-[1.05rem] font-semibold text-[#F1F1F5] hover:text-neon-pink"
+                >
+                  {t(item.key)}
+                </a>
+              ) : (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  className="text-[1.05rem] font-semibold text-[#F1F1F5] hover:text-neon-pink"
+                >
+                  {t(item.key)}
+                </Link>
+              ),
+            )}
+          </nav>
           <LocaleSwitcher />
           <button
             type="button"

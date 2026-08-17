@@ -37,9 +37,9 @@
     "changeLook": "스타일 바꾸기"
   },
   "Hero": {
-    "title": "오사카 거리에서",
-    "titleRest": "합법 카트를 탄다",
-    "subtitle": "가이드가 선도합니다. 슈트, 헬멧, 보험은 요금에 포함. 플랜과 날짜만 고르면 출발합니다.",
+    "title": "오늘 밤, 네온 속으로",
+    "titleRest": "도톤보리가 바퀴 아래",
+    "subtitle": "합법 도로 번호판. 가이드가 난바에서 선도. 슈트·헬멧·보험 포함.",
     "cta": "플랜과 요금 보기",
     "rating": "4.9 (후기 2,000+)",
     "scroll": "아래로"
@@ -170,7 +170,7 @@
     "addonOn": "추가됨"
   },
   "Press": {
-    "title": "스트리트 노트",
+    "title": "뉴스 보도",
     "s1": "Osaka Street Diary",
     "s2": "Night Run Mag",
     "s3": "City Kart Weekly",
@@ -226,11 +226,34 @@
   "Success": {
     "kicker": "접수됨",
     "title": "예약이 접수되었습니다",
-    "body": "집합 장소는 이메일로 보냅니다. 당일 면허를 지참하세요.",
+    "body": "내용을 확인한 뒤 결제하면 자리가 확정됩니다. 집합 장소는 이메일로 보냅니다.",
     "ref": "접수 번호",
     "plan": "플랜",
     "when": "일시",
     "total": "합계",
-    "back": "홈으로"
+    "back": "홈으로",
+    "pay": "결제로 이동",
+    "paidKicker": "결제 완료",
+    "paidTitle": "결제가 완료되었습니다",
+    "paidBody": "집합 장소는 이메일로 보냅니다. 당일 면허를 지참하세요."
+  },
+  "Pay": {
+    "kicker": "Checkout",
+    "title": "결제",
+    "lead": "결제 수단을 선택해 예약을 확정하세요.",
+    "methods": "결제 수단",
+    "card": "카드",
+    "paypay": "PayPay",
+    "apple": "Apple Pay",
+    "number": "카드 번호",
+    "expiry": "유효기간",
+    "cvc": "CVC",
+    "holder": "카드 소유자 이름",
+    "payNow": "{price} 결제",
+    "secure": "암호화 결제",
+    "empty": "결제 대기 중인 예약이 없습니다.",
+    "book": "예약으로",
+    "order": "주문 요약",
+    "walletNote": "아래 버튼으로 이 월렛에서 결제합니다."
   }
 }

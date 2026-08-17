@@ -16,7 +16,6 @@ export function HeroMedia({ theme }: HeroMediaProps) {
       <HeroVideo
         src={asset(clip.src)}
         startAt={clip.startAt}
-        poster={asset("/images/hero/poster.webp")}
         className="absolute inset-0 z-0 h-full w-full object-cover"
       />
 

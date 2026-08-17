@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { formatJpy } from "@/lib/format";
+import { formatYenShort } from "@/lib/format";
 import {
   addMonths,
   dayStatus,
@@ -33,7 +33,7 @@ export function MonthCalendar({ locale, priceJpy, value, onChange }: MonthCalend
 
   const cells = useMemo(() => monthCells(cursor), [cursor]);
   const weekdays = useMemo(() => weekdayLabels(locale), [locale]);
-  const price = formatJpy(priceJpy, locale);
+  const price = formatYenShort(priceJpy);
 
   function pick(iso: string, status: DayStatus) {
     if (status === "closed") return;

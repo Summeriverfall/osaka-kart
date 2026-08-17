@@ -64,9 +64,9 @@ export function SiteNav({ theme, plans, faq, calendar }: SiteNavProps) {
       )}
     >
       <BrandMark className="site-bar-logo" look={theme} />
-      <nav className="site-bar-nav">{links}</nav>
+      <div className="site-bar-contact">{contact}</div>
       <div className="site-bar-end">
-        <div className="site-bar-contact">{contact}</div>
+        <nav className="site-bar-nav">{links}</nav>
         <LocaleSwitcher />
         <button
           type="button"

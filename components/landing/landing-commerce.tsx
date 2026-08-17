@@ -6,6 +6,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { MonthCalendar } from "@/components/booking/month-calendar";
 import type { LandingCopy } from "@/components/landing/copy";
 import { PRESS_CARDS, SITE_CONTACT, SOCIAL_CARDS } from "@/lib/contact";
+import { FEATURE_IMAGES } from "@/lib/media";
 import { asset } from "@/lib/asset";
 import { formatJpy } from "@/lib/format";
 import { parseIsoDate } from "@/lib/calendar";
@@ -21,25 +22,58 @@ type CommerceProps = {
   copy: LandingCopy;
 };
 
-export function LandingCommerce({ plans, locale, copy }: CommerceProps) {
+export function LandingCommerce({ plans, locale, theme, copy }: CommerceProps) {
   return (
     <>
-      <LandingBook plans={plans} locale={locale} copy={copy} />
+      <LandingBook plans={plans} locale={locale} />
       <LandingFlow copy={copy} />
-      <LandingGallery copy={copy} />
       <LandingReviews copy={copy} />
       <LandingFaq copy={copy} />
       <LandingNotes />
+      <LandingFeatures copy={copy} theme={theme} />
       <LandingVisit copy={copy} />
     </>
+  );
+}
+
+export function LandingGallery({ copy }: { copy: LandingCopy }) {
+  return (
+    <section id="videos" className="shop-block shop-gallery-band">
+      <div className="shop-wrap">
+        <p className="shop-kicker">01</p>
+        <h2>{copy.videosTitle}</h2>
+        <p className="shop-lead">{copy.videosLead}</p>
+        <div className="shop-gallery shop-gallery-stack">
+          <figure className="shop-gallery-video">
+            <video
+              src={asset("/videos/street-run.mp4")}
+              autoPlay
+              muted
+              loop
+              controls
+              playsInline
+              preload="auto"
+            />
+            <figcaption>{copy.videos[0]?.title}</figcaption>
+          </figure>
+          <div className="shop-gallery-grid">
+            {SOCIAL_CARDS.slice(0, 4).map((card, index) => (
+              <figure key={card.nameKey}>
+                <img src={asset(card.img)} alt="" />
+                <figcaption>{copy.videos[index + 1]?.title ?? ""}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
 function LandingBook({
   plans,
   locale,
-  copy,
-}: Omit<CommerceProps, "theme">) {
+}: Omit<CommerceProps, "theme" | "copy">) {
   const cal = useTranslations("Calendar");
   const shop = useTranslations("Shop");
   const router = useRouter();
@@ -64,7 +98,7 @@ function LandingBook({
     <section id="book" className="shop-book">
       <div className="shop-wrap shop-book-grid">
         <div className="shop-book-copy">
-          <p className="shop-kicker">02</p>
+          <p className="shop-kicker">03</p>
           <h2>{cal("title")}</h2>
           <p className="shop-lead">{shop("nextDate")}</p>
           <p className="shop-lead">{cal("noteBody")}</p>
@@ -109,7 +143,7 @@ function LandingFlow({ copy }: { copy: LandingCopy }) {
   return (
     <section className="shop-block">
       <div className="shop-wrap">
-        <p className="shop-kicker">03</p>
+        <p className="shop-kicker">04</p>
         <h2>{copy.plan.flowTitle}</h2>
         <ol className="shop-flow">
           {copy.plan.flow.map((step) => (
@@ -120,38 +154,6 @@ function LandingFlow({ copy }: { copy: LandingCopy }) {
             </li>
           ))}
         </ol>
-      </div>
-    </section>
-  );
-}
-
-function LandingGallery({ copy }: { copy: LandingCopy }) {
-  return (
-    <section id="videos" className="shop-block shop-gallery-band">
-      <div className="shop-wrap">
-        <p className="shop-kicker">04</p>
-        <h2>{copy.videosTitle}</h2>
-        <p className="shop-lead">{copy.videosLead}</p>
-        <div className="shop-gallery">
-          <figure className="shop-gallery-video">
-            <video
-              src={asset("/videos/street-run.mp4")}
-              poster={asset("/images/videos/cover-1.jpg")}
-              controls
-              playsInline
-              preload="metadata"
-            />
-            <figcaption>{copy.videos[0]?.title}</figcaption>
-          </figure>
-          <div className="shop-gallery-grid">
-            {SOCIAL_CARDS.slice(0, 4).map((card, index) => (
-              <figure key={card.nameKey}>
-                <img src={asset(card.img)} alt="" />
-                <figcaption>{copy.videos[index + 1]?.title ?? ""}</figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
@@ -218,15 +220,89 @@ function LandingNotes() {
   const press = useTranslations("Press");
 
   return (
-    <section id="press" className="shop-block">
+    <section id="press" className="shop-block shop-news-band">
       <div className="shop-wrap">
-        <p className="shop-kicker">Notes</p>
+        <p className="shop-kicker">Press</p>
         <h2>{press("title")}</h2>
         <div className="shop-news">
           {PRESS_CARDS.slice(0, 3).map((item) => (
             <article key={item.titleKey}>
               <img src={asset(item.img)} alt="" />
+              <p>{press(item.sourceKey)}</p>
               <h3>{press(item.titleKey)}</h3>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LandingFeatures({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) {
+  if (theme === "acid") {
+    return (
+      <section className="acid-section">
+        <h2 className="acid-h2">{copy.featuresTitle}</h2>
+        <div className="acid-posters">
+          {copy.features.map((item, index) => (
+            <article key={item.id} className={index === 1 ? "acid-poster alt" : "acid-poster"}>
+              <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" />
+              <span>{item.id}</span>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (theme === "oni") {
+    return (
+      <section className="oni-section oni-know">
+        <div className="oni-wrap">
+          <h2>{copy.featuresTitle}</h2>
+          <div className="oni-features">
+            {copy.features.map((item, index) => (
+              <article key={item.id}>
+                <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" />
+                <span>{item.id}</span>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (theme === "glitch") {
+    return (
+      <section className="glitch-split">
+        {copy.features.map((item, index) => (
+          <article key={item.id}>
+            <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" />
+            <span>{item.id}</span>
+            <h2>{item.title}</h2>
+            <p>{item.body}</p>
+          </article>
+        ))}
+      </section>
+    );
+  }
+
+  return (
+    <section className="neon-section">
+      <div className="neon-wrap">
+        <h2 className="neon-h2">{copy.featuresTitle}</h2>
+        <div className="neon-features">
+          {copy.features.map((item, index) => (
+            <article key={item.id} className="neon-glass">
+              <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" />
+              <p className="neon-index">{item.id}</p>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
             </article>
           ))}
         </div>
@@ -262,16 +338,14 @@ function LandingVisit({ copy }: { copy: LandingCopy }) {
             WhatsApp
           </a>
           <p className="shop-hint">{contact("whatsappHint")}</p>
-          <div className="shop-contact-lines">
-            <a href={SITE_CONTACT.tel}>
-              <Phone className="size-4" />
-              {SITE_CONTACT.phone}
-            </a>
-            <a href={SITE_CONTACT.mailto}>
-              <Mail className="size-4" />
-              {SITE_CONTACT.email}
-            </a>
-          </div>
+          <a href={SITE_CONTACT.tel} className="cta-btn cta-btn-ghost">
+            <Phone className="size-4" />
+            {SITE_CONTACT.phone}
+          </a>
+          <a href={SITE_CONTACT.mailto} className="cta-btn cta-btn-ghost">
+            <Mail className="size-4" />
+            {SITE_CONTACT.email}
+          </a>
         </div>
       </div>
     </section>

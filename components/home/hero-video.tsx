@@ -66,7 +66,7 @@ export function HeroVideo({
       playsInline
       autoPlay
       preload={preload}
-      poster={poster}
+      {...(poster ? { poster } : {})}
     >
       <source src={`${src}#t=${startAt}`} type="video/mp4" />
     </video>

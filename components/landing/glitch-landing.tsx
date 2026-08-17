@@ -5,11 +5,11 @@ import { HeroScroll } from "@/components/landing/hero-scroll";
 import { HeroTitle } from "@/components/landing/hero-title";
 import { HeroTrust } from "@/components/landing/hero-trust";
 import { FloatBook } from "@/components/landing/float-book";
-import { LandingCommerce } from "@/components/landing/landing-commerce";
+import { LandingCommerce, LandingGallery } from "@/components/landing/landing-commerce";
+import { PageRails } from "@/components/landing/page-rails";
 import { HtmlTheme } from "@/components/layout/html-theme";
 import { SiteFooter } from "@/components/site/site-footer";
 import type { LandingCopy } from "@/components/landing/copy";
-import { FEATURE_IMAGES } from "@/lib/media";
 import type { PlanWithTranslation } from "@/lib/plans/types";
 
 type Props = {
@@ -22,16 +22,28 @@ export function GlitchLanding({ plans, locale, copy }: Props) {
   return (
     <div className="glitch-shell" data-theme="glitch" id="top">
       <HtmlTheme theme="glitch" />
+      <PageRails theme="glitch" />
       <SiteNav
         theme="glitch"
         plans={copy.nav.plans}
         faq={copy.nav.faq}
         calendar={copy.nav.calendar}
       />
+      <p className="glitch-ticker" aria-hidden>
+        <span>
+          SIGNAL LOST · CH-04 · OSAKA NIGHT RUN · GPS OFFSET · 信號丟失 · LIVE FEED ·
+          SIGNAL LOST · CH-04 · OSAKA NIGHT RUN · GPS OFFSET · 信號丟失 · LIVE FEED ·
+        </span>
+      </p>
 
       <section className="glitch-hero">
         <HeroMedia theme="glitch" />
         <div className="glitch-hero-type">
+          <p className="glitch-term-bar">
+            <span>CH-04</span>
+            <span>REC</span>
+            <span>{copy.look.glitch}</span>
+          </p>
           <p className="glitch-kicker">{copy.look.glitch}</p>
           <HeroTitle
             title={copy.hero.title}
@@ -47,19 +59,10 @@ export function GlitchLanding({ plans, locale, copy }: Props) {
         <HeroScroll theme="glitch" label={copy.nav.plans} />
       </section>
 
-      <section className="glitch-split">
-        {copy.features.map((item, index) => (
-          <article key={item.id}>
-            <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" />
-            <span>{item.id}</span>
-            <h2>{item.title}</h2>
-            <p>{item.body}</p>
-          </article>
-        ))}
-      </section>
+      <LandingGallery copy={copy} />
 
       <section id="plans" className="glitch-stack">
-        <p className="shop-kicker">01</p>
+        <p className="shop-kicker">02</p>
         <h2>{copy.plan.title}</h2>
         <p className="shop-lead">{copy.plan.lead}</p>
         <PlanShowcase plans={plans} locale={locale} labels={copy.labels} />
