@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { formatYenShort } from "@/lib/format";
+import { formatYenCell } from "@/lib/format";
 import {
   addMonths,
+  dayRemaining,
   dayStatus,
   monthCells,
   monthLabel,
@@ -33,7 +34,7 @@ export function MonthCalendar({ locale, priceJpy, value, onChange }: MonthCalend
 
   const cells = useMemo(() => monthCells(cursor), [cursor]);
   const weekdays = useMemo(() => weekdayLabels(locale), [locale]);
-  const price = formatYenShort(priceJpy);
+  const cellPrice = formatYenCell(priceJpy);
 
   function pick(iso: string, status: DayStatus) {
     if (status === "closed") return;
@@ -64,6 +65,7 @@ export function MonthCalendar({ locale, priceJpy, value, onChange }: MonthCalend
             return <div key={`e-${index}`} className="cal-cell is-empty" />;
           }
           const status = dayStatus(cell.iso, minIso, maxIso);
+          const left = dayRemaining(cell.iso, status);
           const selected = value === cell.iso;
           return (
             <button
@@ -75,7 +77,12 @@ export function MonthCalendar({ locale, priceJpy, value, onChange }: MonthCalend
             >
               <i className={`cal-mark is-${status}`} />
               <b>{cell.day}</b>
-              {status !== "closed" ? <small>{price}</small> : null}
+              {status !== "closed" ? (
+                <>
+                  <small className="cal-price">{cellPrice}</small>
+                  <em className="cal-spots">{t("spots", { n: left })}</em>
+                </>
+              ) : null}
             </button>
           );
         })}

@@ -9,3 +9,7 @@ export function formatJpy(amount: number, locale = "en") {
 export function formatYenShort(amount: number) {
   return `¥${amount.toLocaleString("en-US")}`;
 }
+
+export function formatYenCell(amount: number) {
+  return `¥${amount}`;
+}

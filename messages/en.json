@@ -196,10 +196,11 @@
   "Calendar": {
     "title": "Pick a date",
     "noteTitle": "Booking note",
-    "noteBody": "Prices in the grid are per person and include tax. Choose a plan, then a day. Morning slots fill first.",
+    "noteBody": "Each day shows the per-person tax-included price and seats left. Choose a plan, then a day.",
     "open": "Open",
     "busy": "Filling",
     "ask": "Ask us",
+    "spots": "{n} left",
     "select": "Continue to booking",
     "needDate": "Tap a date on the calendar",
     "picked": "Selected {date}",

@@ -63,3 +63,11 @@ export function dayStatus(iso: string, minIso: string, maxIso: string): DayStatu
   if (day % 4 === 0) return "busy";
   return "open";
 }
+
+export function dayRemaining(iso: string, status: DayStatus): number {
+  if (status === "closed") return 0;
+  const day = Number(iso.slice(8));
+  if (status === "ask") return 1 + (day % 2);
+  if (status === "busy") return 1 + (day % 3);
+  return 4 + (day % 5);
+}
