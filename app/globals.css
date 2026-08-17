@@ -519,13 +519,20 @@ html[lang="ja"] .gateway-main h1 {
 
 @media (min-width: 1100px) {
   .site-bar-contact {
-    display: block;
+    display: flex;
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 0;
   }
 
   .site-bar-contact .site-bar-contact-list {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.2rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .site-bar-end {
+    margin-left: 0;
   }
 
   .site-bar-menu {

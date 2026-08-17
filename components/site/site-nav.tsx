@@ -66,7 +66,7 @@ export function SiteNav({ look }: SiteNavProps) {
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
         <BrandMark look={currentLook} />
         <div className="site-bar-contact">{contact}</div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="site-bar-end">
           <nav className="hidden items-center gap-8 md:flex">
             {items.map((item) =>
               onLanding ? (
