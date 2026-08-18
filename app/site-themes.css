@@ -4479,9 +4479,9 @@ html {
 
 .plan-card-route {
   width: 100%;
-  aspect-ratio: 10 / 7;
-  object-fit: cover;
-  object-position: center 58%;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
   background: #efe6d8;
   display: block;
   margin-top: 2rem;
@@ -5792,8 +5792,8 @@ html {
 
 .oni-stall-route {
   background: #efe6d8;
-  object-fit: cover;
-  object-position: center 58%;
+  object-fit: contain;
+  object-position: center;
 }
 
 .oni-stall-copy {

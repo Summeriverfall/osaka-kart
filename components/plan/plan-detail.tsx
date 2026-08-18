@@ -60,7 +60,7 @@ export async function PlanDetailView({ plan, addons, locale }: PlanDetailViewPro
             <img
               src={planRoute(plan.slug)}
               alt=""
-              className="mt-4 w-full rounded-2xl border border-white/10 object-cover"
+              className="mt-4 w-full rounded-2xl border border-white/10 object-contain"
             />
             <iframe
               title={t("map")}

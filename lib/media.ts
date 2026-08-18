@@ -11,9 +11,9 @@ export function planImage(slug: string) {
 }
 
 export const PLAN_ROUTES: Record<string, string> = {
-  standard: asset("/images/routes/namba-60.jpg"),
-  "night-run": asset("/images/routes/tsutenkaku-90.jpg"),
-  "grand-tour": asset("/images/routes/osaka-castle-120.jpg"),
+  standard: asset("/images/routes/namba-60.png"),
+  "night-run": asset("/images/routes/tsutenkaku-90.png"),
+  "grand-tour": asset("/images/routes/osaka-castle-120.png"),
 };
 
 export function planRoute(slug: string) {
