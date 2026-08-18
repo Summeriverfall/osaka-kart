@@ -39,14 +39,6 @@ export function HeroMedia({ theme }: HeroMediaProps) {
           <div className="hero-oni-frame" />
         </>
       )}
-
-      {theme === "glitch" && (
-        <>
-          <div className="absolute inset-0 z-[1] bg-[#05010a]/55 mix-blend-multiply" />
-          <div className="hero-glitch-scan" />
-          <div className="hero-glitch-rgb" />
-        </>
-      )}
     </div>
   );
 }

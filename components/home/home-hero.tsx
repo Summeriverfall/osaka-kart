@@ -13,7 +13,6 @@ type HomeHeroProps = {
 
 export function HomeHero({ look }: HomeHeroProps) {
   const t = useTranslations("Hero");
-  const g = useTranslations("Gateway");
   const clip = LOOK_VIDEO[look];
   const title = `${t("title")} ${t("titleRest")}`;
 
@@ -42,29 +41,15 @@ export function HomeHero({ look }: HomeHeroProps) {
         <>
           <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/80 via-[#3a0000]/45 to-black/90" />
           <div className="hero-oni-frame" />
-          <p className="hero-oni-seal" aria-hidden>
-            鬼
-          </p>
-        </>
-      )}
-      {look === "glitch" && (
-        <>
-          <div className="absolute inset-0 z-[1] bg-[#05010a]/70 mix-blend-multiply" />
-          <div className="hero-glitch-scan" />
-          <div className="hero-glitch-rgb" />
         </>
       )}
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 text-center">
-        <p className="mb-4 text-xs tracking-[0.32em] text-neon-cyan uppercase">
-          {g(look)} · {g(LEAD[look])}
-        </p>
         <h1
           data-text={title}
           className={cn(
             "text-5xl font-black leading-tight tracking-tight md:text-7xl lg:text-8xl",
             look === "oni" && "oni-text",
-            look === "glitch" && "glitch-text",
             (look === "neon" || look === "acid") && "neon-text",
           )}
         >
@@ -101,10 +86,3 @@ export function HomeHero({ look }: HomeHeroProps) {
     </section>
   );
 }
-
-const LEAD = {
-  neon: "neonLead",
-  acid: "acidLead",
-  oni: "oniLead",
-  glitch: "glitchLead",
-} as const;

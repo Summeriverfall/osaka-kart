@@ -13,6 +13,7 @@ import {
 } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
+import { withSlash } from "@/lib/paths";
 import { routing, type AppLocale } from "@/i18n/routing";
 import en from "@/messages/en.json";
 import ja from "@/messages/ja.json";
@@ -95,7 +96,7 @@ function LocaleSwitchBridge({
       setCurrent(next);
       setMsgs(ALL_MESSAGES[next]);
       document.documentElement.lang = next;
-      router.replace(pathname, { locale: next });
+      router.replace(withSlash(pathname), { locale: next });
     },
     [current, pathname, router, setCurrent, setMsgs],
   );

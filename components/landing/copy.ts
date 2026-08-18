@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 export async function getLandingCopy() {
-  const [plan, nav, faq, footer, hero, safety, videos, reviews, meet, gateway] =
+  const [plan, nav, faq, footer, hero, safety, videos, reviews, meet] =
     await Promise.all([
       getTranslations("Plan"),
       getTranslations("Nav"),
@@ -12,7 +12,6 @@ export async function getLandingCopy() {
       getTranslations("VideosHome"),
       getTranslations("ReviewsHome"),
       getTranslations("Meet"),
-      getTranslations("Gateway"),
     ]);
 
   return {
@@ -35,12 +34,6 @@ export async function getLandingCopy() {
       faq: nav("faq"),
       booking: nav("booking"),
       calendar: nav("calendar"),
-    },
-    look: {
-      neon: gateway("neonLead"),
-      acid: gateway("acidLead"),
-      oni: gateway("oniLead"),
-      glitch: gateway("glitchLead"),
     },
     featuresTitle: safety("title"),
     features: [

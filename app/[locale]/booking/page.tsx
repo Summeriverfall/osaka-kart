@@ -34,15 +34,24 @@ export default async function BookingPage({ params }: PageProps) {
         <p className="book-lead mt-3">{t("lead")}</p>
 
         <div className="book-contact-row">
-          <a href={SITE_CONTACT.tel}>
-            <Phone className="size-4" />
-            {SITE_CONTACT.phone}
+          <a href={SITE_CONTACT.tel} className="cta-phone">
+            <span className="cta-phone-line">
+              <Phone className="size-4" />
+              {SITE_CONTACT.phone}
+            </span>
           </a>
           <a href={SITE_CONTACT.mailto}>
             <Mail className="size-4" />
             {SITE_CONTACT.email}
           </a>
-          <a href={SITE_CONTACT.whatsapp} target="_blank" rel="noreferrer">
+          <a
+            href={SITE_CONTACT.whatsapp}
+            className="has-tip"
+            data-tip={contact("whatsappHint")}
+            title={contact("whatsappHint")}
+            target="_blank"
+            rel="noreferrer"
+          >
             WhatsApp
           </a>
           <span>{contact("hours", { hours: SITE_CONTACT.hours })}</span>

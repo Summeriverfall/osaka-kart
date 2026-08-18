@@ -6,8 +6,11 @@ import { useRouter } from "@/i18n/navigation";
 import { formatJpy } from "@/lib/format";
 import { addonImage } from "@/lib/media";
 import { cn } from "@/lib/utils";
+import { RideNoteChecks, allNotesChecked, emptyNoteChecks, type NoteKey } from "@/components/notes/ride-notes";
 import { MonthCalendar } from "@/components/booking/month-calendar";
 import { BOOKING_SLOTS } from "@/lib/booking/slots";
+import { clampRiders, riderCap, slotRemaining } from "@/lib/calendar";
+import { withSlash } from "@/lib/paths";
 import {
   BOOKING_RESULT_KEY,
   useBookingStore,
@@ -35,6 +38,8 @@ export function BookingForm({
   const router = useRouter();
   const store = useBookingStore();
   const [hydrated, setHydrated] = useState(false);
+  const [notes, setNotes] = useState(emptyNoteChecks);
+  const notesOk = allNotesChecked(notes);
 
   useEffect(() => {
     const queryPlan = new URLSearchParams(window.location.search).get("plan") || "";
@@ -52,11 +57,18 @@ export function BookingForm({
 
   const planSlug = hydrated ? store.planSlug || initialPlan || plans[0]?.slug : initialPlan;
   const plan = plans.find((item) => item.slug === planSlug) ?? plans[0];
-  const riders = Math.min(
-    Math.max(hydrated ? store.riders : 1, 1),
-    plan?.max_participants ?? 1,
+  const cap = riderCap(hydrated ? store.date : "", hydrated ? store.time : "");
+  const riders = clampRiders(
+    hydrated ? store.riders : 1,
+    hydrated ? store.date : "",
+    hydrated ? store.time : "",
   );
   const selectedAddons = hydrated ? store.addonSlugs : [];
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (store.riders !== riders) store.patch({ riders });
+  }, [hydrated, riders, store.riders, store.patch]);
 
   const total = useMemo(() => {
     if (!plan) return 0;
@@ -68,6 +80,14 @@ export function BookingForm({
 
   if (!plan) return null;
 
+  function toggleNote(key: NoteKey, on: boolean) {
+    setNotes((prev) => {
+      const next = { ...prev, [key]: on };
+      store.patch({ licenseOk: allNotesChecked(next) });
+      return next;
+    });
+  }
+
   function toggleAddon(slug: string) {
     const next = selectedAddons.includes(slug)
       ? selectedAddons.filter((item) => item !== slug)
@@ -77,7 +97,7 @@ export function BookingForm({
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!store.date || !store.time || !store.licenseOk) return;
+    if (!store.date || !store.time || !notesOk) return;
 
     const result: BookingResult = {
       planSlug: plan.slug,
@@ -95,7 +115,7 @@ export function BookingForm({
     };
 
     sessionStorage.setItem(BOOKING_RESULT_KEY, JSON.stringify(result));
-    router.push(`/success?ref=${result.ref}`);
+    router.push(withSlash("/pay"));
   }
 
   return (
@@ -115,31 +135,19 @@ export function BookingForm({
         </select>
       </label>
 
-      <div className="book-grid">
-        <label className="book-field">
-          <span>{t("riders")}</span>
-          <select
-            value={riders}
-            onChange={(event) => store.patch({ riders: Number(event.target.value) })}
-          >
-            {Array.from({ length: plan.max_participants }, (_, index) => index + 1).map(
-              (count) => (
-                <option key={count} value={count}>
-                  {count}
-                </option>
-              ),
-            )}
-          </select>
-        </label>
-      </div>
-
       <div className="book-cal-field">
         <span>{t("date")}</span>
         <MonthCalendar
           locale={locale}
           priceJpy={plan.base_price_jpy}
           value={hydrated ? store.date : ""}
-          onChange={(iso) => store.patch({ date: iso, time: "" })}
+          time={hydrated ? store.time : ""}
+          onChange={(iso) =>
+            store.patch({
+              date: iso,
+              riders: clampRiders(store.riders, iso, store.time),
+            })
+          }
         />
         <input type="hidden" name="date" value={hydrated ? store.date : ""} required />
       </div>
@@ -147,21 +155,49 @@ export function BookingForm({
       <fieldset className="book-field">
         <legend>{t("time")}</legend>
         <div className="book-slots">
-          {BOOKING_SLOTS.map((slot) => (
-            <label key={slot} className={store.time === slot ? "is-on" : undefined}>
-              <input
-                type="radio"
-                name="time"
-                value={slot}
-                checked={hydrated && store.time === slot}
-                onChange={() => store.patch({ time: slot })}
-                required
-              />
-              {slot}
-            </label>
-          ))}
+          {BOOKING_SLOTS.map((slot) => {
+            const left = store.date ? slotRemaining(store.date, slot) : 0;
+            const full = Boolean(store.date) && left <= 0;
+            return (
+              <label key={slot} className={cn(store.time === slot && "is-on", full && "is-full")}>
+                <input
+                  type="radio"
+                  name="time"
+                  value={slot}
+                  checked={hydrated && store.time === slot}
+                  disabled={full}
+                  onChange={() =>
+                    store.patch({
+                      time: slot,
+                      riders: clampRiders(store.riders, store.date, slot),
+                    })
+                  }
+                  required
+                />
+                <span>{slot}</span>
+                {store.date ? <small>{t("spotsLeft", { n: left })}</small> : null}
+              </label>
+            );
+          })}
         </div>
       </fieldset>
+
+      <label className="book-field">
+        <span>{t("riders")}</span>
+        <select
+          value={riders}
+          disabled={cap <= 0}
+          onChange={(event) => store.patch({ riders: Number(event.target.value) })}
+        >
+          {(cap > 0 ? Array.from({ length: cap }, (_, index) => index + 1) : [1]).map(
+            (count) => (
+              <option key={count} value={count}>
+                {count}
+              </option>
+            ),
+          )}
+        </select>
+      </label>
 
       <fieldset className="book-field">
         <legend>{t("addons")}</legend>
@@ -179,7 +215,7 @@ export function BookingForm({
                 <span className="addon-card-copy">
                   <span className="addon-card-top">
                     <strong>{addon.translation.name}</strong>
-                    <b>{formatJpy(addon.price_jpy, locale)}</b>
+                    <b>+{formatJpy(addon.price_jpy, locale)}</b>
                   </span>
                   <small>{addon.translation.description}</small>
                   <em>{on ? t("addonOn") : t("addonAdd")}</em>
@@ -223,15 +259,7 @@ export function BookingForm({
         />
       </label>
 
-      <label className="book-check">
-        <input
-          type="checkbox"
-          checked={hydrated && store.licenseOk}
-          onChange={(event) => store.patch({ licenseOk: event.target.checked })}
-          required
-        />
-        <span>{t("license")}</span>
-      </label>
+      <RideNoteChecks checked={notes} onToggle={toggleNote} />
 
       <div className="book-total">
         <span>{t("total")}</span>
@@ -241,7 +269,7 @@ export function BookingForm({
         </strong>
       </div>
 
-      <button type="submit" className="cta-btn book-submit">
+      <button type="submit" className="cta-btn book-submit" disabled={!notesOk}>
         {t("submit")}
       </button>
     </form>

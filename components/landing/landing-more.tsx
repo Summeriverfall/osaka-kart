@@ -8,6 +8,7 @@ import { PRESS_CARDS, PRESS_OUTLETS, SITE_CONTACT, SOCIAL_CARDS } from "@/lib/co
 import { asset } from "@/lib/asset";
 import { formatJpy } from "@/lib/format";
 import { bookingHref } from "@/lib/booking/path";
+import { withSlash } from "@/lib/paths";
 import { useBookingStore } from "@/stores/booking-store";
 import type { PlanWithTranslation } from "@/lib/plans/types";
 import type { SiteTheme } from "@/lib/visual-theme";
@@ -28,8 +29,8 @@ export function LandingMore({ plans, locale, theme }: LandingMoreProps) {
   const plan = plans.find((item) => item.slug === store.planSlug) ?? plans[0];
 
   function goBook() {
-    if (!store.date || !plan) return;
-    store.patch({ planSlug: plan.slug, date: store.date });
+    if (!store.date || !store.time || !plan) return;
+    store.patch({ planSlug: plan.slug, date: store.date, time: store.time });
     router.push(bookingHref(theme, plan.slug));
   }
 
@@ -93,10 +94,11 @@ export function LandingMore({ plans, locale, theme }: LandingMoreProps) {
             locale={locale}
             priceJpy={plan?.base_price_jpy ?? 0}
             value={store.date}
-            onChange={(iso) => store.patch({ date: iso, time: "" })}
+            time={store.time}
+            onChange={(iso) => store.patch({ date: iso })}
           />
-          <button type="button" className="cta-btn cal-go" disabled={!store.date} onClick={goBook}>
-            {store.date ? cal("select") : cal("needDate")}
+          <button type="button" className="cta-btn cal-go" disabled={!store.date || !store.time} onClick={goBook}>
+            {store.date && store.time ? cal("select") : cal("needDate")}
           </button>
         </div>
       </section>
@@ -107,18 +109,27 @@ export function LandingMore({ plans, locale, theme }: LandingMoreProps) {
           <p>{contact("hours", { hours: SITE_CONTACT.hours })}</p>
         </div>
         <div className="contact-actions">
-          <a href={SITE_CONTACT.tel} className="cta-btn">
-            <Phone className="size-4" />
-            {SITE_CONTACT.phone}
+          <a href={SITE_CONTACT.tel} className="cta-btn cta-phone">
+            <span className="cta-phone-line">
+              <Phone className="size-4" />
+              {SITE_CONTACT.phone}
+            </span>
           </a>
           <a href={SITE_CONTACT.mailto} className="cta-btn">
             <Mail className="size-4" />
             {SITE_CONTACT.email}
           </a>
-          <a href={SITE_CONTACT.whatsapp} className="cta-btn" target="_blank" rel="noreferrer">
+          <a
+            href={SITE_CONTACT.whatsapp}
+            className="cta-btn has-tip"
+            data-tip={contact("whatsappHint")}
+            title={contact("whatsappHint")}
+            target="_blank"
+            rel="noreferrer"
+          >
             WhatsApp
           </a>
-          <Link href="/booking" className="cta-btn">
+          <Link href={withSlash("/booking")} className="cta-btn">
             {contact("online")}
           </Link>
         </div>

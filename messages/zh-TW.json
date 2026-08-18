@@ -14,27 +14,12 @@
   },
   "Gateway": {
     "kicker": "大阪合法上路卡丁車",
-    "title": "同一趟夜跑，四種頁面氣質。",
-    "lead": "行程、價格、集合點完全一樣。先選你喜歡的頁面風格，進去再選套餐和日期。",
+    "title": "今晚，街上就是賽道。",
+    "lead": "行程、價格、集合點完全一樣。點進卡片後再選套餐和日期。",
     "what": "合法公路車牌，嚮導帶隊穿過難波與道頓堀。",
     "from": "含稅 {price} 起",
     "need": "需有效駕照 · 年滿 18 歲",
-    "neon": "霓虹",
-    "hud": "HUD",
-    "acid": "海報",
-    "oni": "鬼巷",
-    "glitch": "信號",
-    "neonLead": "Neon Night",
-    "hudLead": "Circuit HUD",
-    "acidLead": "Acid Street",
-    "oniLead": "鬼巷",
-    "glitchLead": "信號丟失",
-    "neonHint": "電影感大屏，置中標題",
-    "acidHint": "街頭海報雜誌",
-    "oniHint": "夜巷與燈火",
-    "glitchHint": "錯位信號感",
-    "enter": "進入此風格",
-    "changeLook": "換風格"
+    "enter": "進入"
   },
   "Hero": {
     "title": "今晚衝進霓虹裡",
@@ -81,13 +66,13 @@
     "q1": "需要駕照嗎？",
     "a1": "需要。請攜帶有效駕照，或 1949 年日內瓦公約國際駕駛許可。沒有駕照不能上路。",
     "q2": "服裝包含嗎？",
-    "a2": "含賽車服和頭盔。主題服裝可在預約時加購。",
+    "a2": "含賽車服和頭盔。高級角色服裝可在預約時加購。",
     "q3": "在哪裡集合？",
     "a3": "大阪難波一帶。確切地點會在預訂後發送。",
     "q4": "下雨怎麼辦？",
-    "a4": "小雨通常照常。惡劣天氣會改期，我們會通知你。",
+    "a4": "小雨提供雨衣、通常照常出發。暴雨或颱風：免費改期或全額退款。",
     "q5": "年齡要求？",
-    "a5": "須年滿 18 歲，並能在公路上跟隨嚮導行駛。"
+    "a5": "駕駛員須年滿 18 歲並持有有效駕照。兒童可作為乘客搭乘，請先確認空位。"
   },
   "Meet": {
     "title": "集合地點",
@@ -121,7 +106,7 @@
   "Plan": {
     "eyebrow": "選擇你的體驗",
     "title": "選一個套餐",
-    "lead": "三檔夜跑，價格含稅。需有效駕照。點選一張卡，再去下面選日期。",
+    "lead": "難波、通天閣、大阪城三條路線。價格含稅。需有效駕照。點選一張卡，再去下面選日期。",
     "select": "選此套餐",
     "duration": "時長",
     "distance": "距離",
@@ -144,7 +129,12 @@
     "flow3Title": "街頭騎行",
     "flow3Body": "跟隨頭車，按指引節奏駛過霓虹街道。",
     "flow4Title": "返回",
-    "flow4Body": "回到集合點歸還裝備，保留照片或 GoPro 錄影。"
+    "flow4Body": "回到集合點歸還裝備，保留照片或 GoPro 錄影。",
+    "map": "集合點地圖",
+    "addons": "加項",
+    "addonTotal": "加項",
+    "grandTotal": "合計",
+    "changePlan": "更換套餐"
   },
   "Booking": {
     "kicker": "預約時段",
@@ -154,7 +144,8 @@
     "riders": "人數",
     "date": "日期",
     "time": "時段",
-    "addons": "加項",
+    "spotsLeft": "余{n}",
+    "addons": "可選附加項",
     "name": "姓名",
     "email": "電子信箱",
     "phone": "電話",
@@ -166,7 +157,7 @@
     "call": "電話預約",
     "mail": "郵件預約",
     "whatsapp": "WhatsApp",
-    "addonAdd": "加入",
+    "addonAdd": "添加到套餐",
     "addonOn": "已加入"
   },
   "Press": {
@@ -196,21 +187,25 @@
   "Calendar": {
     "title": "選一個日期",
     "noteTitle": "預約說明",
-    "noteBody": "格子裡是每人含稅價和當天剩餘空位。先點套餐，再點日期。",
+    "noteBody": "格子裡是每人含稅價。日期上的余是當天最多剩餘，各時段不會比這更高。",
     "open": "可預約",
     "busy": "快滿了",
     "ask": "需確認",
     "spots": "余{n}",
     "select": "去填寫預約",
-    "needDate": "請先在日曆上點一個日期",
+    "needDate": "請先選日期和時段",
     "picked": "已選 {date}",
-    "planLabel": "當前套餐"
+    "changeDate": "修改日期",
+    "planLabel": "當前套餐",
+    "detailsTitle": "填寫預約",
+    "detailsLead": "人數、加項和聯絡方式。提交後前往付款。"
   },
   "Contact": {
     "title": "怎麼預約",
     "hours": "每日 {hours}",
     "online": "線上填寫預約",
-    "whatsappHint": "訊息回覆通常更快"
+    "whatsappHint": "訊息回覆通常更快",
+    "phoneHint": "人工回覆通常更快捷"
   },
   "Shop": {
     "legal": "合法上路",
@@ -237,6 +232,22 @@
     "paidKicker": "已付款",
     "paidTitle": "付款完成",
     "paidBody": "集合地點會發到信箱。當天請攜帶駕照。"
+  },
+  "Notes": {
+    "title": "注意事項",
+    "agreeLead": "請逐項勾選，確認已閱讀並同意。",
+    "payTitle": "駕照注意事項",
+    "more": "查看更多",
+    "licenseLabel": "駕照",
+    "licenseBody": "需持有有效的日本駕照，或 1949 年日內瓦公約國際駕駛許可。塑膠國際駕照卡無效。",
+    "ageLabel": "年齡",
+    "ageBody": "駕駛員需年滿 18 歲並持有有效駕照。兒童可作為乘客搭乘（請先確認空位）。",
+    "clothesLabel": "著裝要求",
+    "clothesBody": "舒適服裝與包頭鞋。頭盔和安全裝備由我們提供。",
+    "weatherLabel": "天氣",
+    "weatherBody": "小雨提供雨衣。暴雨／颱風：免費改期或全額退款。",
+    "cancelLabel": "取消政策",
+    "cancelBody": "48 小時前免費取消。48 小時內退 50%。未到場不退款。"
   },
   "Pay": {
     "kicker": "Checkout",

@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatJpy } from "@/lib/format";
-import { siteHome, useSiteLook } from "@/lib/site-look";
+import { siteHome, withSlash } from "@/lib/paths";
+import { useSiteLook } from "@/lib/site-look";
 import {
   BOOKING_RESULT_KEY,
   type BookingResult,
@@ -63,7 +64,7 @@ export function SuccessView({ locale }: SuccessViewProps) {
         )}
         <div className="mt-8 flex flex-col gap-3">
           {result && !result.paid ? (
-            <Link href="/pay" className="cta-btn inline-flex px-6 py-3">
+            <Link href={withSlash("/pay")} className="cta-btn inline-flex px-6 py-3">
               {t("pay")}
             </Link>
           ) : null}

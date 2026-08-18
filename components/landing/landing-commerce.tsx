@@ -1,37 +1,47 @@
 "use client";
 
-import { Mail, MapPin, Phone, Star } from "lucide-react";
+import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
+import { ChevronLeft, Mail, MapPin, Phone, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
+import { RideNoteChecks, allNotesChecked, emptyNoteChecks, type NoteKey } from "@/components/notes/ride-notes";
+import { BookingExtras, bookingTotal } from "@/components/booking/booking-extras";
 import { MonthCalendar } from "@/components/booking/month-calendar";
 import type { LandingCopy } from "@/components/landing/copy";
 import { PRESS_CARDS, SITE_CONTACT, SOCIAL_CARDS } from "@/lib/contact";
 import { FEATURE_IMAGES } from "@/lib/media";
 import { asset } from "@/lib/asset";
 import { formatJpy } from "@/lib/format";
-import { parseIsoDate } from "@/lib/calendar";
-import { useBookingStore } from "@/stores/booking-store";
-import type { PlanWithTranslation } from "@/lib/plans/types";
+import { parseIsoDate, slotRemaining, clampRiders } from "@/lib/calendar";
+import { BOOKING_SLOTS } from "@/lib/booking/slots";
+import { withSlash } from "@/lib/paths";
+import {
+  BOOKING_RESULT_KEY,
+  useBookingStore,
+  type BookingResult,
+} from "@/stores/booking-store";
+import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 import type { SiteTheme } from "@/lib/visual-theme";
 import { cn } from "@/lib/utils";
 
 type CommerceProps = {
   plans: PlanWithTranslation[];
+  addons: AddonWithTranslation[];
   locale: string;
   theme: SiteTheme;
   copy: LandingCopy;
 };
 
-export function LandingCommerce({ plans, locale, theme, copy }: CommerceProps) {
+export function LandingCommerce({ plans, addons, locale, theme, copy }: CommerceProps) {
   return (
     <>
-      <LandingBook plans={plans} locale={locale} />
-      <LandingFlow copy={copy} />
-      <LandingReviews copy={copy} />
-      <LandingFaq copy={copy} />
-      <LandingNotes />
+      <LandingBook plans={plans} addons={addons} locale={locale} />
+      <LandingFlow copy={copy} theme={theme} />
+      <LandingReviews copy={copy} theme={theme} />
+      <LandingFaq copy={copy} theme={theme} />
+      <LandingNotes theme={theme} />
       <LandingFeatures copy={copy} theme={theme} />
-      <LandingVisit copy={copy} />
+      <LandingVisit copy={copy} theme={theme} />
     </>
   );
 }
@@ -70,20 +80,74 @@ export function LandingGallery({ copy }: { copy: LandingCopy }) {
   );
 }
 
-function LandingBook({
+export function LandingBook({
   plans,
+  addons,
   locale,
 }: Omit<CommerceProps, "theme" | "copy">) {
   const cal = useTranslations("Calendar");
   const shop = useTranslations("Shop");
+  const book = useTranslations("Booking");
   const router = useRouter();
   const store = useBookingStore();
+  const [step, setStep] = useState<1 | 2>(1);
+  const [notes, setNotes] = useState(emptyNoteChecks);
+  const lockY = useRef<number | null>(null);
   const plan = plans.find((item) => item.slug === store.planSlug) ?? plans[0];
+  const notesOk = allNotesChecked(notes);
 
-  function goBook() {
-    if (!store.date || !plan) return;
-    store.patch({ planSlug: plan.slug, date: store.date });
-    router.push(`/booking?plan=${plan.slug}`);
+  useLayoutEffect(() => {
+    if (lockY.current == null) return;
+    window.scrollTo(0, lockY.current);
+    lockY.current = null;
+  }, [step]);
+
+  function goDetails() {
+    if (!store.date || !store.time || !plan) return;
+    lockY.current = window.scrollY;
+    store.patch({
+      planSlug: plan.slug,
+      date: store.date,
+      time: store.time,
+      riders: clampRiders(store.riders, store.date, store.time),
+    });
+    setStep(2);
+  }
+
+  function goCalendar() {
+    lockY.current = window.scrollY;
+    setStep(1);
+  }
+
+  function toggleNote(key: NoteKey, on: boolean) {
+    setNotes((prev) => {
+      const next = { ...prev, [key]: on };
+      store.patch({ licenseOk: allNotesChecked(next) });
+      return next;
+    });
+  }
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!plan || !store.date || !store.time || !notesOk) return;
+
+    const result: BookingResult = {
+      planSlug: plan.slug,
+      riders: store.riders,
+      date: store.date,
+      time: store.time,
+      addonSlugs: store.addonSlugs,
+      name: store.name,
+      email: store.email,
+      phone: store.phone,
+      licenseOk: true,
+      ref: `OK-${Date.now().toString(36).toUpperCase()}`,
+      planName: plan.translation.name,
+      totalJpy: bookingTotal(plan, addons, store.riders, store.addonSlugs),
+    };
+
+    sessionStorage.setItem(BOOKING_RESULT_KEY, JSON.stringify(result));
+    router.push(withSlash("/pay"));
   }
 
   const picked = store.date
@@ -94,52 +158,155 @@ function LandingBook({
       }).format(parseIsoDate(store.date))
     : "";
 
+  const copyCol = (
+    <div className="shop-book-copy">
+      <p className="shop-kicker">03</p>
+      <h2>{step === 1 ? cal("title") : cal("detailsTitle")}</h2>
+      <p className="shop-lead">{step === 1 ? shop("nextDate") : cal("detailsLead")}</p>
+      <p className="shop-lead">{cal("noteBody")}</p>
+      <div className="shop-plan-pills" role="list">
+        {plans.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={cn("shop-pill", item.slug === plan?.slug && "is-on")}
+            onClick={() => store.patch({ planSlug: item.slug })}
+          >
+            {item.translation.name}
+          </button>
+        ))}
+      </div>
+      {plan ? (
+        <article className="shop-plan-chip">
+          <p>{cal("planLabel")}</p>
+          <h3>{plan.translation.name}</h3>
+          <p className="shop-price">{formatJpy(plan.base_price_jpy, locale)}</p>
+          {picked ? (
+            step === 2 ? (
+              <button type="button" className="shop-picked shop-picked-edit" onClick={goCalendar}>
+                <span>
+                  {cal("picked", { date: picked })}
+                  {store.time ? ` · ${store.time}` : ""}
+                </span>
+                <small>{cal("changeDate")}</small>
+              </button>
+            ) : (
+              <p className="shop-picked">
+                {cal("picked", { date: picked })}
+                {store.time ? ` · ${store.time}` : ""}
+              </p>
+            )
+          ) : null}
+        </article>
+      ) : null}
+      {step === 2 ? (
+        <RideNoteChecks checked={notes} onToggle={toggleNote} />
+      ) : null}
+    </div>
+  );
+
   return (
     <section id="book" className="shop-book">
-      <div className="shop-wrap shop-book-grid">
-        <div className="shop-book-copy">
-          <p className="shop-kicker">03</p>
-          <h2>{cal("title")}</h2>
-          <p className="shop-lead">{shop("nextDate")}</p>
-          <p className="shop-lead">{cal("noteBody")}</p>
-          <div className="shop-plan-pills" role="list">
-            {plans.map((item) => (
+      {step === 1 ? (
+        <div className="shop-wrap shop-book-grid">
+          {copyCol}
+          <div className="shop-cal-card">
+            <div key="cal" className="shop-step">
+              <MonthCalendar
+                locale={locale}
+                priceJpy={plan?.base_price_jpy ?? 0}
+                value={store.date}
+                time={store.time}
+                onChange={(iso) =>
+                  store.patch({
+                    date: iso,
+                    riders: clampRiders(store.riders, iso, store.time),
+                  })
+                }
+              />
+              <fieldset className="book-field shop-slot-field">
+                <legend>{book("time")}</legend>
+                <div className="book-slots">
+                  {BOOKING_SLOTS.map((slot) => {
+                    const left = store.date ? slotRemaining(store.date, slot) : 0;
+                    const full = Boolean(store.date) && left <= 0;
+                    return (
+                      <label key={slot} className={cn(store.time === slot && "is-on", full && "is-full")}>
+                        <input
+                          type="radio"
+                          name="landing-time"
+                          value={slot}
+                          checked={store.time === slot}
+                          disabled={full}
+                          onChange={() =>
+                            store.patch({
+                              time: slot,
+                              riders: clampRiders(store.riders, store.date, slot),
+                            })
+                          }
+                        />
+                        <span>{slot}</span>
+                        {store.date ? <small>{cal("spots", { n: left })}</small> : null}
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
               <button
-                key={item.id}
                 type="button"
-                className={cn("shop-pill", item.slug === plan?.slug && "is-on")}
-                onClick={() => store.patch({ planSlug: item.slug })}
+                className="cta-btn cta-btn-solid cal-go"
+                disabled={!store.date || !store.time}
+                onClick={goDetails}
               >
-                {item.translation.name}
+                {store.date && store.time ? cal("select") : cal("needDate")}
               </button>
-            ))}
+            </div>
           </div>
-          {plan ? (
-            <article className="shop-plan-chip">
-              <p>{cal("planLabel")}</p>
-              <h3>{plan.translation.name}</h3>
-              <p className="shop-price">{formatJpy(plan.base_price_jpy, locale)}</p>
-              {picked ? <p className="shop-picked">{cal("picked", { date: picked })}</p> : null}
-            </article>
-          ) : null}
         </div>
-        <div className="shop-cal-card">
-          <MonthCalendar
-            locale={locale}
-            priceJpy={plan?.base_price_jpy ?? 0}
-            value={store.date}
-            onChange={(iso) => store.patch({ date: iso, time: "" })}
-          />
-          <button type="button" className="cta-btn cta-btn-solid cal-go" disabled={!store.date} onClick={goBook}>
-            {store.date ? cal("select") : cal("needDate")}
-          </button>
-        </div>
-      </div>
+      ) : plan ? (
+        <form className="shop-wrap shop-book-grid" onSubmit={onSubmit}>
+          {copyCol}
+          <div className="shop-cal-card">
+            <div className="shop-step book-form shop-step-form">
+              <button type="button" className="shop-back" onClick={goCalendar}>
+                <ChevronLeft className="size-4 shrink-0" aria-hidden />
+                {cal("changeDate")}
+              </button>
+              <BookingExtras plan={plan} addons={addons} locale={locale} />
+              <button type="submit" className="cta-btn cta-btn-solid cal-go" disabled={!notesOk}>
+                {book("submit")}
+              </button>
+            </div>
+          </div>
+        </form>
+      ) : null}
     </section>
   );
 }
 
-function LandingFlow({ copy }: { copy: LandingCopy }) {
+function LandingFlow({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) {
+  if (theme === "oni") {
+    return (
+      <section className="oni-way">
+        <div className="oni-wrap">
+          <p className="shop-kicker">04</p>
+          <h2>{copy.plan.flowTitle}</h2>
+          <ol>
+            {copy.plan.flow.map((step) => (
+              <li key={step.n}>
+                <b>{step.n}</b>
+                <div>
+                  <strong>{step.title}</strong>
+                  <p>{step.body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="shop-block">
       <div className="shop-wrap">
@@ -159,8 +326,36 @@ function LandingFlow({ copy }: { copy: LandingCopy }) {
   );
 }
 
-function LandingReviews({ copy }: { copy: LandingCopy }) {
+function LandingReviews({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) {
   const shop = useTranslations("Shop");
+
+  if (theme === "oni") {
+    return (
+      <section id="reviews" className="oni-ema">
+        <div className="oni-wrap">
+          <p className="shop-kicker">05</p>
+          <h2>{copy.reviewsTitle}</h2>
+          <p className="oni-lead">{shop("reviewLead")}</p>
+          <div className="oni-ema-hang">
+            {copy.reviews.map((item, index) => (
+              <blockquote key={item.name} className={`tilt-${index}`}>
+                <div className="oni-ema-stars" aria-hidden>
+                  {Array.from({ length: 5 }).map((_, star) => (
+                    <Star key={star} className="size-3.5 fill-current" />
+                  ))}
+                </div>
+                <p>{item.quote}</p>
+                <footer>
+                  {item.name}
+                  <span>{item.meta}</span>
+                </footer>
+              </blockquote>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="reviews" className="shop-block">
@@ -189,8 +384,31 @@ function LandingReviews({ copy }: { copy: LandingCopy }) {
   );
 }
 
-function LandingFaq({ copy }: { copy: LandingCopy }) {
+function LandingFaq({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) {
   const shop = useTranslations("Shop");
+
+  if (theme === "oni") {
+    return (
+      <section id="faq" className="oni-fold">
+        <div className="oni-fold-head">
+          <p className="shop-kicker">FAQ</p>
+          <h2>{copy.faqTitle}</h2>
+          <p>{shop("faqLead")}</p>
+          <Link href={withSlash("/faq")} className="shop-text-link">
+            {shop("moreHelp")}
+          </Link>
+        </div>
+        <div className="oni-fold-list">
+          {copy.faqs.map((item, index) => (
+            <details key={item.q} open={index === 0}>
+              <summary>{item.q}</summary>
+              <p>{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="faq" className="shop-block shop-faq-band">
@@ -199,7 +417,7 @@ function LandingFaq({ copy }: { copy: LandingCopy }) {
           <p className="shop-kicker">FAQ</p>
           <h2>{copy.faqTitle}</h2>
           <p className="shop-lead">{shop("faqLead")}</p>
-          <Link href="/faq" className="shop-text-link">
+          <Link href={withSlash("/faq")} className="shop-text-link">
             {shop("moreHelp")}
           </Link>
         </div>
@@ -216,8 +434,28 @@ function LandingFaq({ copy }: { copy: LandingCopy }) {
   );
 }
 
-function LandingNotes() {
+function LandingNotes({ theme }: { theme: SiteTheme }) {
   const press = useTranslations("Press");
+
+  if (theme === "oni") {
+    return (
+      <section id="press" className="oni-papers">
+        <div className="oni-wrap">
+          <p className="shop-kicker">Press</p>
+          <h2>{press("title")}</h2>
+          <div className="oni-clip">
+            {PRESS_CARDS.slice(0, 3).map((item) => (
+              <article key={item.titleKey}>
+                <img src={asset(item.img)} alt="" />
+                <p>{press(item.sourceKey)}</p>
+                <h3>{press(item.titleKey)}</h3>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="press" className="shop-block shop-news-band">
@@ -259,35 +497,22 @@ function LandingFeatures({ copy, theme }: { copy: LandingCopy; theme: SiteTheme 
 
   if (theme === "oni") {
     return (
-      <section className="oni-section oni-know">
+      <section className="oni-charms">
         <div className="oni-wrap">
           <h2>{copy.featuresTitle}</h2>
-          <div className="oni-features">
+          <div className="oni-charm-row">
             {copy.features.map((item, index) => (
               <article key={item.id}>
-                <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" />
-                <span>{item.id}</span>
-                <h3>{item.title}</h3>
+                <img src={FEATURE_IMAGES[index]} alt="" />
+                <h3>
+                  <span>{item.id}</span>
+                  {item.title}
+                </h3>
                 <p>{item.body}</p>
               </article>
             ))}
           </div>
         </div>
-      </section>
-    );
-  }
-
-  if (theme === "glitch") {
-    return (
-      <section className="glitch-split">
-        {copy.features.map((item, index) => (
-          <article key={item.id}>
-            <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" />
-            <span>{item.id}</span>
-            <h2>{item.title}</h2>
-            <p>{item.body}</p>
-          </article>
-        ))}
       </section>
     );
   }
@@ -311,39 +536,65 @@ function LandingFeatures({ copy, theme }: { copy: LandingCopy; theme: SiteTheme 
   );
 }
 
-function LandingVisit({ copy }: { copy: LandingCopy }) {
+function LandingVisit({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) {
   const contact = useTranslations("Contact");
   const shop = useTranslations("Shop");
 
   return (
-    <section id="access" className="shop-visit">
+    <section id="access" className={cn("shop-visit", theme === "oni" && "oni-visit")}>
       <div className="shop-wrap shop-visit-grid">
-        <div>
-          <p className="shop-kicker">Access</p>
-          <h2>{copy.access.title}</h2>
-          <p className="shop-lead">{shop("visitLead")}</p>
-          <p className="shop-walk">
-            <MapPin className="size-5" />
-            {copy.access.walk}
-          </p>
-          <p className="shop-addr">{copy.access.address}</p>
-          <p className="shop-hours">{contact("hours", { hours: SITE_CONTACT.hours })}</p>
-        </div>
+        {theme === "oni" ? (
+          <div className="oni-visit-copy">
+            <p className="shop-kicker">Access</p>
+            <h2>{copy.access.title}</h2>
+            <p className="shop-lead">{shop("visitLead")}</p>
+            <ol>
+              <li>
+                <MapPin className="size-4" />
+                <span>{copy.access.walk}</span>
+              </li>
+              <li>
+                <span>{copy.access.address}</span>
+              </li>
+              <li>
+                <span>{contact("hours", { hours: SITE_CONTACT.hours })}</span>
+              </li>
+            </ol>
+          </div>
+        ) : (
+          <div>
+            <p className="shop-kicker">Access</p>
+            <h2>{copy.access.title}</h2>
+            <p className="shop-lead">{shop("visitLead")}</p>
+            <p className="shop-walk">
+              <MapPin className="size-5" />
+              {copy.access.walk}
+            </p>
+            <p className="shop-addr">{copy.access.address}</p>
+            <p className="shop-hours">{contact("hours", { hours: SITE_CONTACT.hours })}</p>
+          </div>
+        )}
         <div className="shop-contact">
           <h3>{contact("title")}</h3>
-          <Link href="/booking" className="cta-btn cta-btn-solid">
+          <a href="#book" className="cta-btn cta-btn-solid">
             {contact("online")}
-          </Link>
-          <a href={SITE_CONTACT.whatsapp} className="cta-btn" target="_blank" rel="noreferrer">
+          </a>
+          <a
+            href={SITE_CONTACT.whatsapp}
+            className="cta-btn has-tip"
+            data-tip={contact("whatsappHint")}
+            title={contact("whatsappHint")}
+            target="_blank"
+            rel="noreferrer"
+          >
             WhatsApp
           </a>
-          <p className="shop-hint">{contact("whatsappHint")}</p>
           <a href={SITE_CONTACT.tel} className="cta-btn cta-btn-ghost">
-            <Phone className="size-4" />
+            <Phone className="size-4 shrink-0" aria-hidden />
             {SITE_CONTACT.phone}
           </a>
           <a href={SITE_CONTACT.mailto} className="cta-btn cta-btn-ghost">
-            <Mail className="size-4" />
+            <Mail className="size-4 shrink-0" aria-hidden />
             {SITE_CONTACT.email}
           </a>
         </div>

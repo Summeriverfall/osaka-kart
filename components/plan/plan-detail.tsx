@@ -1,22 +1,16 @@
-import {
-  Check,
-  Clock,
-  MapPinned,
-  ShieldAlert,
-  Sparkles,
-} from "lucide-react";
+import { Check, MapPinned, ShieldAlert, Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
-import { formatJpy } from "@/lib/format";
-import { planImage } from "@/lib/media";
-import type { PlanWithTranslation } from "@/lib/plans/types";
+import { PlanSummaryCard } from "@/components/plan/plan-summary";
+import { planImage, planRoute } from "@/lib/media";
+import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 
 type PlanDetailViewProps = {
   plan: PlanWithTranslation;
+  addons: AddonWithTranslation[];
   locale: string;
 };
 
-export async function PlanDetailView({ plan, locale }: PlanDetailViewProps) {
+export async function PlanDetailView({ plan, addons, locale }: PlanDetailViewProps) {
   const t = await getTranslations("Plan");
   const { translation } = plan;
   const flow = [
@@ -55,15 +49,27 @@ export async function PlanDetailView({ plan, locale }: PlanDetailViewProps) {
             </p>
           </section>
 
-          {translation.route_summary && (
-            <section>
-              <h2 className="mb-3 flex items-center gap-2 text-xl font-black">
-                <MapPinned className="size-5 text-neon-pink" />
-                {t("route")}
-              </h2>
+          <section>
+            <h2 className="mb-3 flex items-center gap-2 text-xl font-black">
+              <MapPinned className="size-5 text-neon-pink" />
+              {t("route")}
+            </h2>
+            {translation.route_summary && (
               <p className="text-[#9CA3AF]">{translation.route_summary}</p>
-            </section>
-          )}
+            )}
+            <img
+              src={planRoute(plan.slug)}
+              alt=""
+              className="mt-4 w-full rounded-2xl border border-white/10 object-cover"
+            />
+            <iframe
+              title={t("map")}
+              src="https://maps.google.com/maps?q=Namba%20Station%20Osaka&z=16&output=embed"
+              className="mt-4 h-64 w-full rounded-2xl border-0"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </section>
 
           {translation.includes.length > 0 && (
             <section>
@@ -118,45 +124,7 @@ export async function PlanDetailView({ plan, locale }: PlanDetailViewProps) {
         </div>
 
         <aside>
-          <div className="plan-summary-card">
-            <p className="text-xs tracking-[0.18em] text-[#9CA3AF] uppercase">
-              {t("summary")}
-            </p>
-            <p className="mt-3 text-3xl font-black text-[#F1F1F5]">
-              {formatJpy(plan.base_price_jpy, locale)}
-              <span className="ml-1 text-sm font-medium text-[#9CA3AF]">
-                {t("perPerson")}
-              </span>
-            </p>
-            <dl className="mt-5 space-y-3 text-sm">
-              <div className="flex items-center justify-between gap-4">
-                <dt className="inline-flex items-center gap-2 text-[#9CA3AF]">
-                  <Clock className="size-4" />
-                  {t("duration")}
-                </dt>
-                <dd className="text-[#F1F1F5]">
-                  {t("minutes", { n: plan.duration_minutes })}
-                </dd>
-              </div>
-              {plan.distance_km != null && (
-                <div className="flex items-center justify-between gap-4">
-                  <dt className="inline-flex items-center gap-2 text-[#9CA3AF]">
-                    <MapPinned className="size-4" />
-                    {t("distance")}
-                  </dt>
-                  <dd className="text-[#F1F1F5]">
-                    {t("km", { n: plan.distance_km })}
-                  </dd>
-                </div>
-              )}
-            </dl>
-            <Link
-              href={`/booking?plan=${plan.slug}`}
-              className="cta-btn mt-8 w-full px-4 py-3 text-center"
-            >
-              {t("continue")}
-            </Link>
-          </div>
+          <PlanSummaryCard plan={plan} addons={addons} locale={locale} />
         </aside>
       </div>
     </article>

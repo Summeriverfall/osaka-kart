@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { formatJpy } from "@/lib/format";
-import { planImage } from "@/lib/media";
+import { planImage, planRoute } from "@/lib/media";
 import { useBookingStore } from "@/stores/booking-store";
 import type { PlanWithTranslation } from "@/lib/plans/types";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,7 @@ export function PlanShowcase({ plans, locale, labels }: PlanShowcaseProps) {
         const selected = plan.slug === activeSlug;
         return (
           <article key={plan.id} className={cn("plan-card", selected && "is-on")}>
-            <img src={planImage(plan.slug)} alt="" />
+            <img className="plan-card-shot" src={planImage(plan.slug)} alt="" />
             <div className="plan-card-body">
               <h3>{plan.translation.name}</h3>
               <p className="plan-card-price">
@@ -54,6 +54,11 @@ export function PlanShowcase({ plans, locale, labels }: PlanShowcaseProps) {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
+              <img
+                className="plan-card-route"
+                src={planRoute(plan.slug)}
+                alt=""
+              />
               {selected ? (
                 <a href="#book" className="cta-btn cta-btn-solid">
                   {labels.continue}

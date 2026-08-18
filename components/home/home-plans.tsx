@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatJpy } from "@/lib/format";
 import { planImage } from "@/lib/media";
+import { withSlash } from "@/lib/paths";
 import type { PlanWithTranslation } from "@/lib/plans/types";
 
 type Props = {
@@ -45,7 +46,7 @@ export function HomePlans({ plans, locale }: Props) {
                 {plan.translation.description}
               </p>
               <Link
-                href={`/plan/${plan.slug}`}
+                href={withSlash(`/plan/${plan.slug}`)}
                 className="cta-btn mt-5 inline-flex w-full px-4 py-2.5 text-center text-sm"
               >
                 {t("select")}

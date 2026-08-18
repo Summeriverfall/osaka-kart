@@ -6,27 +6,13 @@ import { BrandMark } from "@/components/site/brand-mark";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import { asset } from "@/lib/asset";
 import { formatJpy } from "@/lib/format";
+import { siteHome } from "@/lib/paths";
 import { SITE_THEMES, type SiteTheme } from "@/lib/visual-theme";
 
 const PREVIEWS: Record<SiteTheme, string> = {
   neon: asset("/images/plans/standard.png"),
   acid: asset("/images/reviews/r1.png"),
   oni: asset("/images/reviews/r2.png"),
-  glitch: asset("/images/reviews/r3.png"),
-};
-
-const LEAD: Record<SiteTheme, "neonLead" | "acidLead" | "oniLead" | "glitchLead"> = {
-  neon: "neonLead",
-  acid: "acidLead",
-  oni: "oniLead",
-  glitch: "glitchLead",
-};
-
-const HINT: Record<SiteTheme, "neonHint" | "acidHint" | "oniHint" | "glitchHint"> = {
-  neon: "neonHint",
-  acid: "acidHint",
-  oni: "oniHint",
-  glitch: "glitchHint",
 };
 
 type GatewayViewProps = {
@@ -56,14 +42,11 @@ export function GatewayView({ fromPrice, locale }: GatewayViewProps) {
 
         <div className="gateway-bento">
           {SITE_THEMES.map((look) => (
-            <Link key={look} href={`/${look}`} className={`gw-card gw-${look}`}>
+            <Link key={look} href={siteHome(look)} className={`gw-card gw-${look}`}>
               <div className="gw-shot">
                 <img src={PREVIEWS[look]} alt="" />
               </div>
               <div className="gw-copy">
-                <span>{t(look)}</span>
-                <strong>{t(LEAD[look])}</strong>
-                <p>{t(HINT[look])}</p>
                 <em>{t("enter")} →</em>
               </div>
             </Link>

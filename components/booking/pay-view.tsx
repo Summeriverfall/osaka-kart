@@ -5,12 +5,14 @@ import { Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { formatJpy } from "@/lib/format";
-import { siteHome, useSiteLook } from "@/lib/site-look";
+import { siteHome, withSlash } from "@/lib/paths";
+import { useSiteLook } from "@/lib/site-look";
 import {
   BOOKING_RESULT_KEY,
   type BookingResult,
 } from "@/stores/booking-store";
 import { PayMethodMark, type PayMethod } from "@/components/booking/pay-icons";
+import { RideNotes } from "@/components/notes/ride-notes";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteNav } from "@/components/site/site-nav";
 import { cn } from "@/lib/utils";
@@ -45,7 +47,7 @@ export function PayView({ locale }: PayViewProps) {
     if (!result) return;
     const next = { ...result, paid: true };
     sessionStorage.setItem(BOOKING_RESULT_KEY, JSON.stringify(next));
-    router.push("/success");
+    router.push(withSlash("/success"));
   }
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -72,7 +74,7 @@ export function PayView({ locale }: PayViewProps) {
         {!result ? (
           <div className="pay-empty">
             <p>{t("empty")}</p>
-            <Link href="/booking" className="cta-btn cta-btn-solid">
+            <Link href={siteHome(look, "book")} className="cta-btn cta-btn-solid">
               {t("book")}
             </Link>
           </div>
@@ -188,32 +190,37 @@ export function PayView({ locale }: PayViewProps) {
               </button>
             </form>
 
-            <aside className="pay-summary">
-              <h2>{t("order")}</h2>
-              <dl className="book-receipt">
-                <div>
-                  <dt>{success("ref")}</dt>
-                  <dd>{result.ref}</dd>
-                </div>
-                <div>
-                  <dt>{success("plan")}</dt>
-                  <dd>{result.planName}</dd>
-                </div>
-                <div>
-                  <dt>{success("when")}</dt>
-                  <dd>
-                    {result.date} · {result.time}
-                  </dd>
-                </div>
-                <div>
-                  <dt>{success("total")}</dt>
-                  <dd>{formatJpy(result.totalJpy, locale)}</dd>
-                </div>
-              </dl>
-              <Link href={siteHome(look)} className="shop-text-link">
-                {success("back")}
-              </Link>
-            </aside>
+            <div className="pay-side">
+              <aside className="pay-summary">
+                <h2>{t("order")}</h2>
+                <dl className="book-receipt">
+                  <div>
+                    <dt>{success("ref")}</dt>
+                    <dd>{result.ref}</dd>
+                  </div>
+                  <div>
+                    <dt>{success("plan")}</dt>
+                    <dd>{result.planName}</dd>
+                  </div>
+                  <div>
+                    <dt>{success("when")}</dt>
+                    <dd>
+                      {result.date} · {result.time}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{success("total")}</dt>
+                    <dd>{formatJpy(result.totalJpy, locale)}</dd>
+                  </div>
+                </dl>
+                <Link href={siteHome(look)} className="shop-text-link">
+                  {success("back")}
+                </Link>
+              </aside>
+              <aside className="pay-license">
+                <RideNotes compact />
+              </aside>
+            </div>
           </div>
         )}
       </main>

@@ -5,6 +5,7 @@ import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "@/i18n/navigation";
+import { withSlash } from "@/lib/paths";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
@@ -52,7 +53,7 @@ export function LanguageSwitcher() {
     }
 
     const query = searchParams.toString();
-    const href = query ? `${pathname}?${query}` : pathname;
+    const href = query ? withSlash(`${pathname}?${query}`) : withSlash(pathname);
     router.replace(href, { locale: next });
     setOpen(false);
   }

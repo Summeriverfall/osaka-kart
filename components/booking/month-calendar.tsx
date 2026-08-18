@@ -6,11 +6,12 @@ import { useTranslations } from "next-intl";
 import { formatYenCell } from "@/lib/format";
 import {
   addMonths,
-  dayRemaining,
   dayStatus,
   monthCells,
   monthLabel,
   parseIsoDate,
+  dayRemaining,
+  slotStatus,
   weekdayLabels,
   type DayStatus,
 } from "@/lib/calendar";
@@ -21,10 +22,17 @@ type MonthCalendarProps = {
   locale: string;
   priceJpy: number;
   value: string;
+  time?: string;
   onChange: (iso: string) => void;
 };
 
-export function MonthCalendar({ locale, priceJpy, value, onChange }: MonthCalendarProps) {
+export function MonthCalendar({
+  locale,
+  priceJpy,
+  value,
+  time = "",
+  onChange,
+}: MonthCalendarProps) {
   const t = useTranslations("Calendar");
   const minIso = tomorrowIsoDate();
   const maxIso = maxBookIsoDate();
@@ -64,15 +72,18 @@ export function MonthCalendar({ locale, priceJpy, value, onChange }: MonthCalend
           if (!cell.iso || cell.day == null) {
             return <div key={`e-${index}`} className="cal-cell is-empty" />;
           }
-          const status = dayStatus(cell.iso, minIso, maxIso);
-          const left = dayRemaining(cell.iso, status);
+          const status = time
+            ? slotStatus(cell.iso, time, minIso, maxIso)
+            : dayStatus(cell.iso, minIso, maxIso);
+          const left = time ? dayRemaining(cell.iso) : 0;
           const selected = value === cell.iso;
+          const blocked = status === "closed";
           return (
             <button
               key={cell.iso}
               type="button"
               className={cn("cal-cell", `is-${status}`, selected && "is-on")}
-              disabled={status === "closed"}
+              disabled={blocked}
               onClick={() => pick(cell.iso!, status)}
             >
               <i className={`cal-mark is-${status}`} />
@@ -80,7 +91,7 @@ export function MonthCalendar({ locale, priceJpy, value, onChange }: MonthCalend
               {status !== "closed" ? (
                 <>
                   <small className="cal-price">{cellPrice}</small>
-                  <em className="cal-spots">{t("spots", { n: left })}</em>
+                  {time ? <em className="cal-spots">{t("spots", { n: left })}</em> : null}
                 </>
               ) : null}
             </button>

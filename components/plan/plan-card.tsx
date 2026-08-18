@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { formatJpy } from "@/lib/format";
 import { planImage } from "@/lib/media";
+import { withSlash } from "@/lib/paths";
 import type { PlanWithTranslation } from "@/lib/plans/types";
 
 type PlanCardProps = {
@@ -51,7 +52,7 @@ export async function PlanCard({ plan, locale }: PlanCardProps) {
           ))}
         </ul>
         <Link
-          href={`/plan/${plan.slug}`}
+          href={withSlash(`/plan/${plan.slug}`)}
           className="cta-btn mt-6 w-full px-4 py-2.5 text-center"
         >
           {t("select")}

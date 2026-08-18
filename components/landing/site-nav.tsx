@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Mail, Menu, Phone, X } from "lucide-react";
 import { BrandMark } from "@/components/site/brand-mark";
+import { ContactTicker } from "@/components/site/contact-ticker";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import { SITE_CONTACT } from "@/lib/contact";
 import type { SiteTheme } from "@/lib/visual-theme";
@@ -64,7 +65,9 @@ export function SiteNav({ theme, plans, faq, calendar }: SiteNavProps) {
       )}
     >
       <BrandMark className="site-bar-logo" look={theme} />
-      <div className="site-bar-contact">{contact}</div>
+      <div className="site-bar-contact">
+        <ContactTicker />
+      </div>
       <div className="site-bar-end">
         <nav className="site-bar-nav">{links}</nav>
         <LocaleSwitcher />

@@ -14,27 +14,12 @@
   },
   "Gateway": {
     "kicker": "Street-legal karting in Osaka",
-    "title": "One ride. Four ways to see it.",
-    "lead": "Same streets, price, and meeting point. Choose a look, then pick a plan and a date.",
+    "title": "Tonight, the streets are yours.",
+    "lead": "Same course, price, and meeting point. Pick a card to start, then choose a plan and a date.",
     "what": "Licensed road plates. A guide leads you through Namba and Dotonbori.",
     "from": "From {price}, tax included",
     "need": "Valid license required · Age 18+",
-    "neon": "Neon",
-    "hud": "HUD",
-    "acid": "Poster",
-    "oni": "Oni",
-    "glitch": "Signal",
-    "neonLead": "Neon Night",
-    "hudLead": "Circuit HUD",
-    "acidLead": "Acid Street",
-    "oniLead": "Oni Alley",
-    "glitchLead": "Signal Lost",
-    "neonHint": "Cinematic full-screen night",
-    "acidHint": "Street-poster magazine",
-    "oniHint": "Lanterns and backstreets",
-    "glitchHint": "Offset, late-night signal",
-    "enter": "Enter this look",
-    "changeLook": "Change look"
+    "enter": "Enter"
   },
   "Hero": {
     "title": "Tonight, into the neon",
@@ -81,13 +66,13 @@
     "q1": "Do I need a license?",
     "a1": "Yes. Bring a valid license or a 1949 Geneva International Driving Permit. No license, no ride.",
     "q2": "Are costumes included?",
-    "a2": "A racing suit and helmet are included. Themed costumes can be added at booking.",
+    "a2": "A racing suit and helmet are included. Premium character costumes can be added at booking.",
     "q3": "Where do we meet?",
     "a3": "Namba area, Osaka. The exact pin is sent after you book.",
     "q4": "What if it rains?",
-    "a4": "Light rain usually runs. Severe weather is rescheduled. We will message you.",
+    "a4": "Light rain: raincoats provided, we usually still go. Heavy rain or typhoon: free reschedule or full refund.",
     "q5": "How old do I need to be?",
-    "a5": "Riders must be 18 or older and able to follow the guide on public roads."
+    "a5": "Drivers must be 18 or older with a valid license. Children may ride as passengers if a seat is available."
   },
   "Meet": {
     "title": "Meeting Point",
@@ -121,7 +106,7 @@
   "Plan": {
     "eyebrow": "Choose your experience",
     "title": "Choose a plan",
-    "lead": "Three night runs. Prices include tax. A valid license is required. Tap a card, then pick a date below.",
+    "lead": "Three courses: Namba, Tsutenkaku, and Osaka Castle. Prices include tax. A valid license is required. Tap a card, then pick a date below.",
     "select": "Choose this plan",
     "duration": "Duration",
     "distance": "Distance",
@@ -144,7 +129,12 @@
     "flow3Title": "Street ride",
     "flow3Body": "Follow the lead kart through neon streets at a guided pace.",
     "flow4Title": "Return",
-    "flow4Body": "Back to base, return the gear, and keep your photos or GoPro clip."
+    "flow4Body": "Back to base, return the gear, and keep your photos or GoPro clip.",
+    "map": "Meeting point",
+    "addons": "Add-ons",
+    "addonTotal": "Add-ons",
+    "grandTotal": "Total",
+    "changePlan": "Change plan"
   },
   "Booking": {
     "kicker": "Reserve a slot",
@@ -154,7 +144,8 @@
     "riders": "Riders",
     "date": "Date",
     "time": "Time",
-    "addons": "Add-ons",
+    "spotsLeft": "{n} left",
+    "addons": "Optional add-ons",
     "name": "Name",
     "email": "Email",
     "phone": "Phone",
@@ -166,7 +157,7 @@
     "call": "Call to book",
     "mail": "Email to book",
     "whatsapp": "WhatsApp",
-    "addonAdd": "Add this",
+    "addonAdd": "Add to plan",
     "addonOn": "Added"
   },
   "Press": {
@@ -196,21 +187,25 @@
   "Calendar": {
     "title": "Pick a date",
     "noteTitle": "Booking note",
-    "noteBody": "Each day shows the per-person tax-included price and seats left. Choose a plan, then a day.",
+    "noteBody": "Each cell is the per-person tax-included price. The leftover on a date is the most seats still open that day; a time slot never shows more.",
     "open": "Open",
     "busy": "Filling",
     "ask": "Ask us",
     "spots": "{n} left",
     "select": "Continue to booking",
-    "needDate": "Tap a date on the calendar",
+    "needDate": "Pick a date and a time slot",
     "picked": "Selected {date}",
-    "planLabel": "This plan"
+    "changeDate": "Change date",
+    "planLabel": "This plan",
+    "detailsTitle": "Your details",
+    "detailsLead": "Riders, add-ons, and contact. Submit to continue to payment."
   },
   "Contact": {
     "title": "How to book",
     "hours": "Open daily {hours}",
     "online": "Book online",
-    "whatsappHint": "Usually the fastest reply"
+    "whatsappHint": "Usually the fastest reply",
+    "phoneHint": "A person usually replies faster"
   },
   "Shop": {
     "legal": "Street legal",
@@ -237,6 +232,22 @@
     "paidKicker": "Paid",
     "paidTitle": "Payment complete",
     "paidBody": "A meeting pin will follow by email. Bring your license on the day."
+  },
+  "Notes": {
+    "title": "Before you ride",
+    "agreeLead": "Tick each item to confirm you have read and agree.",
+    "payTitle": "License notes",
+    "more": "Read more",
+    "licenseLabel": "License",
+    "licenseBody": "Bring a valid Japanese license, or a 1949 Geneva International Driving Permit. Plastic IDP cards are not accepted.",
+    "ageLabel": "Age",
+    "ageBody": "Drivers must be 18 or older with a valid license. Children may ride as passengers if a seat is available.",
+    "clothesLabel": "What to wear",
+    "clothesBody": "Comfortable clothes and closed-toe shoes. Helmets and safety gear are included.",
+    "weatherLabel": "Weather",
+    "weatherBody": "Light rain: raincoats provided. Heavy rain or typhoon: free reschedule or full refund.",
+    "cancelLabel": "Cancellation",
+    "cancelBody": "Free cancel 48 hours ahead. Within 48 hours: 50% refund. No-show: no refund."
   },
   "Pay": {
     "kicker": "Checkout",

@@ -11,7 +11,7 @@ export default async function GatewayPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const plans = await getPlans(locale);
-  const fromPrice = Math.min(...plans.map((plan) => plan.base_price_jpy), 8000);
+  const fromPrice = Math.min(...plans.map((plan) => plan.base_price_jpy), 12800);
 
   return <GatewayView fromPrice={fromPrice} locale={locale} />;
 }

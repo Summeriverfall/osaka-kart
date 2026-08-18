@@ -5,9 +5,11 @@ import { Calendar, Mail, Menu, Phone, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { BrandMark } from "@/components/site/brand-mark";
+import { ContactTicker } from "@/components/site/contact-ticker";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import { SITE_CONTACT } from "@/lib/contact";
-import { siteHome, useSiteLook } from "@/lib/site-look";
+import { siteHome, withSlash } from "@/lib/paths";
+import { useSiteLook } from "@/lib/site-look";
 import { isSiteTheme, type SiteTheme } from "@/lib/visual-theme";
 import { cn } from "@/lib/utils";
 
@@ -27,9 +29,9 @@ export function SiteNav({ look }: SiteNavProps) {
 
   const items = [
     { hash: "#top", href: home, key: "home" as const },
-    { hash: "#plans", href: home, key: "plans" as const },
-    { hash: "#faq", href: "/faq", key: "faq" as const },
-    { hash: "#videos", href: home, key: "videos" as const },
+    { hash: "#plans", href: siteHome(currentLook, "plans"), key: "plans" as const },
+    { hash: "#faq", href: withSlash("/faq"), key: "faq" as const },
+    { hash: "#videos", href: siteHome(currentLook, "videos"), key: "videos" as const },
   ];
 
   useEffect(() => {
@@ -65,7 +67,9 @@ export function SiteNav({ look }: SiteNavProps) {
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
         <BrandMark look={currentLook} />
-        <div className="site-bar-contact">{contact}</div>
+        <div className="site-bar-contact">
+          <ContactTicker />
+        </div>
         <div className="site-bar-end">
           <nav className="hidden items-center gap-8 md:flex">
             {items.map((item) =>
@@ -137,7 +141,7 @@ export function FloatBook() {
   const t = useTranslations("Nav");
   return (
     <Link
-      href="/booking"
+      href={withSlash("/booking")}
       className="fixed right-4 bottom-4 z-[80] inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-pink to-neon-purple px-5 py-3 text-sm font-semibold text-white shadow-[0_0_28px_rgba(255,46,147,0.55)]"
     >
       <Calendar className="size-4" />

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { usePathname } from "@/i18n/navigation";
 import { isSiteTheme, type SiteTheme } from "@/lib/visual-theme";
 
+export { siteHome } from "@/lib/paths";
+
 const LOOK_KEY = "furture-kart-look";
 const FALLBACK: SiteTheme = "neon";
 
@@ -23,10 +25,6 @@ export function readSiteLook(): SiteTheme {
     /* ignore */
   }
   return FALLBACK;
-}
-
-export function siteHome(look: SiteTheme) {
-  return `/${look}`;
 }
 
 export function useSiteLook(explicit?: SiteTheme): SiteTheme {

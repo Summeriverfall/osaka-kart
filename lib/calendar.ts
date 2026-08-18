@@ -1,3 +1,5 @@
+import { BOOKING_SLOTS } from "@/lib/booking/slots";
+
 export type DayStatus = "open" | "busy" | "ask" | "closed";
 
 export function isoFromDate(date: Date) {
@@ -64,10 +66,46 @@ export function dayStatus(iso: string, minIso: string, maxIso: string): DayStatu
   return "open";
 }
 
-export function dayRemaining(iso: string, status: DayStatus): number {
-  if (status === "closed") return 0;
+export function slotRemaining(iso: string, time: string): number {
+  if (!iso || !time) return 0;
   const day = Number(iso.slice(8));
-  if (status === "ask") return 1 + (day % 2);
-  if (status === "busy") return 1 + (day % 3);
-  return 4 + (day % 5);
+  const hour = Number(time.slice(0, 2)) || 0;
+  const minute = Number(time.slice(3, 5)) || 0;
+  const cap = 2 + (day % 5);
+  const dip = (hour + Math.floor(minute / 30)) % 3;
+  return Math.max(1, cap - dip);
+}
+
+/** Rider dropdown max = leftover seats for the picked date + slot. */
+export function riderCap(date: string, time: string) {
+  if (!date || !time) return 0;
+  return slotRemaining(date, time);
+}
+
+export function clampRiders(riders: number, date: string, time: string) {
+  const cap = riderCap(date, time);
+  if (cap <= 0) return 1;
+  return Math.min(Math.max(Math.floor(riders) || 1, 1), cap);
+}
+
+export function dayRemaining(iso: string): number {
+  if (!iso) return 0;
+  return Math.max(
+    0,
+    ...BOOKING_SLOTS.map((slot) => slotRemaining(iso, slot)),
+  );
+}
+
+export function slotStatus(
+  iso: string,
+  time: string,
+  minIso: string,
+  maxIso: string,
+): DayStatus {
+  if (iso < minIso || iso > maxIso) return "closed";
+  const left = slotRemaining(iso, time);
+  if (left <= 0) return "closed";
+  if (left <= 2) return "ask";
+  if (left <= 3) return "busy";
+  return "open";
 }

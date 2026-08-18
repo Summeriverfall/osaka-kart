@@ -10,15 +10,16 @@ import { PageRails } from "@/components/landing/page-rails";
 import { HtmlTheme } from "@/components/layout/html-theme";
 import { SiteFooter } from "@/components/site/site-footer";
 import type { LandingCopy } from "@/components/landing/copy";
-import type { PlanWithTranslation } from "@/lib/plans/types";
+import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 
 type Props = {
   plans: PlanWithTranslation[];
+  addons: AddonWithTranslation[];
   locale: string;
   copy: LandingCopy;
 };
 
-export function NeonLanding({ plans, locale, copy }: Props) {
+export function NeonLanding({ plans, addons, locale, copy }: Props) {
   return (
     <div className="landing-root neon-root" data-theme="neon" id="top">
       <HtmlTheme theme="neon" />
@@ -59,7 +60,7 @@ export function NeonLanding({ plans, locale, copy }: Props) {
         </div>
       </section>
 
-      <LandingCommerce plans={plans} locale={locale} theme="neon" copy={copy} />
+      <LandingCommerce plans={plans} addons={addons} locale={locale} theme="neon" copy={copy} />
       <SiteFooter />
       <FloatBook theme="neon" label={copy.nav.booking} />
     </div>

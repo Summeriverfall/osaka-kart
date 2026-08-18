@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev -p 3000",
+    "dev:fresh": "node scripts/dev-fresh.mjs",
     "build": "next build",
     "build:pages": "next build && node scripts/pages-fallback.mjs",
     "start": "next start",
@@ -11,6 +12,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
+    "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
