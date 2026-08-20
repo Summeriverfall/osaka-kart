@@ -1,16 +1,18 @@
 import { Check, MapPinned, ShieldAlert, Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { PlanExperience } from "@/components/plan/plan-experience";
 import { PlanSummaryCard } from "@/components/plan/plan-summary";
 import { planImage, planRoute } from "@/lib/media";
 import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 
 type PlanDetailViewProps = {
   plan: PlanWithTranslation;
+  plans: PlanWithTranslation[];
   addons: AddonWithTranslation[];
   locale: string;
 };
 
-export async function PlanDetailView({ plan, addons, locale }: PlanDetailViewProps) {
+export async function PlanDetailView({ plan, plans, addons, locale }: PlanDetailViewProps) {
   const t = await getTranslations("Plan");
   const { translation } = plan;
   const flow = [
@@ -48,6 +50,8 @@ export async function PlanDetailView({ plan, addons, locale }: PlanDetailViewPro
               {translation.description}
             </p>
           </section>
+
+          <PlanExperience plan={plan} plans={plans} addons={addons} locale={locale} />
 
           <section>
             <h2 className="mb-3 flex items-center gap-2 text-xl font-black">

@@ -38,7 +38,12 @@
     "lead": "Public roads, not a closed track.",
     "v1": "Night Dotonbori",
     "v2": "Namba start",
-    "v3": "Convoy lights"
+    "v3": "Convoy lights",
+    "v4": "Shinsaibashi loop",
+    "v5": "Tsutenkaku night",
+    "v6": "Osaka Castle stretch",
+    "v7": "Helmet cam",
+    "v8": "Team photo"
   },
   "ReviewsHome": {
     "title": "What Riders Say",
@@ -72,7 +77,17 @@
     "q4": "What if it rains?",
     "a4": "Light rain: raincoats provided, we usually still go. Heavy rain or typhoon: free reschedule or full refund.",
     "q5": "How old do I need to be?",
-    "a5": "Drivers must be 18 or older with a valid license. Children may ride as passengers if a seat is available."
+    "a5": "Drivers must be 18 or older with a valid license. Children may ride as passengers if a seat is available.",
+    "q6": "Do I need an International Driving Permit?",
+    "a6": "It depends on where your license was issued. US and Japanese licenses are usually enough. Chinese and Korean licenses cannot be used on Japanese public roads without a 1949 Geneva IDP.",
+    "q7": "Do you cancel when it rains?",
+    "a7": "Light rain usually goes ahead, with raincoats. Heavy rain, typhoon, or official warnings: free reschedule or full refund. We reconfirm weather before departure.",
+    "q8": "Are there height or weight limits?",
+    "a8": "Drivers should be at least 145cm. Weight limits depend on the kart on the day. Staff will check the cockpit at check-in.",
+    "q9": "Can I film with my phone while driving?",
+    "a9": "Keep both hands on the wheel. Do not film while moving. Add a GoPro or pro photo follow if you want footage. Selfies are fine after you stop.",
+    "q10": "How many people can go together?",
+    "a10": "A slot is usually up to 4 karts. Bigger groups can split into back-to-back slots — message us and we will arrange it."
   },
   "Meet": {
     "title": "Meeting Point",
@@ -134,7 +149,11 @@
     "addons": "Add-ons",
     "addonTotal": "Add-ons",
     "grandTotal": "Total",
-    "changePlan": "Change plan"
+    "changePlan": "Change plan",
+    "otherPlans": "Three courses",
+    "pickDateFirst": "Pick a date on the calendar, then choose a time.",
+    "soldOut": "Full",
+    "addToBooking": "Add to booking"
   },
   "Booking": {
     "kicker": "Reserve a slot",
@@ -158,7 +177,8 @@
     "mail": "Email to book",
     "whatsapp": "WhatsApp",
     "addonAdd": "Add to plan",
-    "addonOn": "Added"
+    "addonOn": "Added",
+    "full": "Full"
   },
   "Press": {
     "title": "In the news",

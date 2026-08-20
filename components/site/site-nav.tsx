@@ -12,6 +12,7 @@ import { siteHome, withSlash } from "@/lib/paths";
 import { useSiteLook } from "@/lib/site-look";
 import { isSiteTheme, type SiteTheme } from "@/lib/visual-theme";
 import { cn } from "@/lib/utils";
+import { ToastHost } from "@/components/ui/toast-host";
 
 type SiteNavProps = {
   look?: SiteTheme;
@@ -57,6 +58,7 @@ export function SiteNav({ look }: SiteNavProps) {
   );
 
   return (
+    <>
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-50 transition-all duration-300",
@@ -134,6 +136,8 @@ export function SiteNav({ look }: SiteNavProps) {
         </div>
       )}
     </header>
+    <ToastHost />
+    </>
   );
 }
 

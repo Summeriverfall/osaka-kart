@@ -71,9 +71,11 @@ export function slotRemaining(iso: string, time: string): number {
   const day = Number(iso.slice(8));
   const hour = Number(time.slice(0, 2)) || 0;
   const minute = Number(time.slice(3, 5)) || 0;
+  if (time === "10:00" && day % 3 === 0) return 0;
+  if (time === "19:00" && day % 5 === 0) return 0;
   const cap = 2 + (day % 5);
   const dip = (hour + Math.floor(minute / 30)) % 3;
-  return Math.max(1, cap - dip);
+  return Math.max(0, cap - dip);
 }
 
 /** Rider dropdown max = leftover seats for the picked date + slot. */

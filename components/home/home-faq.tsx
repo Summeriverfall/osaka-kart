@@ -16,6 +16,11 @@ export function HomeFaq() {
     { q: t("q3"), a: t("a3") },
     { q: t("q4"), a: t("a4") },
     { q: t("q5"), a: t("a5") },
+    { q: t("q6"), a: t("a6") },
+    { q: t("q7"), a: t("a7") },
+    { q: t("q8"), a: t("a8") },
+    { q: t("q9"), a: t("a9") },
+    { q: t("q10"), a: t("a10") },
   ];
 
   return (
@@ -25,7 +30,7 @@ export function HomeFaq() {
           {t("title")}
         </h2>
         <Accordion
-          defaultValue={["q0"]}
+          multiple
           className="divide-y divide-white/10 rounded-2xl border border-white/10 bg-[#12121A] px-5"
         >
           {items.map((item, index) => (

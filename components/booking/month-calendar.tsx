@@ -23,6 +23,7 @@ type MonthCalendarProps = {
   priceJpy: number;
   value: string;
   time?: string;
+  minIso?: string;
   onChange: (iso: string) => void;
 };
 
@@ -31,13 +32,14 @@ export function MonthCalendar({
   priceJpy,
   value,
   time = "",
+  minIso,
   onChange,
 }: MonthCalendarProps) {
   const t = useTranslations("Calendar");
-  const minIso = tomorrowIsoDate();
+  const startIso = minIso ?? tomorrowIsoDate();
   const maxIso = maxBookIsoDate();
   const [cursor, setCursor] = useState(() =>
-    value ? parseIsoDate(value) : parseIsoDate(minIso),
+    value ? parseIsoDate(value) : parseIsoDate(startIso),
   );
 
   const cells = useMemo(() => monthCells(cursor), [cursor]);
@@ -73,8 +75,8 @@ export function MonthCalendar({
             return <div key={`e-${index}`} className="cal-cell is-empty" />;
           }
           const status = time
-            ? slotStatus(cell.iso, time, minIso, maxIso)
-            : dayStatus(cell.iso, minIso, maxIso);
+            ? slotStatus(cell.iso, time, startIso, maxIso)
+            : dayStatus(cell.iso, startIso, maxIso);
           const left = time ? dayRemaining(cell.iso) : 0;
           const selected = value === cell.iso;
           const blocked = status === "closed";

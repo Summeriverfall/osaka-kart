@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "./site-themes.css";
+@import "./admin-theme.css";
+@import "./inventory-board.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -603,6 +605,110 @@ html[lang="ja"] .gateway-main h1 {
 
 .plan-qty-btn:disabled {
   opacity: 0.35;
+}
+
+.addon-sticky-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 85;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem calc(0.9rem + env(safe-area-inset-bottom));
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  background: rgb(18 18 26 / 94%);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 -12px 40px rgb(255 46 147 / 12%);
+}
+
+@media (min-width: 768px) {
+  .admin-app .addon-sticky-bar {
+    left: 15rem;
+  }
+}
+
+.admin-input {
+  width: 100%;
+  margin-top: 0.35rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  background: #fff;
+  color: #111827;
+  padding: 0.7rem 0.85rem;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 18%);
+}
+
+.admin-input option {
+  background: #fff;
+  color: #111827;
+}
+
+.admin-field {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.admin-table th {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+  background: #f9fafb;
+}
+
+.admin-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.book-slots > button {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.75rem;
+  background: #12121a;
+  color: #f1f1f5;
+}
+
+.book-slots > button small {
+  font-size: 0.7rem;
+  color: #9ca3af;
+}
+
+.fade-in {
+  animation: fade-in 0.35s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.landing-root,
+.admin-app {
+  overflow-x: hidden;
 }
 
 @media (min-width: 1100px) {

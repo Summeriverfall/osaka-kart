@@ -17,6 +17,7 @@ export function HomeMeeting() {
           </p>
           <p className="mt-3 text-gray-300">{t("station")}</p>
           <p className="mt-1 text-gray-400">{t("walk")}</p>
+          <p className="mt-3 text-sm text-[#9CA3AF]">营业 10:00 – 21:00 · 需提前预约</p>
         </div>
         <iframe
           title={t("title")}

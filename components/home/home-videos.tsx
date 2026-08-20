@@ -3,54 +3,33 @@
 import { useState } from "react";
 import { Play, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { asset } from "@/lib/asset";
+import { Modal } from "@/components/ui/modal";
+import { MOCK_VIDEOS } from "@/lib/mock/videos";
 
-const CLIPS = [
-  {
-    id: "1",
-    titleKey: "v1" as const,
-    src: asset("/videos/street-run.mp4"),
-    cover: asset("/images/reviews/r1.png"),
-  },
-  {
-    id: "2",
-    titleKey: "v2" as const,
-    src: asset("/videos/hero-bg.mp4"),
-    cover: asset("/images/hero/poster.jpg"),
-  },
-  {
-    id: "3",
-    titleKey: "v3" as const,
-    src: asset("/videos/street-run.mp4"),
-    cover: asset("/images/reviews/r3.png"),
-  },
-];
-
-export function HomeVideos() {
+export function HomeVideos({ limit }: { limit?: number }) {
   const t = useTranslations("VideosHome");
   const [playing, setPlaying] = useState<string | null>(null);
-  const active = CLIPS.find((clip) => clip.id === playing);
+  const clips = limit ? MOCK_VIDEOS.slice(0, limit) : MOCK_VIDEOS;
+  const active = MOCK_VIDEOS.find((clip) => clip.id === playing);
 
   return (
     <section id="videos" className="bg-[#0A0A0F] py-20">
       <div className="mx-auto max-w-6xl px-4">
-        <h2 className="mb-8 text-3xl font-black md:text-4xl">{t("title")}</h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {CLIPS.map((clip) => (
+        <h2 className="mb-3 text-3xl font-black md:text-4xl">{t("title")}</h2>
+        <p className="mb-8 text-gray-400">{t("lead")}</p>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {clips.map((clip) => (
             <button
               key={clip.id}
               type="button"
-              className="overflow-hidden rounded-2xl border border-white/10 bg-[#12121A] text-left"
+              className="overflow-hidden rounded-2xl border border-white/10 bg-[#12121A] text-left transition hover:border-neon-pink hover:shadow-[0_0_22px_rgb(255_46_147_/_30%)]"
               onClick={() => setPlaying(clip.id)}
             >
-              <div className="relative aspect-video overflow-hidden">
-                <img
-                  src={clip.cover}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
-                <span className="absolute inset-0 bg-black/25" />
+              <div className={`relative aspect-video overflow-hidden bg-gradient-to-br ${clip.accent}`}>
                 <Play className="absolute top-1/2 left-1/2 size-12 -translate-x-1/2 -translate-y-1/2 text-white drop-shadow-lg" />
+                <span className="absolute right-3 bottom-3 rounded-full border border-white/20 bg-black/40 px-2 py-0.5 text-[10px] tracking-[0.16em] text-white uppercase">
+                  Kart
+                </span>
               </div>
               <p className="p-4 font-semibold">{t(clip.titleKey)}</p>
             </button>
@@ -58,35 +37,29 @@ export function HomeVideos() {
         </div>
       </div>
 
-      {active && (
-        <div
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setPlaying(null)}
-        >
-          <div
-            className="relative w-full max-w-4xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              type="button"
-              className="absolute -top-10 right-0 text-white"
-              onClick={() => setPlaying(null)}
-              aria-label="Close"
-            >
-              <X className="size-7" />
-            </button>
-            <video
-              className="w-full rounded-xl"
-              src={active.src}
-              poster={active.cover}
-              controls
-              autoPlay
-              playsInline
+      <Modal
+        open={Boolean(active)}
+        title={active ? t(active.titleKey) : ""}
+        onClose={() => setPlaying(null)}
+        wide
+        footer={
+          <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setPlaying(null)}>
+            <X className="size-4" /> 关闭
+          </button>
+        }
+      >
+        {active ? (
+          <div className="aspect-video overflow-hidden rounded-xl border border-white/10 bg-[#0A0A0F]">
+            <iframe
+              title={t(active.titleKey)}
+              src={`https://www.youtube-nocookie.com/embed/${active.youtubeId}?autoplay=1`}
+              className="h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
             />
-            <p className="mt-3 text-center font-semibold">{t(active.titleKey)}</p>
           </div>
-        </div>
-      )}
+        ) : null}
+      </Modal>
     </section>
   );
 }

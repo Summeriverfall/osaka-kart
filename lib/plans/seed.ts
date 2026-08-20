@@ -11,6 +11,7 @@ const GRAND_ID = "a3333333-3333-4333-8333-333333333333";
 const GOPRO_ID = "b1111111-1111-4111-8111-111111111111";
 const COSTUME_ID = "b2222222-2222-4222-8222-222222222222";
 const PHOTO_ID = "b3333333-3333-4333-8333-333333333333";
+const INSURANCE_ID = "b4444444-4444-4444-8444-444444444444";
 
 const LOCALES = ["en", "zh-CN", "zh-TW", "ja", "ko"] as const;
 
@@ -228,68 +229,90 @@ const planTranslations: Record<string, PlanTranslation[]> = {
 const addonTranslations = {
   [GOPRO_ID]: {
     en: {
-      name: "GoPro recording",
-      description: "Pro GoPro footage, delivered within 24 hours. Relive the run.",
+      name: "GoPro rental",
+      description: "HD action camera rental with waterproof housing.",
     },
     "zh-CN": {
-      name: "GoPro 录像",
-      description: "专业 GoPro 影像，24 小时内交付。重温你的街头骑行。",
+      name: "GoPro 租赁",
+      description: "高清运动相机租赁，含防水壳。",
     },
     "zh-TW": {
-      name: "GoPro錄影",
-      description: "專業 GoPro 影像，24 小時內交付。重溫你的精彩冒險！",
+      name: "GoPro 租賃",
+      description: "高清運動相機租賃，含防水殼。",
     },
     ja: {
-      name: "GoPro撮影",
-      description: "プロのGoPro映像。24時間以内に納品。走行を残せます。",
+      name: "GoProレンタル",
+      description: "防水ハウジング付きの高画質アクションカメラ。",
     },
     ko: {
-      name: "GoPro 촬영",
-      description: "프로 GoPro 영상, 24시간 내 전달. 주행을 다시 볼 수 있습니다.",
+      name: "GoPro 대여",
+      description: "방수 하우징 포함 고화질 액션캠 대여.",
     },
   },
   [COSTUME_ID]: {
     en: {
-      name: "Premium costumes",
-      description: "Upgrade to character suits (Mario, Luigi, Yoshi, and more).",
+      name: "Racing suit upgrade",
+      description: "Pro fire-retardant racing suits, several colors.",
     },
     "zh-CN": {
-      name: "高级服装",
-      description: "升级为高级角色服装（马里奥、路易吉、耀西等）。",
+      name: "赛车服升级",
+      description: "专业防火赛车服，多色可选。",
     },
     "zh-TW": {
-      name: "高級服裝",
-      description: "升級為高級角色服裝（瑪利歐、路易吉、耀西等）。",
+      name: "賽車服升級",
+      description: "專業防火賽車服，多色可選。",
     },
     ja: {
-      name: "プレミアム衣装",
-      description: "キャラクター衣装にアップグレード（マリオ、ルイージ、ヨッシーなど）。",
+      name: "レーシングスーツアップグレード",
+      description: "防火レーシングスーツ。カラー複数。",
     },
     ko: {
-      name: "프리미엄 의상",
-      description: "캐릭터 의상으로 업그레이드 (마리오, 루이지, 요시 등).",
+      name: "레이싱 슈트 업그레이드",
+      description: "전문 방화 레이싱 슈트, 여러 색상.",
     },
   },
   [PHOTO_ID]: {
     en: {
-      name: "Photo pack",
-      description: "10 pro photos from the ride, delivered digitally.",
+      name: "Pro photo follow",
+      description: "Trackside photographer. Five retouched originals included.",
     },
     "zh-CN": {
-      name: "照片套餐",
-      description: "骑行途中拍摄 10 张专业照片，以数字方式交付。",
+      name: "专业跟拍照片",
+      description: "赛道摄影师跟拍，含5张精修原片。",
     },
     "zh-TW": {
-      name: "照片套餐",
-      description: "騎行途中拍攝 10 張專業照片，以數位方式交付。",
+      name: "專業跟拍照片",
+      description: "賽道攝影師跟拍，含5張精修原片。",
     },
     ja: {
-      name: "フォトパック",
-      description: "走行中のプロ写真10枚をデジタルで納品。",
+      name: "プロフォト同行",
+      description: "カメラマンが走行を撮影。レタッチ原版5枚付き。",
     },
     ko: {
-      name: "포토 패키지",
-      description: "주행 중 전문 사진 10장, 디지털로 전달.",
+      name: "프로 사진 동행",
+      description: "트랙 포토그래퍼 촬영, 보정 원본 5장 포함.",
+    },
+  },
+  [INSURANCE_ID]: {
+    en: {
+      name: "Extra insurance",
+      description: "Additional personal accident cover on top of the included policy.",
+    },
+    "zh-CN": {
+      name: "额外保险",
+      description: "在基础保险之外加保人身意外。",
+    },
+    "zh-TW": {
+      name: "額外保險",
+      description: "在基礎保險之外加保人身意外。",
+    },
+    ja: {
+      name: "追加保険",
+      description: "基本保険に加えて傷害保険を上乗せ。",
+    },
+    ko: {
+      name: "추가 보험",
+      description: "기본 보험 외에 상해 담보를 추가합니다.",
     },
   },
 } as const;
@@ -348,8 +371,8 @@ export function getSeedAddons(locale: string): AddonWithTranslation[] {
     {
       id: GOPRO_ID,
       slug: "gopro",
-      price_jpy: 2000,
-      max_qty: 1,
+      price_jpy: 2500,
+      max_qty: 2,
       is_active: true,
       source: "seed",
       translation: { locale: key, ...addonTranslations[GOPRO_ID][key] },
@@ -358,7 +381,7 @@ export function getSeedAddons(locale: string): AddonWithTranslation[] {
       id: COSTUME_ID,
       slug: "costume",
       price_jpy: 1000,
-      max_qty: 1,
+      max_qty: 8,
       is_active: true,
       source: "seed",
       translation: { locale: key, ...addonTranslations[COSTUME_ID][key] },
@@ -366,11 +389,20 @@ export function getSeedAddons(locale: string): AddonWithTranslation[] {
     {
       id: PHOTO_ID,
       slug: "photos",
-      price_jpy: 500,
+      price_jpy: 3000,
       max_qty: 1,
       is_active: true,
       source: "seed",
       translation: { locale: key, ...addonTranslations[PHOTO_ID][key] },
+    },
+    {
+      id: INSURANCE_ID,
+      slug: "insurance",
+      price_jpy: 500,
+      max_qty: 8,
+      is_active: true,
+      source: "seed",
+      translation: { locale: key, ...addonTranslations[INSURANCE_ID][key] },
     },
   ];
 }

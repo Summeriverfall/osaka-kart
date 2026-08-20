@@ -29,7 +29,7 @@ export function HomeLanding({ look, plans, locale }: HomeLandingProps) {
       <SiteNav look={look} />
       <HomeHero look={look} />
       <HomePlans plans={plans} locale={locale} />
-      <HomeVideos />
+      <HomeVideos limit={4} />
       <HomeReviews />
       <HomeSafety />
       <HomeFaq />

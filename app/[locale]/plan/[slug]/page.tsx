@@ -4,7 +4,7 @@ import { PlanDetailView } from "@/components/plan/plan-detail";
 import { SiteFooter } from "@/components/site/site-footer";
 import { FloatBook, SiteNav } from "@/components/site/site-nav";
 import type { AppLocale } from "@/i18n/routing";
-import { getAddons, getPlanBySlug } from "@/lib/plans/queries";
+import { getAddons, getPlanBySlug, getPlans } from "@/lib/plans/queries";
 import { PLAN_SLUGS } from "@/lib/plans/seed";
 
 type PageProps = {
@@ -18,8 +18,9 @@ export function generateStaticParams() {
 export default async function PlanDetailPage({ params }: PageProps) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const [plan, addons] = await Promise.all([
+  const [plan, plans, addons] = await Promise.all([
     getPlanBySlug(slug, locale),
+    getPlans(locale),
     getAddons(locale),
   ]);
   if (!plan) notFound();
@@ -27,7 +28,7 @@ export default async function PlanDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-dvh bg-[#0A0A0F] pt-16">
       <SiteNav />
-      <PlanDetailView plan={plan} addons={addons} locale={locale} />
+      <PlanDetailView plan={plan} plans={plans} addons={addons} locale={locale} />
       <SiteFooter />
       <FloatBook />
     </div>

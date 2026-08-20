@@ -1,0 +1,183 @@
+/* Admin backend: light operations UI. Does not affect the public site. */
+
+html:has(.admin-app) {
+  color-scheme: light;
+}
+
+html:has(.admin-app) body {
+  background: #f5f6f8 !important;
+  background-image: none !important;
+  color: #111827;
+}
+
+.admin-app {
+  color-scheme: light;
+  background: #f5f6f8;
+  color: #111827;
+  min-height: 100dvh;
+}
+
+.admin-app .bg-\[\#0A0A0F\],
+.admin-app .bg-\[\#0a0a0f\],
+.admin-app .bg-\[\#0A0A0F\]\/72 {
+  background-color: #f5f6f8 !important;
+}
+
+.admin-app .bg-\[\#12121A\],
+.admin-app .bg-\[\#12121a\] {
+  background-color: #fff !important;
+}
+
+.admin-app .text-\[\#F1F1F5\] {
+  color: #111827 !important;
+}
+
+.admin-app .text-\[\#9CA3AF\],
+.admin-app .text-gray-300,
+.admin-app .text-gray-400 {
+  color: #6b7280 !important;
+}
+
+.admin-app .border-white\/10,
+.admin-app .border-white\/15,
+.admin-app .border-white\/5,
+.admin-app .border-white\/20 {
+  border-color: #e5e7eb !important;
+}
+
+.admin-app .hover\:border-neon-pink:hover,
+.admin-app .hover\:border-neon-purple:hover {
+  border-color: #2563eb !important;
+}
+
+.admin-app .hover\:bg-white\/10:hover {
+  background-color: #eef2ff !important;
+}
+
+.admin-app .bg-white\/10 {
+  background-color: #eef2ff !important;
+}
+
+.admin-app .admin-input {
+  background: #fff;
+  color: #111827;
+  border-color: #d1d5db;
+}
+
+.admin-app .admin-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 18%);
+}
+
+.admin-app .admin-input option {
+  background: #fff;
+  color: #111827;
+}
+
+.admin-app .admin-field {
+  color: #4b5563;
+}
+
+.admin-app .admin-table th {
+  color: #6b7280;
+  background: #f9fafb;
+}
+
+.admin-app .admin-table td,
+.admin-app .admin-table th {
+  border-bottom-color: #e5e7eb;
+}
+
+.admin-app .admin-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.admin-app .cta-btn {
+  background-image: none;
+  background-color: #2563eb;
+  box-shadow: 0 8px 20px rgb(37 99 235 / 22%);
+  border-radius: 0.75rem;
+  color: #fff;
+}
+
+.admin-app .cta-btn,
+.admin-app .cta-btn * {
+  color: #fff !important;
+}
+
+.admin-app .cta-btn:hover {
+  background-color: #1d4ed8;
+  box-shadow: 0 10px 24px rgb(37 99 235 / 28%);
+  filter: none;
+  transform: none;
+}
+
+.admin-app .plan-qty-btn {
+  color: #111827;
+  border-color: #d1d5db;
+  background: #fff;
+}
+
+.admin-app .text-neon-pink {
+  color: #2563eb !important;
+}
+
+.admin-app .text-neon-cyan {
+  color: #0369a1 !important;
+}
+
+.admin-app .border-neon-pink {
+  border-color: #2563eb !important;
+}
+
+.admin-app button[role="switch"] {
+  box-shadow: none !important;
+}
+
+.admin-app button[role="switch"][aria-checked="true"] {
+  background-image: none !important;
+  background-color: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+.admin-app button[role="switch"][aria-checked="false"] {
+  background-color: #e5e7eb !important;
+  border-color: #d1d5db !important;
+}
+
+.admin-app .fixed.inset-0.z-\[90\] {
+  background-color: rgb(15 23 42 / 40%) !important;
+}
+
+.admin-app .admin-modal-panel {
+  background: #fff !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 24px 60px rgb(15 23 42 / 16%) !important;
+  color: #111827;
+}
+
+.admin-app .admin-modal-panel h2,
+.admin-app .admin-modal-panel button[aria-label="Close"] {
+  color: #111827 !important;
+  border-color: #e5e7eb !important;
+}
+
+.admin-app .inventory-board {
+  background: #fff;
+  color: #262626;
+}
+
+.admin-app .inventory-board .ib-code,
+.admin-app .inventory-board .ib-tip {
+  color: #262626;
+}
+
+.admin-app .inventory-board .text-gray-400 {
+  color: #8c8c8c !important;
+}
+
+.admin-app .bg-blue-600,
+.admin-app .bg-blue-600.text-white,
+.admin-app button.bg-blue-600 {
+  color: #fff !important;
+}
