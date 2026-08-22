@@ -2,9 +2,11 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const cwd = process.cwd();
-const out = [join(cwd, "out"), join(cwd, ".next-pages")].find(
-  (dir) => existsSync(dir) && existsSync(join(dir, "en")),
-);
+const out = [
+  join(cwd, "out"),
+  join(cwd, "out", "osaka-kart"),
+  join(cwd, ".next-pages"),
+].find((dir) => existsSync(dir) && existsSync(join(dir, "en")));
 
 if (!out) {
   throw new Error("Static export folder not found (out or .next-pages)");
