@@ -5,6 +5,7 @@ import { Modal } from "@/components/ui/modal";
 import { VEHICLE_STATUS_LABEL, type MockVehicle, type VehicleStatus } from "@/lib/mock/vehicles";
 import { cn } from "@/lib/utils";
 import { useOpsStore } from "@/stores/ops-store";
+import { useStoreData } from "@/lib/use-store-data";
 import { useToastStore } from "@/stores/toast-store";
 
 const BLANK: MockVehicle = {
@@ -15,10 +16,12 @@ const BLANK: MockVehicle = {
   lastService: "2026-08-20",
   note: "",
   logs: [],
+  storeId: "namba",
 };
 
 export function AdminVehiclesView() {
-  const { vehicles, upsertVehicle, patchVehicle } = useOpsStore();
+  const { vehicles, storeId } = useStoreData();
+  const { upsertVehicle } = useOpsStore();
   const notify = useToastStore((state) => state.notify);
   const [editing, setEditing] = useState<MockVehicle | null>(null);
   const [logs, setLogs] = useState<MockVehicle | null>(null);
@@ -28,7 +31,7 @@ export function AdminVehiclesView() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-amber-800">维修中 {repair} 辆，已从当日可售库存扣除。</p>
-        <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setEditing({ ...BLANK, id: `v-${Date.now()}` })}>添加车辆</button>
+        <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setEditing({ ...BLANK, id: `v-${Date.now()}`, storeId })}>添加车辆</button>
       </div>
       <div className="hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white md:block">
         <table className="admin-table">
@@ -70,7 +73,25 @@ export function AdminVehiclesView() {
         ))}
       </div>
 
-      <Modal open={Boolean(editing)} title="车辆" onClose={() => setEditing(null)} footer={<button type="button" className="cta-btn px-5 py-2.5" onClick={() => { if (!editing) return; upsertVehicle(editing); setEditing(null); notify("车辆已保存"); }}>保存</button>}>
+      <Modal
+        open={Boolean(editing)}
+        title="车辆"
+        onClose={() => setEditing(null)}
+        footer={
+          <button
+            type="button"
+            className="cta-btn px-5 py-2.5"
+            onClick={() => {
+              if (!editing) return;
+              upsertVehicle({ ...editing, storeId: editing.storeId || storeId });
+              setEditing(null);
+              notify("车辆已保存");
+            }}
+          >
+            保存
+          </button>
+        }
+      >
         {editing ? (
           <>
             <label className="admin-field">编号<input className="admin-input" value={editing.code} onChange={(e) => setEditing({ ...editing, code: e.target.value })} /></label>

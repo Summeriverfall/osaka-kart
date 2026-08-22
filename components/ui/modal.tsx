@@ -31,21 +31,21 @@ export function Modal({ open, title, onClose, children, footer, wide }: ModalPro
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-end justify-center bg-black/80 p-4 sm:items-center"
+      className="fixed inset-0 z-[90] flex items-end justify-center bg-black/80 p-3 sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
         className={cn(
-          "admin-modal-panel max-h-[90dvh] w-full overflow-auto rounded-2xl border border-white/10 bg-[#12121A] p-6 shadow-[0_0_40px_rgb(255_46_147_/_18%)]",
+          "admin-modal-panel max-h-[92dvh] w-full overflow-auto rounded-2xl border border-white/10 bg-[#12121A] p-4 shadow-[0_0_40px_rgb(255_46_147_/_18%)] sm:p-6",
           wide ? "max-w-3xl" : "max-w-lg",
         )}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="mb-5 flex items-start justify-between gap-4">
-          <h2 className="text-xl font-black text-white">{title}</h2>
+        <div className="mb-5 flex items-start justify-between gap-3">
+          <h2 className="min-w-0 text-base font-black leading-snug break-words text-white sm:text-xl">{title}</h2>
           <button
             type="button"
-            className="inline-flex size-9 items-center justify-center rounded-full border border-white/10 text-white transition hover:border-neon-pink hover:shadow-[0_0_16px_rgb(255_46_147_/_40%)]"
+            className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-white transition hover:border-neon-pink hover:shadow-[0_0_16px_rgb(255_46_147_/_40%)]"
             onClick={onClose}
             aria-label="Close"
           >

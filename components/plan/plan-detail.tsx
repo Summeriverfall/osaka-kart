@@ -2,6 +2,7 @@ import { Check, MapPinned, ShieldAlert, Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { PlanExperience } from "@/components/plan/plan-experience";
 import { PlanSummaryCard } from "@/components/plan/plan-summary";
+import { LivePlanHeading } from "@/components/plan/live-plan-heading";
 import { planImage, planRoute } from "@/lib/media";
 import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 
@@ -36,9 +37,7 @@ export async function PlanDetailView({ plan, plans, addons, locale }: PlanDetail
             <p className="mb-3 text-xs tracking-[0.2em] text-neon-cyan uppercase">
               {t("eyebrow")}
             </p>
-            <h1 className="neon-text max-w-3xl text-4xl font-black tracking-tight md:text-6xl">
-              {translation.name}
-            </h1>
+            <LivePlanHeading plan={plan} locale={locale} />
           </div>
         </div>
       </section>

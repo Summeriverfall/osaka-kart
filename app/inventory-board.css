@@ -324,6 +324,124 @@
   background: #fff;
 }
 
+.ib-vaxis {
+  padding: 0 0.75rem 0.85rem;
+}
+
+.ib-vaxis-part + .ib-vaxis-part {
+  margin-top: 0.7rem;
+}
+
+.ib-vaxis-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.ib-vaxis-label small {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: #94a3b8;
+}
+
+.ib-vaxis-list {
+  display: grid;
+  gap: 0.35rem;
+  padding-left: 0.65rem;
+  border-left: 2px solid #e8edf3;
+}
+
+.ib-vaxis-row {
+  display: grid;
+  grid-template-columns: 3.1rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.42rem 0.55rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  text-align: left;
+}
+
+.ib-vaxis-time {
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+}
+
+.ib-vaxis-track {
+  display: block;
+  height: 0.45rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(15 23 42 / 8%);
+}
+
+.ib-vaxis-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: currentColor;
+}
+
+.ib-vaxis-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ib-vaxis-stat small {
+  font-size: 0.62rem;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+.ib-vaxis-row.free {
+  background: #e6f7e9;
+  color: #389e0d;
+  border-color: #b7eb8f;
+}
+
+.ib-vaxis-row.tight {
+  background: #fffbe6;
+  color: #d48806;
+  border-color: #ffe58f;
+}
+
+.ib-vaxis-row.full {
+  background: #fff1f0;
+  color: #cf1322;
+  border-color: #ffa39e;
+}
+
+.ib-vaxis-row.idle {
+  background: #f5f5f5;
+  color: #8c8c8c;
+  border-color: #d9d9d9;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgb(0 0 0 / 4%) 0,
+    rgb(0 0 0 / 4%) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+.ib-vaxis-row.idle .ib-vaxis-fill {
+  width: 0 !important;
+}
+
 .ib-form {
   display: grid;
   gap: 0.85rem;

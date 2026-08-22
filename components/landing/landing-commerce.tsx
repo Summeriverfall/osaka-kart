@@ -3,7 +3,8 @@
 import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { ChevronLeft, Mail, MapPin, Phone, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
+import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { RideNoteChecks, allNotesChecked, emptyNoteChecks, type NoteKey } from "@/components/notes/ride-notes";
 import { BookingExtras, bookingTotal } from "@/components/booking/booking-extras";
 import { MonthCalendar } from "@/components/booking/month-calendar";
@@ -12,8 +13,10 @@ import { PRESS_CARDS, SITE_CONTACT, SOCIAL_CARDS } from "@/lib/contact";
 import { FEATURE_IMAGES } from "@/lib/media";
 import { asset } from "@/lib/asset";
 import { formatJpy } from "@/lib/format";
-import { parseIsoDate, slotRemaining, clampRiders } from "@/lib/calendar";
+import { parseIsoDate } from "@/lib/calendar";
+import { useLiveCatalog, useLiveInventory, useLiveStoreContact } from "@/lib/live-catalog";
 import { BOOKING_SLOTS } from "@/lib/booking/slots";
+import { DEFAULT_STORE_ID } from "@/lib/store-id";
 import { withSlash } from "@/lib/paths";
 import {
   BOOKING_RESULT_KEY,
@@ -81,8 +84,8 @@ export function LandingGallery({ copy }: { copy: LandingCopy }) {
 }
 
 export function LandingBook({
-  plans,
-  addons,
+  plans: seedPlans,
+  addons: seedAddons,
   locale,
 }: Omit<CommerceProps, "theme" | "copy">) {
   const cal = useTranslations("Calendar");
@@ -90,10 +93,11 @@ export function LandingBook({
   const book = useTranslations("Booking");
   const router = useRouter();
   const store = useBookingStore();
+  const live = useLiveInventory();
+  const { plans, addons, plan } = useLiveCatalog(seedPlans, seedAddons, locale, store.planSlug);
   const [step, setStep] = useState<1 | 2>(1);
   const [notes, setNotes] = useState(emptyNoteChecks);
   const lockY = useRef<number | null>(null);
-  const plan = plans.find((item) => item.slug === store.planSlug) ?? plans[0];
   const notesOk = allNotesChecked(notes);
 
   useLayoutEffect(() => {
@@ -109,7 +113,7 @@ export function LandingBook({
       planSlug: plan.slug,
       date: store.date,
       time: store.time,
-      riders: clampRiders(store.riders, store.date, store.time),
+      riders: live.clampRiders(store.riders, store.date, store.time),
     });
     setStep(2);
   }
@@ -144,6 +148,7 @@ export function LandingBook({
       ref: `OK-${Date.now().toString(36).toUpperCase()}`,
       planName: plan.translation.name,
       totalJpy: bookingTotal(plan, addons, store.riders, store.addonSlugs),
+      storeId: DEFAULT_STORE_ID,
     };
 
     sessionStorage.setItem(BOOKING_RESULT_KEY, JSON.stringify(result));
@@ -220,7 +225,7 @@ export function LandingBook({
                 onChange={(iso) =>
                   store.patch({
                     date: iso,
-                    riders: clampRiders(store.riders, iso, store.time),
+                    riders: live.clampRiders(store.riders, iso, store.time),
                   })
                 }
               />
@@ -228,7 +233,7 @@ export function LandingBook({
                 <legend>{book("time")}</legend>
                 <div className="book-slots">
                   {BOOKING_SLOTS.map((slot) => {
-                    const left = store.date ? slotRemaining(store.date, slot) : 0;
+                    const left = store.date ? live.remaining(store.date, slot) : 0;
                     const full = Boolean(store.date) && left <= 0;
                     return (
                       <label key={slot} className={cn(store.time === slot && "is-on", full && "is-full")}>
@@ -241,7 +246,7 @@ export function LandingBook({
                           onChange={() =>
                             store.patch({
                               time: slot,
-                              riders: clampRiders(store.riders, store.date, slot),
+                              riders: live.clampRiders(store.riders, store.date, slot),
                             })
                           }
                         />
@@ -539,6 +544,9 @@ function LandingFeatures({ copy, theme }: { copy: LandingCopy; theme: SiteTheme 
 function LandingVisit({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) {
   const contact = useTranslations("Contact");
   const shop = useTranslations("Shop");
+  const store = useLiveStoreContact();
+  const hours = store.hours || SITE_CONTACT.hours;
+  const phone = store.phone || SITE_CONTACT.phone;
 
   return (
     <section id="access" className={cn("shop-visit", theme === "oni" && "oni-visit")}>
@@ -557,7 +565,7 @@ function LandingVisit({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) 
                 <span>{copy.access.address}</span>
               </li>
               <li>
-                <span>{contact("hours", { hours: SITE_CONTACT.hours })}</span>
+                <span>{contact("hours", { hours })}</span>
               </li>
             </ol>
           </div>
@@ -571,7 +579,7 @@ function LandingVisit({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) 
               {copy.access.walk}
             </p>
             <p className="shop-addr">{copy.access.address}</p>
-            <p className="shop-hours">{contact("hours", { hours: SITE_CONTACT.hours })}</p>
+            <p className="shop-hours">{contact("hours", { hours })}</p>
           </div>
         )}
         <div className="shop-contact">
@@ -591,7 +599,7 @@ function LandingVisit({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) 
           </a>
           <a href={SITE_CONTACT.tel} className="cta-btn cta-btn-ghost">
             <Phone className="size-4 shrink-0" aria-hidden />
-            {SITE_CONTACT.phone}
+            {phone}
           </a>
           <a href={SITE_CONTACT.mailto} className="cta-btn cta-btn-ghost">
             <Mail className="size-4 shrink-0" aria-hidden />

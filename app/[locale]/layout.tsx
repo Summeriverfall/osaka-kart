@@ -9,6 +9,7 @@ import {
   Share_Tech_Mono,
 } from "next/font/google";
 import { notFound } from "next/navigation";
+import { FileProtocolNav } from "@/components/file-protocol-nav";
 import { routing } from "@/i18n/routing";
 
 const geistSans = Geist({
@@ -80,6 +81,7 @@ export default async function LocaleLayout({
           messages={messages}
           timeZone="Asia/Tokyo"
         >
+          <FileProtocolNav />
           {children}
         </NextIntlClientProvider>
       </body>

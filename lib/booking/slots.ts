@@ -8,6 +8,13 @@ export const BOOKING_SLOTS = [
   "19:00",
 ] as const;
 
+export const BOOKING_DAYPARTS = [
+  { id: "morning", label: "上午", range: "10:00–11:30", slots: ["10:00", "11:30"] },
+  { id: "afternoon", label: "下午", range: "13:00–14:30", slots: ["13:00", "14:30"] },
+  { id: "dusk", label: "傍晚", range: "16:00–17:30", slots: ["16:00", "17:30"] },
+  { id: "night", label: "夜晚", range: "19:00", slots: ["19:00"] },
+] as const;
+
 export function todayIsoDate() {
   const date = new Date();
   const year = date.getFullYear();

@@ -1,7 +1,8 @@
 "use client";
 
 import { useLocale } from "next-intl";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { useFileRouter as useRouter } from "@/lib/use-file-router";
+import { useAppPathname } from "@/lib/use-app-pathname";
 import { withSlash } from "@/lib/paths";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
@@ -16,7 +17,7 @@ const LOCALE_LABELS: Record<AppLocale, string> = {
 export function LocaleSwitcher() {
   const locale = useLocale() as AppLocale;
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = useAppPathname();
 
   function switchTo(next: AppLocale) {
     if (next === locale) return;

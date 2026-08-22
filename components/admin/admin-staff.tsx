@@ -5,6 +5,7 @@ import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import { STAFF_ROLE_LABEL, type MockStaff, type StaffRole } from "@/lib/mock/staff";
 import { useOpsStore } from "@/stores/ops-store";
+import { useStoreData } from "@/lib/use-store-data";
 import { useToastStore } from "@/stores/toast-store";
 
 const BLANK: MockStaff = {
@@ -13,12 +14,14 @@ const BLANK: MockStaff = {
   email: "",
   role: "staff",
   store: "难波本店",
+  storeId: "namba",
   active: true,
   lastLogin: "—",
 };
 
 export function AdminStaffView() {
-  const { staff, upsertStaff, patchStaff } = useOpsStore();
+  const { staff, stores, storeId, store } = useStoreData();
+  const { upsertStaff, patchStaff } = useOpsStore();
   const notify = useToastStore((state) => state.notify);
   const [editing, setEditing] = useState<MockStaff | null>(null);
   const [confirm, setConfirm] = useState<{ id: string; kind: "reset" | "off" } | null>(null);
@@ -26,7 +29,7 @@ export function AdminStaffView() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setEditing({ ...BLANK, id: `s-${Date.now()}` })}>添加员工</button>
+        <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setEditing({ ...BLANK, id: `s-${Date.now()}`, store: store?.name ?? "难波本店", storeId })}>添加员工</button>
       </div>
       <div className="hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white md:block">
         <table className="admin-table">
@@ -83,10 +86,15 @@ export function AdminStaffView() {
             </label>
             <label className="admin-field">
               门店
-              <select className="admin-input" value={editing.store} onChange={(e) => setEditing({ ...editing, store: e.target.value })}>
-                <option>难波本店</option>
-                <option>预留·心斋桥</option>
-                <option>预留·梅田</option>
+              <select
+                className="admin-input"
+                value={editing.storeId ?? storeId}
+                onChange={(e) => {
+                  const next = stores.find((item) => item.id === e.target.value);
+                  setEditing({ ...editing, storeId: e.target.value, store: next?.name ?? editing.store });
+                }}
+              >
+                {stores.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
             </label>
             <label className="admin-field">初始密码<input className="admin-input" type="password" placeholder="演示环境任意密码" /></label>

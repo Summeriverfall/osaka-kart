@@ -7,6 +7,7 @@ import { formatYenShort } from "@/lib/format";
 import { type MockPlan } from "@/lib/mock/plans";
 import { cn } from "@/lib/utils";
 import { useOpsStore } from "@/stores/ops-store";
+import { useStoreData } from "@/lib/use-store-data";
 import { useToastStore } from "@/stores/toast-store";
 
 function toggleAddon(plan: MockPlan, addonId: string): MockPlan {
@@ -19,7 +20,8 @@ function toggleAddon(plan: MockPlan, addonId: string): MockPlan {
 }
 
 export function AdminPlansView() {
-  const { plans, addons, patchPlan, upsertPlan } = useOpsStore();
+  const { addons, patchPlan, upsertPlan } = useOpsStore();
+  const { plans, storeId } = useStoreData();
   const notify = useToastStore((state) => state.notify);
   const [editing, setEditing] = useState<MockPlan | null>(null);
 
@@ -42,6 +44,7 @@ export function AdminPlansView() {
             maxRiders: 4,
             includes: ["头盔", "赛车服", "保险", "向导"],
             allowedAddonIds: addons.map((item) => item.id),
+            storeIds: [storeId],
           })
         }
       >
@@ -107,7 +110,7 @@ export function AdminPlansView() {
               if (!editing) return;
               upsertPlan(editing);
               setEditing(null);
-              notify("套餐已保存");
+              notify("套餐已保存，官网价格、时长与上下架会同步");
             }}
           >
             保存
@@ -119,6 +122,18 @@ export function AdminPlansView() {
             <label className="admin-field">
               名称
               <input className="admin-input" value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} />
+            </label>
+            <label className="admin-field">
+              英文名
+              <input className="admin-input" value={editing.nameEn} onChange={(e) => setEditing({ ...editing, nameEn: e.target.value })} />
+            </label>
+            <label className="admin-field">
+              日文名
+              <input className="admin-input" value={editing.nameJa} onChange={(e) => setEditing({ ...editing, nameJa: e.target.value })} />
+            </label>
+            <label className="admin-field">
+              网址代号
+              <input className="admin-input" value={editing.slug} onChange={(e) => setEditing({ ...editing, slug: e.target.value.trim() })} />
             </label>
             <label className="admin-field">
               价格（日元）

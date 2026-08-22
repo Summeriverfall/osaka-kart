@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { formatJpy } from "@/lib/format";
+import { useLivePlans } from "@/lib/live-catalog";
 import { planImage, planRoute } from "@/lib/media";
 import { useBookingStore } from "@/stores/booking-store";
 import type { PlanWithTranslation } from "@/lib/plans/types";
@@ -15,9 +16,10 @@ type PlanShowcaseProps = {
   labels: LandingCopy["labels"];
 };
 
-export function PlanShowcase({ plans, locale, labels }: PlanShowcaseProps) {
+export function PlanShowcase({ plans: seedPlans, locale, labels }: PlanShowcaseProps) {
   const planT = useTranslations("Plan");
   const store = useBookingStore();
+  const plans = useLivePlans(seedPlans, locale);
   const minutes = (n: number) => planT("minutes", { n });
   const km = (n: number) => planT("km", { n });
   const activeSlug = store.planSlug && plans.some((item) => item.slug === store.planSlug)

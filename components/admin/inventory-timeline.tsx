@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Modal } from "@/components/ui/modal";
-import { BOOKING_SLOTS } from "@/lib/booking/slots";
+import { BOOKING_DAYPARTS, BOOKING_SLOTS } from "@/lib/booking/slots";
 import { VEHICLE_STATUS_LABEL, type MockVehicle, type VehicleStatus } from "@/lib/mock/vehicles";
 import {
   addIsoDays,
@@ -14,6 +14,7 @@ import {
 } from "@/lib/mock/vehicle-timeline";
 import { cn } from "@/lib/utils";
 import { useOpsStore } from "@/stores/ops-store";
+import { useStoreData } from "@/lib/use-store-data";
 import { useToastStore } from "@/stores/toast-store";
 
 const TICKS = timelineTicks();
@@ -41,15 +42,13 @@ function toneLabel(tone: OccupancyTone) {
 
 export function InventoryTimeline() {
   const {
-    vehicles,
-    vehicleSlots,
-    specialDates,
     addSpecialDate,
     patchVehicleSlot,
     batchPatchVehicleSlots,
     clearDayInventory,
     resetDayInventory,
   } = useOpsStore();
+  const { vehicles, vehicleSlots, specialDates, storeId } = useStoreData();
   const notify = useToastStore((state) => state.notify);
   const [picked, setPicked] = useState(TODAY);
   const [query, setQuery] = useState("");
@@ -267,7 +266,7 @@ export function InventoryTimeline() {
       </div>
 
       <div className="space-y-2 p-3 md:hidden">
-        {rows.map((vehicle, vehicleIndex) => {
+        {rows.map((vehicle) => {
           const open = openIds.includes(vehicle.id);
           return (
             <article key={vehicle.id} className="ib-mobile-card">
@@ -290,21 +289,49 @@ export function InventoryTimeline() {
                 <span className="text-xs text-slate-500">{open ? "收起" : "展开"}</span>
               </button>
               {open ? (
-                <div className="ib-mobile-scroll pb-3">
-                  <div className="inventory-grid">
-                    <div className="inventory-axis">
-                      <div className="ib-sticky">车辆</div>
-                      {TICKS.map((tick) => (
-                        <span key={tick}>{tick.endsWith(":00") ? tick : ""}</span>
-                      ))}
-                    </div>
-                    <div className="inventory-row">
-                      <div className="ib-sticky">
-                        <p className="ib-code">{vehicle.code}</p>
+                <div className="ib-vaxis">
+                  {BOOKING_DAYPARTS.map((part) => (
+                    <div key={part.id} className="ib-vaxis-part">
+                      <p className="ib-vaxis-label">
+                        <span>{part.label}</span>
+                        <small>{part.range}</small>
+                      </p>
+                      <div className="ib-vaxis-list">
+                        {part.slots.map((time) => {
+                          const cell =
+                            cellOf(vehicle.id, time) ?? {
+                              vehicleId: vehicle.id,
+                              date: picked,
+                              time,
+                              capacity: 2,
+                              booked: 0,
+                              remaining: 2,
+                              closed: false,
+                              customers: [],
+                            };
+                          const tone = occupancyTone(cell);
+                          const fill = cell.closed ? 0 : Math.round((cell.remaining / Math.max(cell.capacity, 1)) * 100);
+                          return (
+                            <button
+                              key={time}
+                              type="button"
+                              className={cn("ib-vaxis-row", tone)}
+                              onClick={() => openEditor(vehicle.id, time, time)}
+                            >
+                              <span className="ib-vaxis-time">{time}</span>
+                              <span className="ib-vaxis-track" aria-hidden>
+                                <span className="ib-vaxis-fill" style={{ width: `${fill}%` }} />
+                              </span>
+                              <span className="ib-vaxis-stat">
+                                {tone === "idle" ? "休" : `剩 ${cell.remaining}/${cell.capacity}`}
+                                <small>{toneLabel(tone)}</small>
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
-                      {renderBlocks(vehicle, vehicleIndex)}
                     </div>
-                  </div>
+                  ))}
                 </div>
               ) : null}
             </article>
@@ -347,7 +374,7 @@ export function InventoryTimeline() {
                   customers: edit.closed ? [] : cellOf(edit.vehicleId, edit.time)?.customers ?? [],
                 });
                 setEdit(null);
-                notify("保存成功");
+                notify("库存已保存，官网时段余位会同步");
               }}
             >
               保存
@@ -398,7 +425,7 @@ export function InventoryTimeline() {
                   { closed: true, booked: 0 },
                 );
                 setBatch(null);
-                notify("保存成功");
+                notify("库存已保存，官网时段余位会同步");
               }}
             >
               设为维修
@@ -417,7 +444,7 @@ export function InventoryTimeline() {
                   { closed: false, booked: 0 },
                 );
                 setBatch(null);
-                notify("保存成功");
+                notify("库存已保存，官网时段余位会同步");
               }}
             >
               恢复可订
@@ -439,10 +466,10 @@ export function InventoryTimeline() {
               type="button"
               className={confirm === "clear" ? "ib-office-btn danger" : "ib-office-btn primary"}
               onClick={() => {
-                if (confirm === "clear") clearDayInventory(picked);
-                if (confirm === "reset") resetDayInventory(picked);
+                if (confirm === "clear") clearDayInventory(picked, vehicles.map((item) => item.id));
+                if (confirm === "reset") resetDayInventory(picked, vehicles.map((item) => item.id));
                 setConfirm(null);
-                notify("保存成功");
+                notify("库存已保存，官网时段余位会同步");
               }}
             >
               {confirm === "clear" ? "确认清空" : "确认恢复"}
@@ -471,9 +498,9 @@ export function InventoryTimeline() {
                 onSubmit={(event) => {
                   event.preventDefault();
                   if (!specialForm.label.trim()) return;
-                  addSpecialDate(specialForm);
+                  addSpecialDate({ ...specialForm, storeId });
                   setSpecialForm({ date: "2026-08-26", label: "", closed: true });
-                  notify("特殊日期已添加");
+                  notify("特殊日期已添加，休业日官网日历会关闭");
                 }}
               >
                 <label className="admin-field">日期<input className="admin-input" type="date" value={specialForm.date} onChange={(event) => setSpecialForm({ ...specialForm, date: event.target.value })} /></label>

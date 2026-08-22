@@ -87,7 +87,7 @@ export function AdminAddonsView() {
         open={Boolean(editing)}
         title={editing?.name ? "编辑附加项" : "添加附加项"}
         onClose={() => setEditing(null)}
-        footer={<button type="button" className="cta-btn px-5 py-2.5" onClick={() => { if (!editing) return; upsertAddon(editing); setEditing(null); notify("附加项已保存"); }}>保存</button>}
+        footer={<button type="button" className="cta-btn px-5 py-2.5" onClick={() => { if (!editing) return; upsertAddon(editing); setEditing(null); notify("附加项已保存，官网加项价格会同步"); }}>保存</button>}
       >
         {editing ? (
           <>
@@ -121,7 +121,7 @@ export function AdminAddonsView() {
           </>
         }
       >
-        <p className="text-sm text-slate-500">删除后前台加项列表会立刻少这一项（演示内存状态）。</p>
+        <p className="text-sm text-slate-500">删除后官网加项列表会立刻少这一项。</p>
       </Modal>
     </div>
   );

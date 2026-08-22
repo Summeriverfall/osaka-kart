@@ -18,6 +18,34 @@ export function addMonths(date: Date, count: number) {
   return new Date(date.getFullYear(), date.getMonth() + count, 1);
 }
 
+export function addDaysIso(iso: string, count: number) {
+  const date = parseIsoDate(iso);
+  date.setDate(date.getDate() + count);
+  return isoFromDate(date);
+}
+
+/** 周一为一周起始（周视图用）。月历仍按周日对齐。 */
+export function weekStartMonday(iso: string) {
+  const date = parseIsoDate(iso);
+  const day = date.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  date.setDate(date.getDate() + diff);
+  return isoFromDate(date);
+}
+
+export function weekdayLabelZh(iso: string) {
+  return ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][parseIsoDate(iso).getDay()];
+}
+
+export function formatIsoRangeZh(startIso: string, endIso: string) {
+  const start = parseIsoDate(startIso);
+  const end = parseIsoDate(endIso);
+  if (start.getMonth() === end.getMonth()) {
+    return `${start.getMonth() + 1}月${start.getDate()}日 – ${end.getDate()}日`;
+  }
+  return `${start.getMonth() + 1}月${start.getDate()}日 – ${end.getMonth() + 1}月${end.getDate()}日`;
+}
+
 export function monthLabel(date: Date, locale: string) {
   return new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(date);
 }

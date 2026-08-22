@@ -13,6 +13,7 @@ export type MockPlan = {
   maxRiders: number;
   includes: string[];
   allowedAddonIds: string[];
+  storeIds?: string[];
 };
 
 const ALL_ADDONS = MOCK_ADDONS.map((item) => item.id);
@@ -33,6 +34,7 @@ export const MOCK_PLANS: MockPlan[] = [
     maxRiders: 4,
     includes: ["头盔", "基础赛车服", "保险", "向导"],
     allowedAddonIds: CORE_ONLY,
+    storeIds: ["namba"],
   },
   {
     id: "plan-standard",
@@ -89,5 +91,6 @@ export const MOCK_PLANS: MockPlan[] = [
     maxRiders: 4,
     includes: ["头盔", "赛车服", "保险", "向导", "夜拍点"],
     allowedAddonIds: NO_PHOTOS,
+    storeIds: ["namba"],
   },
 ];

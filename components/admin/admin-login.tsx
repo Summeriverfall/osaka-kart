@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useRouter } from "@/i18n/navigation";
-import { withSlash } from "@/lib/paths";
+import { goToAppPath } from "@/lib/file-href";
+import { MOCK_STORES } from "@/lib/mock/settings";
+import { boundStoreIdFromEmail, staffRecordForEmail } from "@/lib/staff-bind";
 import { ROLE_LABEL, roleFromEmail, useAdminStore } from "@/stores/admin-store";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 
 export function AdminLoginForm() {
-  const router = useRouter();
   const login = useAdminStore((state) => state.login);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,12 +17,16 @@ export function AdminLoginForm() {
     if (!email.trim() || !password) return;
     login(email);
     useAdminNavStore.getState().reset();
-    router.push(withSlash("/admin/dashboard"));
+    goToAppPath("/admin/dashboard");
   }
 
-  const preview = email.trim()
-    ? ROLE_LABEL[roleFromEmail(email)]
-    : "店长";
+  const previewRole = email.trim() ? ROLE_LABEL[roleFromEmail(email)] : "店长";
+  const previewStore =
+    email.trim() && roleFromEmail(email) === "manager"
+      ? staffRecordForEmail(email)?.store
+        ?? MOCK_STORES.find((item) => item.id === boundStoreIdFromEmail(email))?.name
+        ?? "难波本店"
+      : null;
 
   return (
     <div className="admin-app flex min-h-dvh items-center justify-center bg-[#f5f6f8] px-4">
@@ -63,9 +67,12 @@ export function AdminLoginForm() {
         </label>
 
         <p className="mt-4 text-xs text-slate-500">
-          Admin login: admin@test.com / Manager login: manager@test.com
+          超管：admin@test.com（仪表盘默认全店合计，可点进分店）
           <br />
-          任意密码都能登录。当前将以「{preview}」进入。
+          店长：manager@test.com（绑定难波本店）
+          <br />
+          任意密码都能登录。当前将以「{previewRole}」进入
+          {previewStore ? `，只能查看「${previewStore}」` : ""}。
         </p>
 
         <button type="submit" className="cta-btn mt-6 h-11 w-full text-sm">

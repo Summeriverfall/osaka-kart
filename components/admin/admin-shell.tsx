@@ -3,33 +3,39 @@
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useLocale } from "next-intl";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { usePathname } from "@/i18n/navigation";
+import { StoreSwitcher } from "@/components/admin/store-switcher";
 import { AdminWorkspace } from "@/components/admin/admin-workspace";
 import { navForRole, normalizeAdminTab } from "@/lib/admin/nav";
-import { withSlash } from "@/lib/paths";
+import { goToAppPath } from "@/lib/file-href";
 import { cn } from "@/lib/utils";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { ROLE_LABEL, useAdminStore } from "@/stores/admin-store";
 import { ToastHost } from "@/components/ui/toast-host";
 
+function isAdminLoginPath(pathname: string) {
+  return /(?:^|\/)admin\/login(?:\/|$|\/index\.html)/.test(pathname);
+}
+
 export function AdminShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const router = useRouter();
+  const pathname = usePathname() ?? "";
   const locale = useLocale();
-  const { role, email, logout } = useAdminStore();
+  const { role, email, logout, lockBoundStore } = useAdminStore();
   const [ready, setReady] = useState(false);
   const [open, setOpen] = useState(false);
+  const [href, setHref] = useState("");
   const tab = useAdminNavStore((state) => state.tab);
   const go = useAdminNavStore((state) => state.go);
   const setLocale = useAdminNavStore((state) => state.setLocale);
   const syncFromWindow = useAdminNavStore((state) => state.syncFromWindow);
 
-  const isLogin = pathname.replace(/\/$/, "").endsWith("/admin/login");
-  const current = normalizeAdminTab(tab ?? pathname);
+  const isLogin = isAdminLoginPath(pathname) || isAdminLoginPath(href);
+  const current = normalizeAdminTab(tab ?? (pathname || "/admin/dashboard"));
 
   useEffect(() => {
     setReady(true);
-  }, []);
+    setHref(window.location.pathname);
+  }, [pathname]);
 
   useEffect(() => {
     setLocale(locale);
@@ -37,8 +43,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!ready || isLogin) return;
-    if (!role) router.replace(withSlash("/admin/login"));
-  }, [ready, isLogin, role, router]);
+    if (!role) goToAppPath("/admin/login", locale);
+  }, [ready, isLogin, role, locale]);
 
   useEffect(() => {
     setOpen(false);
@@ -47,19 +53,34 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }, [current]);
 
   useEffect(() => {
+    if (role === "manager") lockBoundStore();
+  }, [role, email, lockBoundStore]);
+
+  useEffect(() => {
     window.addEventListener("popstate", syncFromWindow);
     return () => window.removeEventListener("popstate", syncFromWindow);
   }, [syncFromWindow]);
 
   if (isLogin) return <div className="admin-app">{children}</div>;
   if (!ready || !role) {
-    return <div className="admin-app min-h-dvh bg-[#f5f6f8]" />;
+    return (
+      <div className="admin-app flex min-h-dvh items-center justify-center bg-[#f5f6f8] px-4">
+        {children ?? (
+          <p className="text-sm text-slate-500">
+            正在进入登录…
+            <a className="ml-2 text-blue-600" href={`/${locale}/admin/login/`}>
+              去登录
+            </a>
+          </p>
+        )}
+      </div>
+    );
   }
 
   const items = navForRole(role);
 
   return (
-    <div className="admin-app flex min-h-dvh bg-[#f5f6f8] text-[#111827]">
+    <div className="admin-app flex h-dvh overflow-hidden bg-[#f5f6f8] text-[#111827]">
       {open ? (
         <button
           type="button"
@@ -71,7 +92,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-60 border-r border-slate-200 bg-white p-4 transition-transform md:static md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col overflow-y-auto border-r border-slate-200 bg-white p-4 transition-transform md:static md:h-full md:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         )}
       >
@@ -101,35 +122,42 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </nav>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur md:px-6">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="z-30 flex h-16 shrink-0 items-center gap-2 border-b border-slate-200 bg-white/90 px-3 backdrop-blur md:gap-3 md:px-6">
           <button
             type="button"
-            className="inline-flex size-10 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:border-blue-400 md:hidden"
+            className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:border-blue-400 md:hidden"
             onClick={() => setOpen((value) => !value)}
             aria-label="Menu"
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
-          <p className="hidden text-sm text-slate-500 md:block">大阪卡丁车运营后台</p>
-          <div className="ml-auto flex items-center gap-3">
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600">
+          <p className="hidden min-w-0 shrink-0 text-sm text-slate-500 md:block">大阪卡丁车运营后台</p>
+          <span className="hidden text-slate-300 md:inline" aria-hidden>
+            ·
+          </span>
+          <StoreSwitcher />
+          <div className="ml-auto flex min-w-0 items-center gap-2 md:gap-3">
+            <span className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600 sm:hidden">
+              {ROLE_LABEL[role]}
+            </span>
+            <span className="hidden max-w-[9.5rem] truncate rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600 sm:inline md:max-w-none">
               {ROLE_LABEL[role]} · {email}
             </span>
             <button
               type="button"
-              className="rounded-full border border-slate-200 px-3 py-1.5 text-xs text-slate-600 transition hover:border-blue-400 hover:text-slate-900"
+              className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-xs text-slate-600 transition hover:border-blue-400 hover:text-slate-900"
               onClick={() => {
                 logout();
                 useAdminNavStore.getState().reset();
-                router.replace(withSlash("/admin/login"));
+                goToAppPath("/admin/login", locale);
               }}
             >
               退出
             </button>
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-6">
+        <main className="min-h-0 min-w-0 flex-1 overflow-auto p-4 md:p-6">
           <AdminWorkspace />
         </main>
         <ToastHost light />

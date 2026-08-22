@@ -1,6 +1,7 @@
 "use client";
 
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
+import { useAppPathname } from "@/lib/use-app-pathname";
 import { SITE_BRAND, SITE_BRAND_SHORT } from "@/lib/brand";
 import { siteHome, withSlash } from "@/lib/paths";
 import { useSiteLook } from "@/lib/site-look";
@@ -13,7 +14,7 @@ type BrandMarkProps = {
 };
 
 export function BrandMark({ className, look }: BrandMarkProps) {
-  const pathname = usePathname();
+  const pathname = useAppPathname();
   const current = useSiteLook(look);
   const segment = pathname.split("/").filter(Boolean)[0];
   const href = !segment ? "/" : withSlash(siteHome(current));

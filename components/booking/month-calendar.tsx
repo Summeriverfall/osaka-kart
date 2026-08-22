@@ -6,15 +6,13 @@ import { useTranslations } from "next-intl";
 import { formatYenCell } from "@/lib/format";
 import {
   addMonths,
-  dayStatus,
   monthCells,
   monthLabel,
   parseIsoDate,
-  dayRemaining,
-  slotStatus,
   weekdayLabels,
   type DayStatus,
 } from "@/lib/calendar";
+import { useLiveInventory } from "@/lib/live-catalog";
 import { maxBookIsoDate, tomorrowIsoDate } from "@/lib/booking/slots";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +34,7 @@ export function MonthCalendar({
   onChange,
 }: MonthCalendarProps) {
   const t = useTranslations("Calendar");
+  const live = useLiveInventory();
   const startIso = minIso ?? tomorrowIsoDate();
   const maxIso = maxBookIsoDate();
   const [cursor, setCursor] = useState(() =>
@@ -75,9 +74,9 @@ export function MonthCalendar({
             return <div key={`e-${index}`} className="cal-cell is-empty" />;
           }
           const status = time
-            ? slotStatus(cell.iso, time, startIso, maxIso)
-            : dayStatus(cell.iso, startIso, maxIso);
-          const left = time ? dayRemaining(cell.iso) : 0;
+            ? live.slotStatus(cell.iso, time, startIso, maxIso)
+            : live.dayStatus(cell.iso, startIso, maxIso);
+          const left = time ? live.remaining(cell.iso, time) : live.dayRemaining(cell.iso);
           const selected = value === cell.iso;
           const blocked = status === "closed";
           return (
@@ -93,7 +92,7 @@ export function MonthCalendar({
               {status !== "closed" ? (
                 <>
                   <small className="cal-price">{cellPrice}</small>
-                  {time ? <em className="cal-spots">{t("spots", { n: left })}</em> : null}
+                  <em className="cal-spots">{t("spots", { n: left })}</em>
                 </>
               ) : null}
             </button>

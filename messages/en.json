@@ -251,7 +251,7 @@
     "pay": "Continue to payment",
     "paidKicker": "Paid",
     "paidTitle": "Payment complete",
-    "paidBody": "A meeting pin will follow by email. Bring your license on the day."
+    "paidBody": "Your booking is now in the shop console. After staff confirm, a meeting pin is emailed. Bring your license on the day."
   },
   "Notes": {
     "title": "Before you ride",
@@ -291,6 +291,8 @@
     "empty": "No booking is waiting for payment.",
     "book": "Go to booking",
     "order": "Order summary",
-    "walletNote": "Tap below to finish with this wallet."
+    "walletNote": "Tap below to finish with this wallet.",
+    "synced": "Paid and synced to the shop console. Staff will confirm and email you.",
+    "alreadySynced": "This booking is already in the shop console."
   }
 }

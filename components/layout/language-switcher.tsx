@@ -4,7 +4,8 @@ import { ChevronDown, Globe } from "lucide-react";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { useFileRouter as useRouter } from "@/lib/use-file-router";
+import { useAppPathname } from "@/lib/use-app-pathname";
 import { withSlash } from "@/lib/paths";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,7 @@ const LOCALE_META: Record<
 
 export function LanguageSwitcher() {
   const locale = useLocale() as AppLocale;
-  const pathname = usePathname();
+  const pathname = useAppPathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);

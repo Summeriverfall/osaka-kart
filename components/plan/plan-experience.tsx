@@ -3,15 +3,17 @@
 import { useMemo } from "react";
 import { Clock, MapPinned } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
+import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { AddonPicker, type AddonCardModel } from "@/components/addons/addon-picker";
 import { MonthCalendar } from "@/components/booking/month-calendar";
 import { BOOKING_SLOTS, todayIsoDate } from "@/lib/booking/slots";
 import { formatJpy } from "@/lib/format";
+import { useLiveCatalog, useLiveInventory } from "@/lib/live-catalog";
 import { addonUnitLabel } from "@/lib/mock/addons";
 import { planImage } from "@/lib/media";
+import { PLAN_SLUGS } from "@/lib/plans/seed";
 import { withSlash } from "@/lib/paths";
-import { slotRemaining } from "@/lib/calendar";
 import { cn } from "@/lib/utils";
 import { useBookingStore } from "@/stores/booking-store";
 import { useToastStore } from "@/stores/toast-store";
@@ -24,13 +26,16 @@ type PlanExperienceProps = {
   locale: string;
 };
 
-export function PlanExperience({ plan, plans, addons, locale }: PlanExperienceProps) {
+export function PlanExperience({ plan: seedPlan, plans: seedPlans, addons: seedAddons, locale }: PlanExperienceProps) {
   const t = useTranslations("Plan");
   const book = useTranslations("Booking");
   const router = useRouter();
   const store = useBookingStore();
   const notify = useToastStore((state) => state.notify);
   const minIso = todayIsoDate();
+  const live = useLiveInventory();
+  const { plans, addons, plan } = useLiveCatalog(seedPlans, seedAddons, locale, seedPlan.slug);
+  const current = plan ?? seedPlan;
 
   const cards: AddonCardModel[] = useMemo(
     () =>
@@ -55,10 +60,10 @@ export function PlanExperience({ plan, plans, addons, locale }: PlanExperiencePr
   }
 
   function addToBooking() {
-    store.setPlan(plan.id, plan.slug, plan.translation.name, plan.base_price_jpy);
+    store.setPlan(current.id, current.slug, current.translation.name, current.base_price_jpy);
     store.calcTotal();
     notify("已加入预订");
-    router.push(withSlash(`/booking?plan=${plan.slug}`));
+    router.push(withSlash(`/booking?plan=${current.slug}`));
   }
 
   return (
@@ -67,11 +72,14 @@ export function PlanExperience({ plan, plans, addons, locale }: PlanExperiencePr
         <p className="mb-4 text-xs tracking-[0.18em] text-neon-cyan uppercase">{t("otherPlans")}</p>
         <div className="flex gap-4 overflow-x-auto pb-2">
           {plans.map((item) => {
-            const on = item.slug === plan.slug;
+            const on = item.slug === current.slug;
+            const href = (PLAN_SLUGS as readonly string[]).includes(item.slug)
+              ? withSlash(`/plan/${item.slug}`)
+              : withSlash(`/booking?plan=${item.slug}`);
             return (
               <Link
                 key={item.id}
-                href={withSlash(`/plan/${item.slug}`)}
+                href={href}
                 className={cn(
                   "min-w-[16.5rem] shrink-0 overflow-hidden rounded-2xl border bg-[#12121A] transition hover:shadow-[0_0_20px_rgb(255_46_147_/_25%)]",
                   on ? "border-neon-pink shadow-[0_0_20px_rgb(255_46_147_/_30%)]" : "border-white/10",
@@ -105,7 +113,7 @@ export function PlanExperience({ plan, plans, addons, locale }: PlanExperiencePr
           <h2 className="mb-4 text-xl font-black">{book("date")}</h2>
           <MonthCalendar
             locale={locale}
-            priceJpy={plan.base_price_jpy}
+            priceJpy={current.base_price_jpy}
             value={store.date}
             time={store.time}
             minIso={minIso}
@@ -121,7 +129,7 @@ export function PlanExperience({ plan, plans, addons, locale }: PlanExperiencePr
           ) : (
             <div className="book-slots">
               {BOOKING_SLOTS.map((slot) => {
-                const left = slotRemaining(store.date, slot);
+                const left = live.remaining(store.date, slot);
                 const full = left <= 0;
                 return (
                   <button

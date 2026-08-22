@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { formatJpy } from "@/lib/format";
+import { useLiveInventory } from "@/lib/live-catalog";
 import { addonImage } from "@/lib/media";
-import { clampRiders, riderCap } from "@/lib/calendar";
 import { cn } from "@/lib/utils";
 import { useBookingStore } from "@/stores/booking-store";
 import type {
@@ -21,14 +21,15 @@ type BookingExtrasProps = {
 export function BookingExtras({ plan, addons, locale }: BookingExtrasProps) {
   const t = useTranslations("Booking");
   const store = useBookingStore();
+  const live = useLiveInventory();
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setHydrated(true);
   }, []);
 
-  const cap = riderCap(hydrated ? store.date : "", hydrated ? store.time : "");
-  const riders = clampRiders(hydrated ? store.riders : 1, hydrated ? store.date : "", hydrated ? store.time : "");
+  const cap = live.riderCap(hydrated ? store.date : "", hydrated ? store.time : "");
+  const riders = live.clampRiders(hydrated ? store.riders : 1, hydrated ? store.date : "", hydrated ? store.time : "");
   const selectedAddons = hydrated ? store.addonSlugs : [];
 
   useEffect(() => {

@@ -2,15 +2,16 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { formatJpy } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { RideNoteChecks, allNotesChecked, emptyNoteChecks, type NoteKey } from "@/components/notes/ride-notes";
 import { AddonPicker, type AddonCardModel } from "@/components/addons/addon-picker";
 import { MonthCalendar } from "@/components/booking/month-calendar";
 import { BOOKING_SLOTS, todayIsoDate } from "@/lib/booking/slots";
-import { clampRiders, riderCap, slotRemaining } from "@/lib/calendar";
+import { useLiveCatalog, useLiveInventory } from "@/lib/live-catalog";
 import { addonUnitLabel } from "@/lib/mock/addons";
+import { DEFAULT_STORE_ID } from "@/lib/store-id";
 import { withSlash } from "@/lib/paths";
 import {
   BOOKING_RESULT_KEY,
@@ -28,10 +29,11 @@ type BookingFormProps = {
   initialPlan: string;
 };
 
-export function BookingForm({ plans, addons, locale, initialPlan }: BookingFormProps) {
+export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, initialPlan }: BookingFormProps) {
   const t = useTranslations("Booking");
   const router = useRouter();
   const store = useBookingStore();
+  const live = useLiveInventory();
   const [hydrated, setHydrated] = useState(false);
   const [step, setStep] = useState(0);
   const [passport, setPassport] = useState("");
@@ -39,6 +41,9 @@ export function BookingForm({ plans, addons, locale, initialPlan }: BookingFormP
   const [request, setRequest] = useState("");
   const [notes, setNotes] = useState(emptyNoteChecks);
   const notesOk = allNotesChecked(notes);
+
+  const planSlugHint = hydrated ? store.planSlug || initialPlan : initialPlan;
+  const { plans, addons, plan: catalogPlan } = useLiveCatalog(seedPlans, seedAddons, locale, planSlugHint);
 
   useEffect(() => {
     const queryPlan = new URLSearchParams(window.location.search).get("plan") || "";
@@ -51,9 +56,9 @@ export function BookingForm({ plans, addons, locale, initialPlan }: BookingFormP
   }, []);
 
   const planSlug = hydrated ? store.planSlug || initialPlan || plans[0]?.slug : initialPlan;
-  const plan = plans.find((item) => item.slug === planSlug) ?? plans[0];
-  const cap = riderCap(hydrated ? store.date : "", hydrated ? store.time : "");
-  const riders = clampRiders(hydrated ? store.riders : 1, hydrated ? store.date : "", hydrated ? store.time : "");
+  const plan = plans.find((item) => item.slug === planSlug) ?? catalogPlan;
+  const cap = live.riderCap(hydrated ? store.date : "", hydrated ? store.time : "");
+  const riders = live.clampRiders(hydrated ? store.riders : 1, hydrated ? store.date : "", hydrated ? store.time : "");
   const selectedAddons = hydrated ? store.addonSlugs : [];
   const addonCards: AddonCardModel[] = addons.map((addon) => ({
     id: addon.id,
@@ -102,6 +107,10 @@ export function BookingForm({ plans, addons, locale, initialPlan }: BookingFormP
       ref: `OK-${Date.now().toString(36).toUpperCase()}`,
       planName: plan.translation.name,
       totalJpy: total,
+      passport,
+      nationality: nation,
+      note: request,
+      storeId: DEFAULT_STORE_ID,
     };
     sessionStorage.setItem(BOOKING_RESULT_KEY, JSON.stringify(result));
     router.push(withSlash("/pay"));
@@ -153,14 +162,14 @@ export function BookingForm({ plans, addons, locale, initialPlan }: BookingFormP
           priceJpy={plan.base_price_jpy}
           value={hydrated ? store.date : ""}
           minIso={todayIsoDate()}
-          onChange={(iso) => store.patch({ date: iso, riders: clampRiders(store.riders, iso, store.time) })}
+          onChange={(iso) => store.patch({ date: iso, riders: live.clampRiders(store.riders, iso, store.time) })}
         />
       ) : null}
 
       {step === 2 ? (
         <div className="book-slots">
           {BOOKING_SLOTS.map((slot) => {
-            const left = store.date ? slotRemaining(store.date, slot) : 0;
+            const left = store.date ? live.remaining(store.date, slot) : 0;
             const full = Boolean(store.date) && left <= 0;
             return (
               <label key={slot} className={cn(store.time === slot && "is-on", full && "is-full")}>
@@ -170,7 +179,7 @@ export function BookingForm({ plans, addons, locale, initialPlan }: BookingFormP
                   value={slot}
                   checked={hydrated && store.time === slot}
                   disabled={full}
-                  onChange={() => store.patch({ time: slot, riders: clampRiders(store.riders, store.date, slot) })}
+                  onChange={() => store.patch({ time: slot, riders: live.clampRiders(store.riders, store.date, slot) })}
                 />
                 <span>{slot}</span>
                 <small>{full ? t("full") : t("spotsLeft", { n: left })}</small>

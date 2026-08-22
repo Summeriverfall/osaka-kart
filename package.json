@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "dev:fresh": "node scripts/dev-fresh.mjs",
-    "build": "next build",
+    "build": "next build && node scripts/file-openable.mjs",
     "build:pages": "next build && node scripts/pages-fallback.mjs",
-    "start": "next start",
+    "preview": "node scripts/preview.mjs",
+    "start": "node scripts/preview.mjs",
     "lint": "eslint"
   },
   "dependencies": {

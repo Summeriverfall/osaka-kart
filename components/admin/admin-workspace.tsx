@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
+import { AdminCalendarView } from "@/components/admin/admin-calendar";
 import { AdminDashboardView } from "@/components/admin/admin-dashboard";
 import { AdminInventoryView } from "@/components/admin/admin-inventory";
+import { AdminLogsView } from "@/components/admin/admin-logs";
 import { AdminOrderDetailView } from "@/components/admin/admin-order-detail";
 import { AdminOrdersView } from "@/components/admin/admin-orders";
 import { AdminPageFrame } from "@/components/admin/admin-page-frame";
@@ -11,7 +14,7 @@ import { AdminRoleGate } from "@/components/admin/admin-role-gate";
 import { AdminSettingsView } from "@/components/admin/admin-settings";
 import { AdminStaffView } from "@/components/admin/admin-staff";
 import { AdminVehiclesView } from "@/components/admin/admin-vehicles";
-import { ADMIN_PAGE_META, normalizeAdminTab } from "@/lib/admin/nav";
+import { ADMIN_PAGE_META, adminTabFromLocation, normalizeAdminTab } from "@/lib/admin/nav";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { usePathname } from "@/i18n/navigation";
 
@@ -31,7 +34,7 @@ function viewFor(tab: string) {
     case "/admin/orders":
       return <AdminOrdersView />;
     case "/admin/calendar":
-      return <AdminOrdersView />;
+      return <AdminCalendarView />;
     case "/admin/inventory":
       return <AdminInventoryView />;
     case "/admin/vehicles":
@@ -57,17 +60,29 @@ function viewFor(tab: string) {
           <AdminSettingsView />
         </AdminRoleGate>
       );
+    case "/admin/settings/logs":
+      return (
+        <AdminRoleGate allow={["admin"]}>
+          <AdminLogsView />
+        </AdminRoleGate>
+      );
     default:
       return <AdminDashboardView />;
   }
 }
 
 export function AdminWorkspace() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const override = useAdminNavStore((state) => state.tab);
-  const tab = normalizeAdminTab(override ?? pathname);
+  const syncFromWindow = useAdminNavStore((state) => state.syncFromWindow);
 
+  useEffect(() => {
+    syncFromWindow();
+  }, [pathname, override, syncFromWindow]);
+
+  const tab = normalizeAdminTab(override ?? adminTabFromLocation() ?? (pathname || "/admin/dashboard"));
   const meta = metaFor(tab);
+
   return (
     <AdminPageFrame key={tab} title={meta.title} lead={meta.lead}>
       {viewFor(tab)}

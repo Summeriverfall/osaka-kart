@@ -154,4 +154,9 @@ export type BookingResult = BookingDraft & {
   planName: string;
   totalJpy: number;
   paid?: boolean;
+  synced?: boolean;
+  passport?: string;
+  nationality?: string;
+  note?: string;
+  storeId?: string;
 };

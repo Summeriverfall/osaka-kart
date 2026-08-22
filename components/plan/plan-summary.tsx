@@ -3,8 +3,10 @@
 import { useEffect } from "react";
 import { Minus, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
+import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { formatJpy } from "@/lib/format";
+import { useLiveCatalog } from "@/lib/live-catalog";
 import { addonImage } from "@/lib/media";
 import { withSlash } from "@/lib/paths";
 import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
@@ -16,21 +18,23 @@ type PlanSummaryCardProps = {
   locale: string;
 };
 
-export function PlanSummaryCard({ plan, addons, locale }: PlanSummaryCardProps) {
+export function PlanSummaryCard({ plan: seedPlan, addons: seedAddons, locale }: PlanSummaryCardProps) {
   const t = useTranslations("Plan");
   const router = useRouter();
   const store = useBookingStore();
+  const { addons, plan } = useLiveCatalog([seedPlan], seedAddons, locale, seedPlan.slug);
+  const current = plan ?? seedPlan;
 
   useEffect(() => {
-    store.setPlan(plan.id, plan.slug, plan.translation.name, plan.base_price_jpy);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- bind this plan once per slug
-  }, [plan.id, plan.slug, plan.translation.name, plan.base_price_jpy]);
+    store.setPlan(current.id, current.slug, current.translation.name, current.base_price_jpy);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- bind this plan once per slug / live price
+  }, [current.id, current.slug, current.translation.name, current.base_price_jpy]);
 
   const extras = addons.reduce((sum, addon) => {
     const qty = store.addons.find((item) => item.id === addon.id)?.qty ?? 0;
     return sum + addon.price_jpy * qty;
   }, 0);
-  const total = plan.base_price_jpy * Math.max(store.riders, 1) + extras;
+  const total = current.base_price_jpy * Math.max(store.riders, 1) + extras;
 
   function qtyOf(id: string) {
     return store.addons.find((item) => item.id === id)?.qty ?? 0;
@@ -56,9 +60,9 @@ export function PlanSummaryCard({ plan, addons, locale }: PlanSummaryCardProps) 
   }
 
   function continueBooking() {
-    store.setPlan(plan.id, plan.slug, plan.translation.name, plan.base_price_jpy);
+    store.setPlan(current.id, current.slug, current.translation.name, current.base_price_jpy);
     store.calcTotal();
-    router.push(withSlash(`/booking?plan=${plan.slug}`));
+    router.push(withSlash(`/booking?plan=${current.slug}`));
   }
 
   return (
@@ -67,18 +71,24 @@ export function PlanSummaryCard({ plan, addons, locale }: PlanSummaryCardProps) 
         {t("summary")}
       </p>
       <h2 className="mt-3 text-2xl font-black text-[#F1F1F5]">
-        {plan.translation.name}
+        {current.translation.name}
       </h2>
       <p className="neon-text mt-2 text-4xl font-black">
-        {formatJpy(plan.base_price_jpy, locale)}
+        {formatJpy(current.base_price_jpy, locale)}
         <span className="ml-1 text-sm font-medium text-[#9CA3AF]">
           {t("perPerson")}
         </span>
       </p>
       <p className="mt-2 text-sm text-[#9CA3AF]">
-        {t("minutes", { n: plan.duration_minutes })}
-        {plan.distance_km != null ? ` · ${t("km", { n: plan.distance_km })}` : ""}
+        {t("minutes", { n: current.duration_minutes })}
+        {current.distance_km != null ? ` · ${t("km", { n: current.distance_km })}` : ""}
       </p>
+
+      {!current.is_active ? (
+        <p className="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
+          该套餐已下架，暂时无法预订。
+        </p>
+      ) : null}
 
       <div className="mt-6">
         <p className="text-sm font-semibold text-[#F1F1F5]">{t("addons")}</p>
@@ -138,7 +148,12 @@ export function PlanSummaryCard({ plan, addons, locale }: PlanSummaryCardProps) 
         </p>
       </div>
 
-      <button type="button" className="cta-btn mt-6 w-full px-4 py-3" onClick={continueBooking}>
+      <button
+        type="button"
+        className="cta-btn mt-6 w-full px-4 py-3"
+        onClick={continueBooking}
+        disabled={!current.is_active}
+      >
         {t("continue")}
       </button>
       <Link href={withSlash("/plan")} className="mt-3 block text-center text-sm text-[#9CA3AF] underline">

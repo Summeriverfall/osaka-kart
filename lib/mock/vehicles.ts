@@ -8,6 +8,7 @@ export type MockVehicle = {
   lastService: string;
   note: string;
   logs: string[];
+  storeId?: string;
 };
 
 export const VEHICLE_STATUS_LABEL: Record<VehicleStatus, string> = {
@@ -27,4 +28,7 @@ export const MOCK_VEHICLES: MockVehicle[] = [
   { id: "v8", code: "OK-08", model: "Street Kart S", status: "repair", lastService: "2026-08-19", note: "转向异响", logs: ["2026-08-19 进厂"] },
   { id: "v9", code: "OK-09", model: "Street Kart Lite", status: "available", lastService: "2026-08-01", note: "矮个子客人优先", logs: ["2026-08-01 座舱调整"] },
   { id: "v10", code: "OK-10", model: "Street Kart Lite", status: "retired", lastService: "2026-06-20", note: "车架裂纹，停用待报废", logs: ["2026-06-20 停用"] },
+  { id: "v11", code: "SK-01", model: "Street Kart S", status: "available", lastService: "2026-08-15", note: "心斋桥预留车", logs: ["2026-08-15 调拨"], storeId: "shinsaibashi" },
+  { id: "v12", code: "SK-02", model: "Street Kart Pro", status: "available", lastService: "2026-08-15", note: "心斋桥预留车", logs: ["2026-08-15 调拨"], storeId: "shinsaibashi" },
+  { id: "v13", code: "UM-01", model: "Street Kart S", status: "available", lastService: "2026-08-01", note: "梅田预留车", logs: ["2026-08-01 入库"], storeId: "umeda" },
 ];

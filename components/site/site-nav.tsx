@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Calendar, Mail, Menu, Phone, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
+import { useAppPathname } from "@/lib/use-app-pathname";
 import { BrandMark } from "@/components/site/brand-mark";
 import { ContactTicker } from "@/components/site/contact-ticker";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
@@ -20,7 +21,7 @@ type SiteNavProps = {
 
 export function SiteNav({ look }: SiteNavProps) {
   const t = useTranslations("Nav");
-  const pathname = usePathname();
+  const pathname = useAppPathname();
   const currentLook = useSiteLook(look);
   const home = siteHome(currentLook);
   const segment = pathname.split("/").filter(Boolean)[0];

@@ -1,10 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { addMonths, isoFromDate, monthCells, monthLabel, parseIsoDate, weekdayLabels } from "@/lib/calendar";
+import { WeekTimeline } from "@/components/admin/week-timeline";
+import {
+  addDaysIso,
+  addMonths,
+  formatIsoRangeZh,
+  monthCells,
+  monthLabel,
+  parseIsoDate,
+  weekdayLabels,
+  weekStartMonday,
+} from "@/lib/calendar";
 import { cn } from "@/lib/utils";
-import { useOpsStore } from "@/stores/ops-store";
+import { useStoreData } from "@/lib/use-store-data";
 
 export type CalendarView = "month" | "week" | "day";
 
@@ -16,25 +26,6 @@ type Props = {
   counts?: Map<string, number>;
   heatFor?: "orders" | "stock";
 };
-
-function weekStart(iso: string) {
-  const date = parseIsoDate(iso);
-  date.setDate(date.getDate() - date.getDay());
-  return isoFromDate(date);
-}
-
-function addDays(iso: string, count: number) {
-  const date = parseIsoDate(iso);
-  date.setDate(date.getDate() + count);
-  return isoFromDate(date);
-}
-
-function band(time: string) {
-  const hour = Number(time.slice(0, 2));
-  if (hour < 12) return "上午";
-  if (hour < 17) return "下午";
-  return "晚上";
-}
 
 function heat(count: number, mode: "orders" | "stock") {
   if (mode === "stock") {
@@ -48,9 +39,34 @@ function heat(count: number, mode: "orders" | "stock") {
   return "border-slate-200 text-slate-500";
 }
 
+function readThreeDayMode() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(orientation: portrait)").matches && window.innerWidth < 768;
+}
+
+function useThreeDayMode() {
+  const [threeDay, setThreeDay] = useState(false);
+  useEffect(() => {
+    const sync = () => setThreeDay(readThreeDayMode());
+    sync();
+    window.addEventListener("resize", sync);
+    window.addEventListener("orientationchange", sync);
+    const media = window.matchMedia("(orientation: portrait)");
+    media.addEventListener("change", sync);
+    return () => {
+      window.removeEventListener("resize", sync);
+      window.removeEventListener("orientationchange", sync);
+      media.removeEventListener("change", sync);
+    };
+  }, []);
+  return threeDay;
+}
+
 export function OrderCalendarDrill({ value, view, onView, onChange, counts: countsProp, heatFor = "orders" }: Props) {
-  const orders = useOpsStore((state) => state.orders);
+  const { orders } = useStoreData();
   const [cursor, setCursor] = useState(() => parseIsoDate(value));
+  const [threeStart, setThreeStart] = useState(value);
+  const threeDay = useThreeDayMode();
   const cells = useMemo(() => monthCells(cursor), [cursor]);
   const orderCounts = useMemo(() => {
     const map = new Map<string, number>();
@@ -61,11 +77,64 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
   }, [orders]);
   const counts = countsProp ?? orderCounts;
 
-  const start = weekStart(value);
-  const weekDays = Array.from({ length: 7 }, (_, index) => addDays(start, index));
+  useEffect(() => {
+    const end = addDaysIso(threeStart, 2);
+    if (value < threeStart || value > end) setThreeStart(value);
+  }, [value, threeStart]);
+
+  const weekDays = useMemo(() => {
+    if (view === "week" && threeDay) {
+      return Array.from({ length: 3 }, (_, index) => addDaysIso(threeStart, index));
+    }
+    const start = weekStartMonday(value);
+    return Array.from({ length: 7 }, (_, index) => addDaysIso(start, index));
+  }, [view, threeDay, threeStart, value]);
+
+  const goPrev = () => {
+    if (view === "week") {
+      if (threeDay) {
+        const next = addDaysIso(threeStart, -3);
+        setThreeStart(next);
+        onChange(next);
+        return;
+      }
+      onChange(addDaysIso(value, -7));
+      return;
+    }
+    if (view === "day") {
+      onChange(addDaysIso(value, -1));
+      return;
+    }
+    setCursor((date) => addMonths(date, -1));
+  };
+
+  const goNext = () => {
+    if (view === "week") {
+      if (threeDay) {
+        const next = addDaysIso(threeStart, 3);
+        setThreeStart(next);
+        onChange(next);
+        return;
+      }
+      onChange(addDaysIso(value, 7));
+      return;
+    }
+    if (view === "day") {
+      onChange(addDaysIso(value, 1));
+      return;
+    }
+    setCursor((date) => addMonths(date, 1));
+  };
+
+  const headerLabel =
+    view === "week"
+      ? formatIsoRangeZh(weekDays[0], weekDays[weekDays.length - 1])
+      : view === "day"
+        ? value
+        : monthLabel(cursor, "zh-TW");
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5">
+    <section className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex rounded-full border border-slate-200 p-1">
           {(["month", "week", "day"] as const).map((item) => (
@@ -78,16 +147,16 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
                 view === item ? "bg-blue-600 text-white" : "text-slate-500",
               )}
             >
-              {item === "month" ? "月" : item === "week" ? "周" : "日"}
+              {item === "month" ? "月" : item === "week" ? (threeDay ? "3日" : "周") : "日"}
             </button>
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <button type="button" className="plan-qty-btn" onClick={() => setCursor((d) => addMonths(d, -1))}>
+          <button type="button" className="plan-qty-btn" onClick={goPrev} aria-label="上一页">
             <ChevronLeft className="size-4" />
           </button>
-          <span className="text-sm text-slate-500">{monthLabel(cursor, "zh-TW")}</span>
-          <button type="button" className="plan-qty-btn" onClick={() => setCursor((d) => addMonths(d, 1))}>
+          <span className="min-w-28 text-center text-sm text-slate-500">{headerLabel}</span>
+          <button type="button" className="plan-qty-btn" onClick={goNext} aria-label="下一页">
             <ChevronRight className="size-4" />
           </button>
         </div>
@@ -102,7 +171,7 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
           </div>
           <div className="grid grid-cols-7 gap-1">
             {cells.map((cell, index) => {
-              if (!cell.iso) return <div key={`e-${index}`} className="h-16" />;
+              if (!cell.iso) return <div key={`e-${index}`} className="min-h-20" />;
               const count = counts.get(cell.iso) ?? 0;
               return (
                 <button
@@ -113,7 +182,7 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
                     onView("day");
                   }}
                   className={cn(
-                    "flex h-16 flex-col items-center justify-center rounded-xl border text-sm transition hover:border-blue-400",
+                    "flex min-h-20 flex-col items-center justify-center rounded-xl border text-sm transition hover:border-blue-400",
                     heat(count, heatFor),
                     value === cell.iso && "ring-1 ring-blue-500",
                   )}
@@ -131,40 +200,7 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
       ) : null}
 
       {view === "week" ? (
-        <div className="grid gap-2 md:grid-cols-7">
-          {weekDays.map((iso) => {
-            const dayOrders = orders.filter((item) => item.date === iso);
-            const buckets = { 上午: 0, 下午: 0, 晚上: 0 };
-            for (const order of dayOrders) buckets[band(order.time)] += 1;
-            return (
-              <button
-                key={iso}
-                type="button"
-                onClick={() => {
-                  onChange(iso);
-                  onView("day");
-                }}
-                className={cn(
-                  "rounded-2xl border p-3 text-left transition hover:border-blue-400",
-                  iso === value ? "border-blue-500 bg-blue-50" : "border-slate-200",
-                )}
-              >
-                <p className="text-xs text-slate-500">{iso.slice(5)}</p>
-                <p className="mt-1 text-2xl font-black">{dayOrders.length}</p>
-                {(["上午", "下午", "晚上"] as const).map((key) => (
-                  <p key={key} className="mt-1 text-xs text-slate-500">
-                    {key} {buckets[key]}
-                  </p>
-                ))}
-                {dayOrders.length > 0 ? (
-                  <p className="mt-2 text-[11px] leading-4 text-slate-500">
-                    {[...new Set(dayOrders.map((item) => item.channel))].join(" · ")}
-                  </p>
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
+        <WeekTimeline value={value} orders={orders} days={weekDays} compact={threeDay} onSelectDate={onChange} />
       ) : null}
 
       {view === "day" ? (

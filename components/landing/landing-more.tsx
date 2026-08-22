@@ -2,11 +2,13 @@
 
 import { Mail, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
+import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { MonthCalendar } from "@/components/booking/month-calendar";
 import { PRESS_CARDS, PRESS_OUTLETS, SITE_CONTACT, SOCIAL_CARDS } from "@/lib/contact";
 import { asset } from "@/lib/asset";
 import { formatJpy } from "@/lib/format";
+import { useLivePlans, useLiveStoreContact } from "@/lib/live-catalog";
 import { bookingHref } from "@/lib/booking/path";
 import { withSlash } from "@/lib/paths";
 import { useBookingStore } from "@/stores/booking-store";
@@ -19,13 +21,15 @@ type LandingMoreProps = {
   theme: SiteTheme;
 };
 
-export function LandingMore({ plans, locale, theme }: LandingMoreProps) {
+export function LandingMore({ plans: seedPlans, locale, theme }: LandingMoreProps) {
   const press = useTranslations("Press");
   const social = useTranslations("Social");
   const cal = useTranslations("Calendar");
   const contact = useTranslations("Contact");
   const router = useRouter();
   const store = useBookingStore();
+  const plans = useLivePlans(seedPlans, locale);
+  const shop = useLiveStoreContact();
   const plan = plans.find((item) => item.slug === store.planSlug) ?? plans[0];
 
   function goBook() {
@@ -106,13 +110,13 @@ export function LandingMore({ plans, locale, theme }: LandingMoreProps) {
       <section id="contact" className="contact-band">
         <div>
           <h2>{contact("title")}</h2>
-          <p>{contact("hours", { hours: SITE_CONTACT.hours })}</p>
+          <p>{contact("hours", { hours: shop.hours || SITE_CONTACT.hours })}</p>
         </div>
         <div className="contact-actions">
           <a href={SITE_CONTACT.tel} className="cta-btn cta-phone">
             <span className="cta-phone-line">
               <Phone className="size-4" />
-              {SITE_CONTACT.phone}
+              {shop.phone || SITE_CONTACT.phone}
             </span>
           </a>
           <a href={SITE_CONTACT.mailto} className="cta-btn">

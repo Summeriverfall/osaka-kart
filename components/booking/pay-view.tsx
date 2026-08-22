@@ -3,7 +3,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
+import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { formatJpy } from "@/lib/format";
 import { siteHome, withSlash } from "@/lib/paths";
 import { useSiteLook } from "@/lib/site-look";
@@ -15,7 +16,10 @@ import { PayMethodMark, type PayMethod } from "@/components/booking/pay-icons";
 import { RideNotes } from "@/components/notes/ride-notes";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteNav } from "@/components/site/site-nav";
+import { enabledPayMethods } from "@/lib/live-catalog";
 import { cn } from "@/lib/utils";
+import { useOpsStore } from "@/stores/ops-store";
+import { useToastStore } from "@/stores/toast-store";
 
 type PayViewProps = {
   locale: string;
@@ -26,6 +30,9 @@ export function PayView({ locale }: PayViewProps) {
   const success = useTranslations("Success");
   const look = useSiteLook();
   const router = useRouter();
+  const settings = useOpsStore((state) => state.settings);
+  const notify = useToastStore((state) => state.notify);
+  const methods = enabledPayMethods(settings);
   const [result, setResult] = useState<BookingResult | null>(null);
   const [method, setMethod] = useState<PayMethod>("card");
   const [number, setNumber] = useState("");
@@ -43,10 +50,36 @@ export function PayView({ locale }: PayViewProps) {
     }
   }, []);
 
+  useEffect(() => {
+    if (!methods.includes(method)) setMethod(methods[0] ?? "card");
+  }, [methods, method]);
+
   function finishPay() {
     if (!result) return;
-    const next = { ...result, paid: true };
+    const committed = useOpsStore.getState().commitWebsiteBooking({
+      ref: result.ref,
+      planSlug: result.planSlug,
+      planName: result.planName,
+      riders: result.riders,
+      date: result.date,
+      time: result.time,
+      addonSlugs: result.addonSlugs,
+      name: result.name,
+      email: result.email,
+      phone: result.phone,
+      passport: result.passport,
+      nationality: result.nationality,
+      note: result.note,
+      totalJpy: result.totalJpy,
+      storeId: result.storeId,
+    });
+    const next = { ...result, paid: true, synced: committed.ok };
     sessionStorage.setItem(BOOKING_RESULT_KEY, JSON.stringify(next));
+    notify(
+      committed.already
+        ? t("alreadySynced")
+        : t("synced"),
+    );
     router.push(withSlash("/success"));
   }
 
@@ -96,7 +129,9 @@ export function PayView({ locale }: PayViewProps) {
                     ["wechat", t("wechat")],
                     ["stripe", t("stripe")],
                   ] as const
-                ).map(([id, label]) => (
+                )
+                  .filter(([id]) => methods.includes(id))
+                  .map(([id, label]) => (
                   <button
                     key={id}
                     type="button"

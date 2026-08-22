@@ -12,6 +12,7 @@ export type MockSpecialDate = {
   date: string;
   label: string;
   closed: boolean;
+  storeId?: string;
 };
 
 export function buildMonthInventory(): MockSlotStock[] {
@@ -39,7 +40,8 @@ export function defaultSlotStock() {
 }
 
 export const MOCK_SPECIAL_DATES: MockSpecialDate[] = [
-  { date: "2026-08-22", label: "夏季夜跑加场", closed: false },
-  { date: "2026-08-25", label: "台风预警，全天休业", closed: true },
-  { date: "2026-08-31", label: "包场活动", closed: true },
+  { date: "2026-08-22", label: "夏季夜跑加场", closed: false, storeId: "namba" },
+  { date: "2026-08-25", label: "台风预警，全天休业", closed: true, storeId: "namba" },
+  { date: "2026-08-31", label: "包场活动", closed: true, storeId: "namba" },
+  { date: "2026-08-28", label: "心斋桥施工绕行", closed: false, storeId: "shinsaibashi" },
 ];

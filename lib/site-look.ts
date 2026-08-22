@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "@/i18n/navigation";
+import { useAppPathname } from "@/lib/use-app-pathname";
 import { isSiteTheme, type SiteTheme } from "@/lib/visual-theme";
 
 export { siteHome } from "@/lib/paths";
@@ -28,7 +28,7 @@ export function readSiteLook(): SiteTheme {
 }
 
 export function useSiteLook(explicit?: SiteTheme): SiteTheme {
-  const pathname = usePathname();
+  const pathname = useAppPathname();
   const segment = pathname.split("/").filter(Boolean)[0];
   const fromPath = isSiteTheme(segment) ? segment : undefined;
   const [look, setLook] = useState<SiteTheme>(explicit ?? fromPath ?? FALLBACK);

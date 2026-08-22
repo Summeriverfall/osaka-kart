@@ -12,6 +12,6 @@ export const useToastStore = create<ToastState>((set) => ({
   notify: (message) => {
     if (timer) clearTimeout(timer);
     set({ message });
-    timer = setTimeout(() => set({ message: null }), 2200);
+    timer = setTimeout(() => set({ message: null }), 4200);
   },
 }));
