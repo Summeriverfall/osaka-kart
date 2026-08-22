@@ -31,12 +31,9 @@ jobs:
       - run: npm ci
 
       - name: Build static site
-        run: npm run build
+        run: npm run build:pages
         env:
           GITHUB_PAGES: "true"
-
-      - name: Pages fallback
-        run: node scripts/pages-fallback.mjs
 
       - uses: actions/configure-pages@v5
 
