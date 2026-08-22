@@ -35,6 +35,20 @@ jobs:
         env:
           GITHUB_PAGES: "true"
 
+      - name: Prepare Pages folder
+        run: |
+          if [ -d out/en ]; then
+            echo "using out/"
+          elif [ -d .next/en ]; then
+            mv .next out
+          else
+            echo "static export not found" >&2
+            find . -name index.html | head -40
+            exit 1
+          fi
+          test -f out/index.html
+          ls out
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3

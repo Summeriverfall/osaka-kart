@@ -7,7 +7,6 @@ const repo = "osaka-kart";
 const pages = process.env.GITHUB_PAGES === "true";
 
 const nextConfig: NextConfig = {
-  distDir: pages ? ".next-pages" : ".next",
   output: "export",
   trailingSlash: true,
   images: { unoptimized: true },
