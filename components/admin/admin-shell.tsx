@@ -7,7 +7,7 @@ import { usePathname } from "@/i18n/navigation";
 import { StoreSwitcher } from "@/components/admin/store-switcher";
 import { AdminWorkspace } from "@/components/admin/admin-workspace";
 import { navForRole, normalizeAdminTab } from "@/lib/admin/nav";
-import { goToAppPath } from "@/lib/file-href";
+import { appPageHref, goToAppPath } from "@/lib/file-href";
 import { cn } from "@/lib/utils";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { ROLE_LABEL, useAdminStore } from "@/stores/admin-store";
@@ -68,7 +68,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         {children ?? (
           <p className="text-sm text-slate-500">
             正在进入登录…
-            <a className="ml-2 text-blue-600" href={`/${locale}/admin/login/`}>
+            <a className="ml-2 text-blue-600" href={appPageHref("/admin/login", locale)}>
               去登录
             </a>
           </p>
