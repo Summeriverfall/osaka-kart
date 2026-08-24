@@ -38,7 +38,9 @@ export function toFileHref(href: string, locale?: string) {
   const noHash = hashIndex >= 0 ? trimmed.slice(0, hashIndex) : trimmed;
   const qIndex = noHash.indexOf("?");
   const query = qIndex >= 0 ? noHash.slice(qIndex) : "";
-  let path = (qIndex >= 0 ? noHash.slice(0, qIndex) : noHash).replace(/index\.html$/i, "");
+  let path = (qIndex >= 0 ? noHash.slice(0, qIndex) : noHash)
+    .replace(/index\.html$/i, "")
+    .replace(/index\.txt$/i, "");
   if (!path.startsWith("/")) path = `/${path}`;
   if (path === "/") path = `/${lang}/`;
 
@@ -66,13 +68,41 @@ export function goToAppPath(appPath: string, locale?: string) {
   window.location.href = appPageHref(appPath, localeOf(locale));
 }
 
-export function navigateToHref(href: string, locale?: string) {
+/** 后台标签切换：http(s) 只改 URL，不整页刷新。file:// 仍跳到对应 html。 */
+export function pushAppPath(appPath: string, locale?: string) {
   if (typeof window === "undefined") return;
+  const href = appPageHref(appPath, localeOf(locale));
   if (isFileProtocol()) {
-    window.location.href = toFileHref(href, locale);
+    if (window.location.href !== href) window.location.href = href;
     return;
   }
-  window.location.href = href;
+  const next = new URL(href, window.location.href);
+  const dest = `${next.pathname}${next.search}${next.hash}`;
+  const here = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  if (dest === here) return;
+  window.history.pushState({ appPath }, "", dest);
+}
+
+export function navigateToHref(href: string, locale?: string) {
+  if (typeof window === "undefined") return;
+  if (!isFileProtocol()) {
+    window.location.href = href;
+    return;
+  }
+  const trimmed = href.trim();
+  if (!trimmed || trimmed.startsWith("#") || trimmed.startsWith("mailto:") || trimmed.startsWith("tel:")) {
+    return;
+  }
+  if (/^javascript:/i.test(trimmed)) return;
+  if (/^(https?:|file:)/i.test(trimmed) || trimmed.startsWith("./") || trimmed.startsWith("../")) {
+    window.location.href = new URL(trimmed, window.location.href).href;
+    return;
+  }
+  if (trimmed.startsWith("/")) {
+    window.location.href = toFileHref(trimmed, locale);
+    return;
+  }
+  window.location.href = new URL(trimmed, window.location.href).href;
 }
 
 /** Next pathname without locale, e.g. /neon or /plan/standard. file:// 下 usePathname 不可靠. */

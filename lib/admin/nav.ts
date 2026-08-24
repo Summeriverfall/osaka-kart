@@ -36,7 +36,7 @@ export function navForRole(role: AdminRole) {
 }
 
 export function adminTabFromHref(href: string) {
-  const path = decodeURIComponent(href.split("?")[0] ?? "")
+  const path = decodeURIComponent((href.split("#")[0] ?? "").split("?")[0] ?? "")
     .replace(/\\/g, "/")
     .replace(/index\.html$/i, "")
     .replace(/\/$/, "");
@@ -49,7 +49,7 @@ export function adminTabFromHref(href: string) {
 
 export function adminTabFromLocation() {
   if (typeof window === "undefined") return null;
-  return adminTabFromHref(`${window.location.pathname}${window.location.hash}`);
+  return adminTabFromHref(window.location.pathname);
 }
 
 export function normalizeAdminTab(href: string) {

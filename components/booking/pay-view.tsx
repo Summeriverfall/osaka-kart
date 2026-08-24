@@ -18,6 +18,7 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteNav } from "@/components/site/site-nav";
 import { enabledPayMethods } from "@/lib/live-catalog";
 import { cn } from "@/lib/utils";
+import { sendNewBookingMail } from "@/lib/ops-notify";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 
@@ -75,6 +76,9 @@ export function PayView({ locale }: PayViewProps) {
     });
     const next = { ...result, paid: true, synced: committed.ok };
     sessionStorage.setItem(BOOKING_RESULT_KEY, JSON.stringify(next));
+    if (committed.ok && !committed.already && committed.order) {
+      void sendNewBookingMail(committed.order, useOpsStore.getState().settings);
+    }
     notify(
       committed.already
         ? t("alreadySynced")

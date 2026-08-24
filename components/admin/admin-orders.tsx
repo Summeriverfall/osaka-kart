@@ -11,7 +11,7 @@ import { MOCK_PLANS } from "@/lib/mock/plans";
 import { cn } from "@/lib/utils";
 import { useOpsStore } from "@/stores/ops-store";
 import { useStoreData } from "@/lib/use-store-data";
-import { mailNoticeForStatus } from "@/lib/ops-notify";
+import { sendStatusMail } from "@/lib/ops-notify";
 import { useToastStore } from "@/stores/toast-store";
 
 const EMPTY: MockOrder = {
@@ -92,7 +92,7 @@ function OrderOps({
 }
 
 export function AdminOrdersView() {
-  const { upsertOrder, patchOrder, setOrderStatus, templates } = useOpsStore();
+  const { upsertOrder, patchOrder, setOrderStatus, templates, settings } = useOpsStore();
   const { orders: storeOrders, storeId, plans } = useStoreData();
   const notify = useToastStore((state) => state.notify);
   const [picked, setPicked] = useState("");
@@ -151,11 +151,11 @@ export function AdminOrdersView() {
   function changeStatus(id: string, next: OrderStatus) {
     const current = useOpsStore.getState().orders.find((item) => item.id === id);
     setOrderStatus(id, next);
-    notify(
-      current
-        ? mailNoticeForStatus(next, { ...current, status: next }, templates)
-        : `已改为${ORDER_STATUS_LABEL[next]}`,
-    );
+    if (!current) {
+      notify(`已改为${ORDER_STATUS_LABEL[next]}`);
+      return;
+    }
+    void sendStatusMail(next, { ...current, status: next }, templates, settings).then(notify);
   }
 
   function sortMark(key: SortKey) {
@@ -166,35 +166,35 @@ export function AdminOrdersView() {
   return (
     <div className="space-y-4">
       <section className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="text-xs text-slate-500">
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="grid gap-1 text-xs text-slate-500">
             日期
             <input
-              className="admin-input ml-2 max-w-40"
+              className="admin-input mt-0 w-auto min-w-[11rem] max-w-44"
               type="date"
               value={picked}
               onChange={(event) => setPicked(event.target.value)}
             />
           </label>
-          <button type="button" className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600" onClick={() => setPicked(TODAY)}>
+          <button type="button" className="h-11 rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-600" onClick={() => setPicked(TODAY)}>
             今天
           </button>
-          <button type="button" className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600" onClick={() => setPicked("")}>
+          <button type="button" className="h-11 rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-600" onClick={() => setPicked("")}>
             全部日期
           </button>
           <input
-            className="admin-input min-w-52 flex-1"
+            className="admin-input mt-0 min-w-52 flex-1"
             placeholder="搜索订单号/客户姓名/套餐"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
-          <select className="admin-input max-w-36" value={status} onChange={(event) => setStatus(event.target.value as OrderStatus | "all")}>
+          <select className="admin-input mt-0 max-w-36" value={status} onChange={(event) => setStatus(event.target.value as OrderStatus | "all")}>
             <option value="all">全部状态</option>
             {Object.entries(ORDER_STATUS_LABEL).map(([key, label]) => (
               <option key={key} value={key}>{label}</option>
             ))}
           </select>
-          <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setEditing({ ...EMPTY, date: picked || TODAY, storeId })}>
+          <button type="button" className="cta-btn h-11 px-5" onClick={() => setEditing({ ...EMPTY, date: picked || TODAY, storeId })}>
             添加订单
           </button>
         </div>
@@ -382,8 +382,8 @@ export function AdminOrdersView() {
               onClick={() => {
                 if (!refund) return;
                 patchOrder(refund.id, { status: "cancelled", note: refund.note || "后台退款取消" });
-                notify(
-                  mailNoticeForStatus("cancelled", { ...refund, status: "cancelled" }, templates),
+                void sendStatusMail("cancelled", { ...refund, status: "cancelled" }, templates, settings).then(
+                  notify,
                 );
                 setRefund(null);
               }}

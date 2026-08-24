@@ -364,6 +364,7 @@ export const useOpsStore = create<OpsState>()(
           plans: extra.plans ?? current.plans,
           addons: extra.addons ?? current.addons,
           vehicleSlots: extra.vehicleSlots ?? current.vehicleSlots,
+          settings: { ...MOCK_SETTINGS, ...extra.settings },
         };
       },
     },

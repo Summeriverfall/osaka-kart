@@ -11,6 +11,14 @@ function rewritePublicSrc(value: string | null) {
   return null;
 }
 
+function shouldHandleHref(href: string | null) {
+  if (!href) return false;
+  if (href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return false;
+  if (/^javascript:/i.test(href)) return false;
+  if (/^https?:/i.test(href)) return false;
+  return true;
+}
+
 export function FileProtocolNav() {
   useEffect(() => {
     if (!isFileProtocol()) return;
@@ -36,23 +44,24 @@ export function FileProtocolNav() {
     observer.observe(document.body, { childList: true, subtree: true });
 
     function onClick(event: MouseEvent) {
-      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
         return;
       }
       const node = event.target as Element | null;
       const link = node?.closest?.("a");
-      if (!link) return;
+      if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
       const href = link.getAttribute("href");
-      if (!href || !href.startsWith("/")) return;
-      if (href.startsWith("//")) return;
+      if (!shouldHandleHref(href)) return;
       event.preventDefault();
-      navigateToHref(href);
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      navigateToHref(href as string);
     }
 
-    document.addEventListener("click", onClick, true);
+    window.addEventListener("click", onClick, true);
     return () => {
       observer.disconnect();
-      document.removeEventListener("click", onClick, true);
+      window.removeEventListener("click", onClick, true);
     };
   }, []);
 

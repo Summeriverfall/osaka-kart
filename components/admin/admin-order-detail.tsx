@@ -6,7 +6,7 @@ import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import { formatYenShort } from "@/lib/format";
 import { ORDER_STATUS_LABEL, type OrderStatus } from "@/lib/mock/orders";
-import { mailNoticeForStatus } from "@/lib/ops-notify";
+import { sendStatusMail } from "@/lib/ops-notify";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 
@@ -20,6 +20,7 @@ export function AdminOrderDetailView({ id }: { id: string }) {
   const patchOrder = useOpsStore((state) => state.patchOrder);
   const setOrderStatus = useOpsStore((state) => state.setOrderStatus);
   const templates = useOpsStore((state) => state.templates);
+  const settings = useOpsStore((state) => state.settings);
   const notify = useToastStore((state) => state.notify);
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState(order?.note ?? "");
@@ -64,7 +65,7 @@ export function AdminOrderDetailView({ id }: { id: string }) {
               className="rounded-full border border-slate-200 px-3 py-2 text-xs hover:border-blue-400"
               onClick={() => {
                 setOrderStatus(order.id, status);
-                notify(mailNoticeForStatus(status, { ...order, status }, templates));
+                void sendStatusMail(status, { ...order, status }, templates, settings).then(notify);
               }}
             >
               {ORDER_STATUS_LABEL[status]}
@@ -102,7 +103,7 @@ export function AdminOrderDetailView({ id }: { id: string }) {
             onChange={(on) => {
               const status = on ? "confirmed" : "pending";
               setOrderStatus(order.id, status);
-              notify(mailNoticeForStatus(status, { ...order, status }, templates));
+              void sendStatusMail(status, { ...order, status }, templates, settings).then(notify);
             }}
           />
         </div>

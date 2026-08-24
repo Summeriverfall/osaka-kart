@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { adminTabFromLocation, normalizeAdminTab } from "@/lib/admin/nav";
-import { goToAppPath } from "@/lib/file-href";
+import { pushAppPath } from "@/lib/file-href";
 
 type AdminNavState = {
   tab: string | null;
@@ -21,10 +21,11 @@ export const useAdminNavStore = create<AdminNavState>((set, get) => ({
   setLocale: (locale) => set({ locale }),
   go: (href) => {
     const tab = normalizeAdminTab(href);
+    if (typeof window !== "undefined") {
+      const locale = get().locale || document.documentElement.lang || "zh-TW";
+      pushAppPath(tab, locale);
+    }
     set({ tab });
-    if (typeof window === "undefined") return;
-    const locale = get().locale || document.documentElement.lang || "zh-TW";
-    goToAppPath(tab, locale);
   },
   reset: () => set({ tab: null }),
   syncFromWindow: () => set({ tab: tabFromWindow() }),

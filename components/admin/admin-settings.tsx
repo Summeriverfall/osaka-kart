@@ -5,6 +5,7 @@ import { LogsTable } from "@/components/admin/logs-table";
 import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import { type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
+import { sendTestMail } from "@/lib/ops-notify";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
@@ -15,6 +16,7 @@ export function AdminSettingsView() {
   const go = useAdminNavStore((state) => state.go);
   const [tpl, setTpl] = useState<MockEmailTemplate | null>(null);
   const [store, setStore] = useState<MockStore | null>(null);
+  const [testing, setTesting] = useState(false);
   const payments = settings.payments;
   const templateGroups = useMemo(() => {
     const map = new Map<string, MockEmailTemplate[]>();
@@ -30,18 +32,20 @@ export function AdminSettingsView() {
     <div className="grid min-w-0 gap-6">
       <nav className="flex flex-wrap gap-2">
         {[
-          ["#settings-pay", "支付配置"],
-          ["#settings-stores", "门店管理"],
-          ["#settings-mail", "邮件模板"],
-          ["#settings-logs", "操作日志"],
-        ].map(([href, label]) => (
-          <a
-            key={href}
-            href={href}
+          ["settings-pay", "支付配置"],
+          ["settings-stores", "门店管理"],
+          ["settings-send", "邮件发送"],
+          ["settings-mail", "邮件模板"],
+          ["settings-logs", "操作日志"],
+        ].map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
             className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-blue-400 hover:text-blue-700"
+            onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
           >
             {label}
-          </a>
+          </button>
         ))}
       </nav>
 
@@ -144,6 +148,86 @@ export function AdminSettingsView() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section id="settings-send" className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
+        <h2 className="font-black">邮件发送</h2>
+        <p className="text-sm leading-6 text-slate-500">
+          静态站不能填邮箱密码。请到{" "}
+          <a className="text-blue-600" href="https://www.emailjs.com" target="_blank" rel="noreferrer">
+            emailjs.com
+          </a>{" "}
+          用发信箱绑定 Gmail / Outlook，模板收件人填 <code>{"{{to_email}}"}</code>、主题{" "}
+          <code>{"{{subject}}"}</code>、正文 <code>{"{{message}}"}</code>。Allowed Origins 加上本站域名。客人信发到订单邮箱，店长抄送发到收件箱。
+        </p>
+        <label className="admin-field">
+          发信箱
+          <input
+            className="admin-input"
+            type="email"
+            placeholder="book@osakakart.jp"
+            value={settings.mailFrom ?? ""}
+            onChange={(event) => patchSettings({ mailFrom: event.target.value })}
+          />
+        </label>
+        <label className="admin-field">
+          收件箱
+          <input
+            className="admin-input"
+            type="email"
+            placeholder="店长接收新订单和抄送"
+            value={settings.mailTo ?? ""}
+            onChange={(event) => patchSettings({ mailTo: event.target.value })}
+          />
+        </label>
+        <label className="admin-field">
+          EmailJS Public Key
+          <input
+            className="admin-input"
+            type="password"
+            autoComplete="off"
+            value={settings.mailPublicKey ?? ""}
+            onChange={(event) => patchSettings({ mailPublicKey: event.target.value })}
+          />
+        </label>
+        <label className="admin-field">
+          Service ID
+          <input
+            className="admin-input"
+            value={settings.mailServiceId ?? ""}
+            onChange={(event) => patchSettings({ mailServiceId: event.target.value })}
+          />
+        </label>
+        <label className="admin-field">
+          Template ID
+          <input
+            className="admin-input"
+            value={settings.mailTemplateId ?? ""}
+            onChange={(event) => patchSettings({ mailTemplateId: event.target.value })}
+          />
+        </label>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            className="cta-btn px-5 py-2.5"
+            onClick={() => notify("发信设置已保存")}
+          >
+            保存
+          </button>
+          <button
+            type="button"
+            className="rounded-full border border-slate-200 px-5 py-2.5 text-sm text-slate-700 hover:border-blue-400"
+            disabled={testing}
+            onClick={() => {
+              setTesting(true);
+              void sendTestMail(useOpsStore.getState().settings)
+                .then((result) => notify(result.message))
+                .finally(() => setTesting(false));
+            }}
+          >
+            {testing ? "发送中…" : "发送测试信"}
+          </button>
+        </div>
       </section>
 
       <section id="settings-mail" className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">

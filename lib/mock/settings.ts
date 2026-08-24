@@ -39,6 +39,11 @@ export type MockSettings = {
   appleMerchant: string;
   googleMerchant: string;
   emailTemplate: string;
+  mailFrom: string;
+  mailTo: string;
+  mailPublicKey: string;
+  mailServiceId: string;
+  mailTemplateId: string;
   payments: MockPayChannel[];
 };
 
@@ -346,5 +351,10 @@ export const MOCK_SETTINGS: MockSettings = {
   googleMerchant: "",
   emailTemplate:
     "主旨：Furture Kart Osaka 預訂確認 — {{booking_id}}\n\n{{customer_name}} 您好，您的預約已確認。{{date}} {{time}}，難波集合請提前 15 分鐘。",
+  mailFrom: "",
+  mailTo: "",
+  mailPublicKey: "",
+  mailServiceId: "",
+  mailTemplateId: "",
   payments: MOCK_PAYMENTS,
 };

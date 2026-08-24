@@ -1,11 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import { BrandMark } from "@/components/site/brand-mark";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import { asset } from "@/lib/asset";
 import { formatJpy } from "@/lib/format";
+import { appPageHref, isFileProtocol, navigateToHref } from "@/lib/file-href";
 import { siteHome } from "@/lib/paths";
 import { SITE_THEMES, type SiteTheme } from "@/lib/visual-theme";
 
@@ -41,16 +41,30 @@ export function GatewayView({ fromPrice, locale }: GatewayViewProps) {
         </p>
 
         <div className="gateway-bento">
-          {SITE_THEMES.map((look) => (
-            <Link key={look} href={siteHome(look)} className={`gw-card gw-${look}`}>
-              <div className="gw-shot">
-                <img src={PREVIEWS[look]} alt="" />
-              </div>
-              <div className="gw-copy">
-                <em>{t("enter")} →</em>
-              </div>
-            </Link>
-          ))}
+          {SITE_THEMES.map((look) => {
+            const path = siteHome(look);
+            return (
+              <a
+                key={look}
+                href={appPageHref(path, locale)}
+                className={`gw-card gw-${look}`}
+                suppressHydrationWarning
+                onClick={(event) => {
+                  if (!isFileProtocol()) return;
+                  event.preventDefault();
+                  event.stopPropagation();
+                  navigateToHref(path, locale);
+                }}
+              >
+                <div className="gw-shot">
+                  <img src={PREVIEWS[look]} alt="" />
+                </div>
+                <div className="gw-copy">
+                  <em>{t("enter")} →</em>
+                </div>
+              </a>
+            );
+          })}
         </div>
       </main>
     </div>

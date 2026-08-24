@@ -78,7 +78,7 @@ export function AdminWorkspace() {
 
   useEffect(() => {
     syncFromWindow();
-  }, [pathname, override, syncFromWindow]);
+  }, [pathname, syncFromWindow]);
 
   const tab = normalizeAdminTab(override ?? adminTabFromLocation() ?? (pathname || "/admin/dashboard"));
   const meta = metaFor(tab);

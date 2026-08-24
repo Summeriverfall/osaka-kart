@@ -14,6 +14,10 @@ export function useFileRouter() {
 
   return {
     ...router,
+    prefetch(href?: Href) {
+      if (isFileProtocol()) return;
+      return router.prefetch?.(href as never);
+    },
     push(href: Href, opts?: Opts) {
       if (isFileProtocol()) {
         navigateToHref(href, opts?.locale ?? locale);

@@ -25,8 +25,73 @@ function prefixFor(file) {
   return depth === 0 ? "./" : "../".repeat(depth);
 }
 
+const FILE_BOOT = `<script data-file-boot>(function(){
+  if (location.protocol !== "file:") return;
+  var LOCALES = ["en","ja","zh-TW","ko"];
+  function root(){
+    var href = location.href.split("#")[0].split("?")[0].replace(/\\\\/g,"/");
+    for (var i=0;i<LOCALES.length;i++){
+      var n = "/" + LOCALES[i] + "/";
+      var idx = href.lastIndexOf(n);
+      if (idx >= 0) return href.slice(0, idx + 1);
+    }
+    return href.replace(/\\/[^/]*$/, "/");
+  }
+  function toHtml(url){
+    if (url == null || url === "") return url;
+    var s = String(url);
+    if (s.charAt(0) === "#" || /^(mailto:|tel:|javascript:|https?:)/i.test(s)) return s;
+    s = s.replace(/index\\.txt/gi, "index.html");
+    var loc = s.match(/\\/(en|ja|zh-TW|ko)\\/[^\\s]*/);
+    var lang = document.documentElement.lang || "zh-TW";
+    var rel;
+    if (s.charAt(0) === "/" || /^[A-Za-z]:\\//.test(s) || /^file:\\/\\/\\/[A-Za-z]:\\/(en|ja|zh-TW|ko)\\//i.test(s)) {
+      if (loc) rel = loc[0].replace(/^\\//, "");
+      else {
+        rel = s.replace(/^[A-Za-z]:\\//, "").replace(/^file:\\/\\/\\/[A-Za-z]:\\//i, "").replace(/^\\//, "");
+        if (!LOCALES.some(function(item){ return rel === item || rel.indexOf(item + "/") === 0; })) {
+          rel = lang.replace(/^\\//, "") + "/" + rel;
+        }
+      }
+      rel = rel.replace(/^\\/+/, "");
+      if (!/\\.[a-z0-9]+([?#]|$)/i.test(rel)) rel = rel.replace(/\\/?$/, "/") + "index.html";
+      rel = rel.replace(/index\\.txt/gi, "index.html");
+      return root() + rel;
+    }
+    return s;
+  }
+  var hrefDesc = Object.getOwnPropertyDescriptor(Location.prototype, "href");
+  var assign = Location.prototype.assign.bind(location);
+  var replace = Location.prototype.replace.bind(location);
+  function go(url){ assign(toHtml(url)); }
+  try {
+    Object.defineProperty(location, "href", {
+      configurable: true,
+      get: function(){ return hrefDesc.get.call(location); },
+      set: function(v){ hrefDesc.set.call(location, toHtml(v)); }
+    });
+  } catch (e) {}
+  location.assign = function(v){ go(v); };
+  location.replace = function(v){ replace(toHtml(v)); };
+  var push = history.pushState.bind(history);
+  var repl = history.replaceState.bind(history);
+  history.pushState = function(s, t, u){ if (u) { go(u); return; } return push(s, t, u); };
+  history.replaceState = function(s, t, u){ if (u) { go(u); return; } return repl(s, t, u); };
+  document.addEventListener("click", function(e){
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target && e.target.closest && e.target.closest("a");
+    if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+    var href = a.getAttribute("href");
+    if (!href || href.charAt(0) === "#" || /^(mailto:|tel:|javascript:|https?:)/i.test(href)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    go(href);
+  }, true);
+})();</script>`;
+
 function rewriteHtml(content, prefix) {
-  return content
+  let html = content
     .replace(/(["'(])\/_next\//g, `$1${prefix}_next/`)
     .replace(/(["'(])\/favicon\.ico/g, `$1${prefix}favicon.ico`)
     .replace(/(\s(?:src|poster|href)=["'])\/(images|videos)\//g, `$1${prefix}$2/`)
@@ -37,6 +102,10 @@ function rewriteHtml(content, prefix) {
         return `${start}${prefix}${page}index.html${query}${hash}${end}`;
       },
     );
+  if (!html.includes("data-file-boot")) {
+    html = html.replace(/<head[^>]*>/i, (m) => `${m}${FILE_BOOT}`);
+  }
+  return html;
 }
 
 function rewriteCss(content) {
@@ -76,10 +145,8 @@ for (const file of files) {
   if (ext === ".html") {
     const before = fs.readFileSync(file, "utf8");
     const after = rewriteHtml(before, prefixFor(file));
-    if (after !== before) {
-      fs.writeFileSync(file, after);
-      htmlCount += 1;
-    }
+    fs.writeFileSync(file, after);
+    if (after !== before) htmlCount += 1;
   } else if (ext === ".css") {
     const before = fs.readFileSync(file, "utf8");
     const after = rewriteCss(before);
