@@ -674,10 +674,15 @@ html[lang="ja"] .gateway-main h1 {
 
 .admin-table th {
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 600;
   color: #6b7280;
   background: #f9fafb;
+}
+
+.admin-table .u-mix {
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .admin-table tbody tr:hover {

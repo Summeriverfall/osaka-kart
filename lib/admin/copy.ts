@@ -198,6 +198,7 @@ export type AdminCopy = {
     ops: string;
     empty: string;
     mf: (male: number, female: number) => string;
+    channelChip: (label: string, n: number) => string;
     edit: string;
     refund: string;
     confirm: string;
@@ -706,6 +707,7 @@ const zh: AdminCopy = {
     ops: "操作",
     empty: "没有符合条件的订单",
     mf: (male, female) => `（${male}男/${female}女）`,
+    channelChip: (label, n) => `${label} ${n}`,
     edit: "编辑",
     refund: "退款",
     confirm: "确认",
@@ -1154,12 +1156,12 @@ const ja: AdminCopy = {
     revenueCol: "売上",
     cut: "手数料",
     net: "入金",
-    channelCard: (orders, cut, net) => `${orders}件 · 手数料 ${cut}% · 入金 ${net}`,
+    channelCard: (orders, cut, net) => `${orders}件・手数料${cut}%・入金${net}`,
     plans: "コース販売",
     plan: "コース",
     sold: "件数",
     share: "売上構成",
-    planCard: (sold, share) => `${sold}件 · ${share}%`,
+    planCard: (sold, share) => `${sold}件・${share}%`,
     nations: "国籍",
     genderTitle: "男女比",
     ages: "年代",
@@ -1179,19 +1181,19 @@ const ja: AdminCopy = {
     storeRevenue: "本日の店舗売上",
     needHandle: "早めに確認してください",
     noPending: "未確認はありません",
-    kartsOk: (free, total) => `${free}/${total} 稼働`,
+    kartsOk: (free, total) => `${free}/${total}台稼働`,
     count: (n) => `${n}件`,
     newOrder: "予約を追加",
     inventory: "在庫を調整",
     reports: "レポートを見る",
     staff: "スタッフ管理",
     branches: "店舗",
-    todayLine: (orders, yen) => `本日 ${orders}件 · ${yen}`,
-    pendingKarts: (pending, karts) => `未確認 ${pending} · 稼働車 ${karts}`,
+    todayLine: (orders, yen) => `本日${orders}件・${yen}`,
+    pendingKarts: (pending, karts) => `未確認${pending}件・稼働${karts}台`,
     timeline: "本日の予約タイムライン",
     emptyAll: "本日の予約はありません",
     emptyStore: "この店の本日予約はありません",
-    orderMeta: (customer, riders, yen) => `${customer} · ${riders}名 · ${yen}`,
+    orderMeta: (customer, riders, yen) => `${customer}・${riders}名・${yen}`,
     people: "名",
     shortcuts: "ショートカット",
     mobileHint: "スマホからも予約確認と在庫調整ができます。",
@@ -1207,8 +1209,8 @@ const ja: AdminCopy = {
     search: "予約番号／氏名／コース",
     allStatus: "全ステータス",
     add: "予約を追加",
-    filtering: (date, n) => `${date} を表示 · ${n}件`,
-    allDatesCount: (n) => `全日付 · ${n}件`,
+    filtering: (date, n) => `${date}を表示・${n}件`,
+    allDatesCount: (n) => `全日付・${n}件`,
     allChannels: "全流入元",
     id: "予約番号",
     channel: "流入元",
@@ -1220,7 +1222,8 @@ const ja: AdminCopy = {
     status: "ステータス",
     ops: "操作",
     empty: "条件に合う予約はありません",
-    mf: (male, female) => `（男${male}／女${female}）`,
+    mf: (male, female) => `名（男${male}・女${female}）`,
+    channelChip: (label, n) => `${label}（${n}）`,
     edit: "編集",
     refund: "返金",
     confirm: "確定",
@@ -1248,13 +1251,13 @@ const ja: AdminCopy = {
     day: "日",
     prev: "前へ",
     next: "次へ",
-    dayOrders: (iso) => `${iso} の予約`,
+    dayOrders: (iso) => `${iso}の予約`,
     count: (n) => `${n}件`,
     empty: "この日の予約はありません。上の日付や色ブロックで日付を切り替えられます。",
     drill: "詳細へ",
     heatOrders: "日付を押すとその日の一覧へ。濃い赤は20件超、橙は10–20、緑は10件未満。",
     heatStock: "緑＝余裕、橙＝逼迫、赤＝満席。日付を押すと時間帯を見ます。",
-    dayHint: (iso) => `${iso} を表示中。下にその日の予約一覧があります。`,
+    dayHint: (iso) => `${iso}を表示中。下にその日の予約一覧があります。`,
     time: "時刻",
     compactHint: "縦向きでは3日ずつ。矢印で移動。横向きにすると1週間が見えます。",
     weekHint: "色ブロックの高さはコース時間。日付列やブロックを押すと下の一覧がその日になります。",
@@ -1265,7 +1268,7 @@ const ja: AdminCopy = {
     tight: "逼迫",
     full: "満席",
     idle: "休",
-    remain: (left, cap) => `残 ${left}/${cap}`,
+    remain: (left, cap) => `残${left}/${cap}`,
     yest: "昨",
     today: "今",
     tom: "明",
@@ -1285,7 +1288,7 @@ const ja: AdminCopy = {
     expand: "開く",
     idleLong: "整備 / 廃車",
     mergeHint: "同じ状態が続くと1本にまとまり、ドラッグでまとめて変更できます",
-    tipCap: (cap, booked, left, tone) => `座席 ${cap} · 予約済 ${booked} · 残 ${left}（${tone}）`,
+    tipCap: (cap, booked, left, tone) => `座席${cap}・予約済${booked}・残${left}（${tone}）`,
     tipClosed: "状態：整備 / 廃車",
     tipGuests: (names) => `お客さま：${names}`,
     noGuests: "なし",
@@ -1317,7 +1320,7 @@ const ja: AdminCopy = {
     extra: "増便",
   },
   vehicles: {
-    repairNote: (n) => `整備中 ${n}台。当日の販売在庫から外れています。`,
+    repairNote: (n) => `整備中${n}台。当日の販売在庫から外れています。`,
     add: "車両を追加",
     code: "番号",
     model: "車種",
@@ -1327,7 +1330,7 @@ const ja: AdminCopy = {
     logs: "整備記録",
     title: "車両",
     saved: "車両を保存しました",
-    logsTitle: (code) => `${code} の整備記録`,
+    logsTitle: (code) => `${code}の整備記録`,
   },
   staff: {
     add: "スタッフを追加",
@@ -1397,8 +1400,8 @@ const ja: AdminCopy = {
     allActors: "全員",
     allTypes: "全種類",
     recent: (shown, extra) =>
-      extra ? `直近 ${shown}件、絞り込み後 ${extra}件` : `直近 ${shown}件`,
-    total: (n) => `全 ${n}件`,
+      extra ? `直近${shown}件、絞り込み後${extra}件` : `直近${shown}件`,
+    total: (n) => `全${n}件`,
     time: "時刻",
     actor: "操作者",
     role: "権限",
@@ -1408,7 +1411,7 @@ const ja: AdminCopy = {
   },
   addons: {
     add: "オプションを追加",
-    max: (n) => `最大 ${n}点`,
+    max: (n) => `最大${n}点`,
     editTitle: "オプションを編集",
     addTitle: "オプションを追加",
     saved: "オプションを保存しました。サイトの価格も同期されます",
@@ -1535,7 +1538,9 @@ export function adminPlanName(
   fallback = "",
 ) {
   if (!plan) return fallback;
-  if (locale.startsWith("ja") && plan.nameJa) return plan.nameJa;
+  if (locale.startsWith("ja") && plan.nameJa) {
+    return plan.nameJa.replace(/([^\s\d])(\d+分)/g, "$1 $2");
+  }
   if (locale.startsWith("en") && plan.nameEn) return plan.nameEn;
   return plan.name || fallback;
 }

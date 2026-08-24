@@ -228,7 +228,7 @@ export function AdminOrdersView() {
                 : "border-slate-200 bg-white text-slate-600 hover:border-blue-400",
             )}
           >
-            {label} {channelCounts.get(id) ?? 0}
+            {copy.orders.channelChip(label, channelCounts.get(id) ?? 0)}
           </button>
         ))}
       </div>
@@ -270,7 +270,7 @@ export function AdminOrdersView() {
                   <span className="block text-xs text-slate-500">{adminNation(locale, order.nationality)}</span>
                 </td>
                 <td>{planLabel(order)}</td>
-                <td>{order.riders}{copy.orders.mf(order.male, order.female)}</td>
+                <td className="u-mix">{order.riders}{copy.orders.mf(order.male, order.female)}</td>
                 <td>{formatYenShort(order.totalJpy)}</td>
                 <td>
                   <StatusSelect status={order.status} onChange={(next) => changeStatus(order.id, next)} />

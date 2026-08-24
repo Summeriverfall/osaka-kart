@@ -37,7 +37,7 @@ export const MOCK_PLANS: MockPlan[] = [
     slug: "sunset",
     name: "黄昏湾岸 45 分钟",
     nameEn: "Sunset bay 45 min",
-    nameJa: "黄昏ベイ 45分",
+    nameJa: "黄昏ベイ45分",
     durationMinutes: 45,
     distanceKm: 6,
     priceJpy: 5000,
