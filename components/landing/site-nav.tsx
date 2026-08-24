@@ -1,22 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Mail, Menu, Phone, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { BrandMark } from "@/components/site/brand-mark";
-import { ContactTicker } from "@/components/site/contact-ticker";
+import { ContactTicker, NavBookingContact } from "@/components/site/contact-ticker";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
-import { SITE_CONTACT } from "@/lib/contact";
 import type { SiteTheme } from "@/lib/visual-theme";
 import { cn } from "@/lib/utils";
 
 type SiteNavProps = {
   theme: SiteTheme;
+  experience: string;
   plans: string;
   faq: string;
   calendar: string;
 };
 
-export function SiteNav({ theme, plans, faq, calendar }: SiteNavProps) {
+export function SiteNav({ theme, experience, plans, faq, calendar }: SiteNavProps) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -31,6 +31,9 @@ export function SiteNav({ theme, plans, faq, calendar }: SiteNavProps) {
 
   const links = (
     <>
+      <a href="#experience" className="hash-link" onClick={() => setOpen(false)}>
+        {experience}
+      </a>
       <a href="#plans" className="hash-link" onClick={() => setOpen(false)}>
         {plans}
       </a>
@@ -43,18 +46,7 @@ export function SiteNav({ theme, plans, faq, calendar }: SiteNavProps) {
     </>
   );
 
-  const contact = (
-    <div className="site-bar-contact-list">
-      <a href={SITE_CONTACT.tel} onClick={() => setOpen(false)}>
-        <Phone className="size-4" />
-        {SITE_CONTACT.phone}
-      </a>
-      <a href={SITE_CONTACT.mailto} onClick={() => setOpen(false)}>
-        <Mail className="size-4" />
-        {SITE_CONTACT.email}
-      </a>
-    </div>
-  );
+  const contact = <NavBookingContact onClick={() => setOpen(false)} />;
 
   return (
     <header

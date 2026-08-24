@@ -8,6 +8,7 @@
     "plans": "プラン",
     "faq": "FAQ",
     "videos": "現場",
+    "experience": "動画",
     "booking": "今すぐ予約",
     "calendar": "予約",
     "menu": "メニュー"
@@ -46,7 +47,7 @@
     "v8": "隊列ショット"
   },
   "ReviewsHome": {
-    "title": "ライダーの声",
+    "title": "お客さまの声",
     "r1Name": "Alex M.",
     "r1Country": "USA",
     "r1Quote": "カートから見る街は別物。大阪で一番の夜だった。",

@@ -8,7 +8,8 @@ import { adminCopy } from "@/lib/admin/copy";
 import {
   addDaysIso,
   addMonths,
-  formatIsoRangeZh,
+  calendarIntlLocale,
+  formatIsoRange,
   monthCells,
   monthLabel,
   parseIsoDate,
@@ -16,6 +17,7 @@ import {
   weekStartMonday,
 } from "@/lib/calendar";
 import { cn } from "@/lib/utils";
+import { type MockOrder } from "@/lib/mock/orders";
 import { useStoreData } from "@/lib/use-store-data";
 
 export type CalendarView = "month" | "week" | "day";
@@ -25,6 +27,7 @@ type Props = {
   view: CalendarView;
   onView: (view: CalendarView) => void;
   onChange: (iso: string) => void;
+  onSelectOrder?: (order: MockOrder) => void;
   counts?: Map<string, number>;
   heatFor?: "orders" | "stock";
 };
@@ -64,7 +67,7 @@ function useThreeDayMode() {
   return threeDay;
 }
 
-export function OrderCalendarDrill({ value, view, onView, onChange, counts: countsProp, heatFor = "orders" }: Props) {
+export function OrderCalendarDrill({ value, view, onView, onChange, onSelectOrder, counts: countsProp, heatFor = "orders" }: Props) {
   const locale = useLocale();
   const copy = adminCopy(locale);
   const { orders } = useStoreData();
@@ -132,10 +135,10 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
 
   const headerLabel =
     view === "week"
-      ? formatIsoRangeZh(weekDays[0], weekDays[weekDays.length - 1])
+      ? formatIsoRange(weekDays[0], weekDays[weekDays.length - 1], locale)
       : view === "day"
         ? value
-        : monthLabel(cursor, locale.startsWith("ja") ? "ja-JP" : "zh-TW");
+        : monthLabel(cursor, calendarIntlLocale(locale));
 
   return (
     <section className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
@@ -169,7 +172,7 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
       {view === "month" ? (
         <>
           <div className="mb-2 grid grid-cols-7 gap-1 text-center text-xs text-slate-500">
-            {weekdayLabels(locale.startsWith("ja") ? "ja-JP" : "zh-TW").map((label, index) => (
+            {weekdayLabels(calendarIntlLocale(locale)).map((label, index) => (
               <span key={`${label}-${index}`}>{label}</span>
             ))}
           </div>
@@ -181,10 +184,7 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
                 <button
                   key={cell.iso}
                   type="button"
-                  onClick={() => {
-                    onChange(cell.iso!);
-                    onView("day");
-                  }}
+                  onClick={() => onChange(cell.iso!)}
                   className={cn(
                     "flex min-h-20 flex-col items-center justify-center rounded-xl border text-sm transition hover:border-blue-400",
                     heat(count, heatFor),
@@ -204,7 +204,7 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
       ) : null}
 
       {view === "week" ? (
-        <WeekTimeline value={value} orders={orders} days={weekDays} compact={threeDay} onSelectDate={onChange} />
+        <WeekTimeline value={value} orders={orders} days={weekDays} compact={threeDay} onSelectDate={onChange} onSelectOrder={onSelectOrder} />
       ) : null}
 
       {view === "day" ? (

@@ -17,13 +17,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { adminCopy } from "@/lib/admin/copy";
+import { adminChannel, adminCopy } from "@/lib/admin/copy";
 import { addDaysIso } from "@/lib/calendar";
 import { todayIsoDate } from "@/lib/booking/slots";
 import { reportsFromOrders, resolveReportRange, type RangeKind } from "@/lib/mock/reports";
 import { formatYenShort } from "@/lib/format";
 import { CountUp } from "@/components/admin/count-up";
+import { CHANNELS, type OrderChannel } from "@/lib/mock/orders";
 import { useStoreData } from "@/lib/use-store-data";
+import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 
 const tooltipStyle = {
@@ -34,6 +36,32 @@ const tooltipStyle = {
   maxWidth: 220,
   fontSize: 12,
 };
+
+function CutInput({
+  value,
+  label,
+  onChange,
+}: {
+  value: number;
+  label: string;
+  onChange: (pct: number) => void;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1">
+      <input
+        className="report-cut-input"
+        type="number"
+        min={0}
+        max={100}
+        step={0.1}
+        aria-label={label}
+        value={Number((value * 100).toFixed(1))}
+        onChange={(event) => onChange(Math.min(100, Math.max(0, Number(event.target.value) || 0)))}
+      />
+      <span className="text-slate-500">%</span>
+    </span>
+  );
+}
 
 function useNarrow() {
   const [narrow, setNarrow] = useState(false);
@@ -88,8 +116,48 @@ export function AdminReportsView() {
   const [kind, setKind] = useState<RangeKind>("month");
   const [custom, setCustom] = useState(() => ({ from: addDaysIso(today, -13), to: today }));
   const { orders } = useStoreData();
+  const channels = useOpsStore((state) => state.settings.channels);
+  const patchSettings = useOpsStore((state) => state.patchSettings);
   const range = useMemo(() => resolveReportRange(kind, today, custom), [kind, today, custom]);
-  const report = useMemo(() => reportsFromOrders(orders, range, locale), [orders, range, locale]);
+  const cuts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const row of channels ?? []) map[row.id] = row.cut;
+    return map;
+  }, [channels]);
+  const report = useMemo(() => reportsFromOrders(orders, range, locale, cuts), [orders, range, locale, cuts]);
+  const channelRows = useMemo(() => {
+    const byId = new Map(report.channels.map((item) => [item.id, item]));
+    const rows = CHANNELS.map((id) => {
+      const found = byId.get(id);
+      if (found) return found;
+      const setting = (channels ?? []).find((row) => row.id === id);
+      return {
+        id,
+        name: adminChannel(locale, id),
+        fill: "#9CA3AF",
+        cut: setting?.cut ?? 0,
+        orders: 0,
+        revenue: 0,
+        value: 0,
+      };
+    });
+    for (const item of report.channels) {
+      if (!CHANNELS.includes(item.id as OrderChannel)) rows.push(item);
+    }
+    return rows;
+  }, [report.channels, channels, locale]);
+
+  function setCut(id: string, pct: number) {
+    const cut = Math.min(100, Math.max(0, pct)) / 100;
+    const list = [...(channels ?? [])];
+    const index = list.findIndex((row) => row.id === id);
+    if (index >= 0) {
+      list[index] = { ...list[index], cut };
+    } else {
+      list.push({ id: id as OrderChannel, enabled: true, cut });
+    }
+    patchSettings({ channels: list });
+  }
   const exportOk = () => notify(copy.reports.exportOk);
   const totalRev = report.channels.reduce((sum, item) => sum + item.revenue, 0) || 1;
   const narrow = useNarrow();
@@ -105,6 +173,10 @@ export function AdminReportsView() {
   ] as const;
 
   function compactYen(value: number) {
+    if (locale.startsWith("en")) {
+      if (Math.abs(value) >= 1000) return `${Math.round(value / 1000)}k`;
+      return String(value);
+    }
     if (Math.abs(value) >= 10000) return `${Math.round(value / 10000)}${copy.common.wan}`;
     return String(value);
   }
@@ -235,35 +307,47 @@ export function AdminReportsView() {
                 </tr>
               </thead>
               <tbody>
-                {report.channels.map((item) => (
-                  <tr key={item.name}>
+                {channelRows.map((item) => (
+                  <tr key={item.id}>
                     <td>{item.name}</td>
                     <td>{item.orders}</td>
                     <td>{formatYenShort(item.revenue)}</td>
-                    <td>{Math.round(item.cut * 100)}%</td>
+                    <td>
+                      <CutInput
+                        value={item.cut}
+                        label={`${item.name} ${copy.reports.cut}`}
+                        onChange={(pct) => setCut(item.id, pct)}
+                      />
+                    </td>
                     <td>{formatYenShort(Math.round(item.revenue * (1 - item.cut)))}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            <p className="mt-2 text-xs text-slate-400">{copy.reports.cutHint}</p>
           </div>
           <ul className="mt-4 grid gap-2 md:hidden">
-            {report.channels.map((item) => (
-              <li key={item.name} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+            {channelRows.map((item) => (
+              <li key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-semibold">{item.name}</span>
                   <span className="text-sm tabular-nums">{formatYenShort(item.revenue)}</span>
                 </div>
-                <p className="mt-1 text-xs text-slate-500">
-                  {copy.reports.channelCard(
-                    item.orders,
-                    Math.round(item.cut * 100),
-                    formatYenShort(Math.round(item.revenue * (1 - item.cut))),
-                  )}
-                </p>
+                <div className="mt-2 flex items-center justify-between gap-3">
+                  <p className="text-xs text-slate-500">
+                    {item.orders}
+                    {copy.reports.unitOrders} · {copy.reports.net} {formatYenShort(Math.round(item.revenue * (1 - item.cut)))}
+                  </p>
+                  <CutInput
+                    value={item.cut}
+                    label={`${item.name} ${copy.reports.cut}`}
+                    onChange={(pct) => setCut(item.id, pct)}
+                  />
+                </div>
               </li>
             ))}
           </ul>
+          <p className="mt-2 text-xs text-slate-400 md:hidden">{copy.reports.cutHint}</p>
         </ChartBox>
 
         <ChartBox title={copy.reports.plans} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
@@ -319,91 +403,6 @@ export function AdminReportsView() {
               </li>
             ))}
           </ul>
-        </ChartBox>
-      </div>
-
-      <div className="grid min-w-0 gap-5 lg:grid-cols-2 md:gap-6">
-        <ChartBox title={copy.reports.nations} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
-          <div className="report-chart h-56 sm:h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={report.nations} dataKey="value" nameKey="name" outerRadius={pieRadius}>
-                  {report.nations.map((item) => (
-                    <Cell key={item.name} fill={item.fill} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
-                <Legend wrapperStyle={{ color: "#374151", fontSize: 12 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartBox>
-        <ChartBox title={copy.reports.genderTitle} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
-          <div className="report-chart h-56 sm:h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={report.gender} dataKey="value" nameKey="name" innerRadius={narrow ? 34 : 48} outerRadius={pieRadius}>
-                  {report.gender.map((item) => (
-                    <Cell key={item.name} fill={item.fill} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
-                <Legend wrapperStyle={{ color: "#374151", fontSize: 12 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartBox>
-        <ChartBox title={copy.reports.ages} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
-          <div className="report-chart h-56 sm:h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={report.ages} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid stroke="rgba(15,23,42,0.08)" />
-                <XAxis dataKey="band" stroke="#6B7280" interval={0} tick={axisTick} />
-                <YAxis stroke="#6B7280" width={narrow ? 28 : 40} tick={axisTick} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="people" name={copy.reports.people} fill="#22D3EE" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartBox>
-        <ChartBox title={copy.reports.daypartTitle} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
-          <div className="report-chart h-64 sm:h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={report.daypart} margin={{ top: 8, right: 4, left: 0, bottom: 8 }}>
-                <CartesianGrid stroke="rgba(15,23,42,0.08)" />
-                <XAxis
-                  dataKey="band"
-                  stroke="#6B7280"
-                  interval={0}
-                  height={40}
-                  tick={(props) => {
-                    const part = report.daypart.find((item) => item.band === String(props.payload?.value ?? ""));
-                    const x = Number(props.x ?? 0);
-                    const y = Number(props.y ?? 0);
-                    return (
-                      <g transform={`translate(${x},${y})`}>
-                        <text textAnchor="middle" dy={12} fill="#334155" fontSize={11} fontWeight={600}>
-                          {props.payload?.value}
-                        </text>
-                        <text textAnchor="middle" dy={26} fill="#94a3b8" fontSize={9}>
-                          {part?.range}
-                        </text>
-                      </g>
-                    );
-                  }}
-                />
-                <YAxis stroke="#6B7280" width={narrow ? 28 : 40} tick={axisTick} />
-                <Tooltip
-                  contentStyle={tooltipStyle}
-                  labelFormatter={(label) => {
-                    const part = report.daypart.find((item) => item.band === label);
-                    return part ? `${part.band}（${part.range}）` : String(label);
-                  }}
-                />
-                <Bar dataKey="people" name={copy.reports.people} fill="#2563eb" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
         </ChartBox>
       </div>
     </div>

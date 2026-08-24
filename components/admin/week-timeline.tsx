@@ -22,6 +22,7 @@ type Props = {
   days: string[];
   compact?: boolean;
   onSelectDate: (iso: string) => void;
+  onSelectOrder?: (order: MockOrder) => void;
 };
 
 type LaidOut = {
@@ -86,7 +87,7 @@ function statusClass(status: OrderStatus) {
   return "is-completed";
 }
 
-export function WeekTimeline({ value, orders, days, compact = false, onSelectDate }: Props) {
+export function WeekTimeline({ value, orders, days, compact = false, onSelectDate, onSelectOrder }: Props) {
   const locale = useLocale();
   const copy = adminCopy(locale);
   const plans = useOpsStore((state) => state.plans);
@@ -157,7 +158,9 @@ export function WeekTimeline({ value, orders, days, compact = false, onSelectDat
                       style={{ top: block.top, height: block.height, width, left }}
                       onClick={(event) => {
                         event.stopPropagation();
-                        onSelectDate(iso);
+                        setTip(null);
+                        if (onSelectOrder) onSelectOrder(block.order);
+                        else onSelectDate(iso);
                       }}
                       onMouseEnter={(event) => {
                         const rect = event.currentTarget.getBoundingClientRect();

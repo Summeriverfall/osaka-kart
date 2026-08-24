@@ -8,6 +8,7 @@
     "plans": "Plans",
     "faq": "FAQ",
     "videos": "Gallery",
+    "experience": "Videos",
     "booking": "Book now",
     "calendar": "Book",
     "menu": "Menu"
@@ -46,7 +47,7 @@
     "v8": "Team photo"
   },
   "ReviewsHome": {
-    "title": "What Riders Say",
+    "title": "Guest reviews",
     "r1Name": "Alex M.",
     "r1Country": "USA",
     "r1Quote": "The streets look completely different from a kart. Best night in Osaka.",

@@ -1,7 +1,9 @@
 import type { MockPlan } from "@/lib/mock/plans";
 
 const DB_NAME = "osaka-kart-media";
+const DB_VERSION = 2;
 const STORE = "plan-images";
+export const CMS_BLOB_STORE = "cms-blobs";
 
 export type PlanMedia = {
   cover?: string;
@@ -12,17 +14,24 @@ export function isInlineImage(value?: string) {
   return Boolean(value?.startsWith("data:image"));
 }
 
-function openDb(): Promise<IDBDatabase> {
+export function openMediaDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
       if (!req.result.objectStoreNames.contains(STORE)) {
         req.result.createObjectStore(STORE);
+      }
+      if (!req.result.objectStoreNames.contains(CMS_BLOB_STORE)) {
+        req.result.createObjectStore(CMS_BLOB_STORE);
       }
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });
+}
+
+function openDb() {
+  return openMediaDb();
 }
 
 export async function putPlanMedia(planId: string, media: PlanMedia) {

@@ -1,20 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
+import { OrderDocs } from "@/components/admin/order-docs";
+import { OrderEditFields } from "@/components/admin/order-edit-fields";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Modal } from "@/components/ui/modal";
-import { NeonToggle } from "@/components/ui/neon-toggle";
 import { adminChannel, adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
 import { formatYenShort } from "@/lib/format";
-import { type OrderStatus } from "@/lib/mock/orders";
+import { CHANNELS, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import { sendStatusMail } from "@/lib/ops-notify";
+import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 
 export function AdminOrderDetailView({ id }: { id: string }) {
   const locale = useLocale();
   const copy = adminCopy(locale);
+  const go = useAdminNavStore((state) => state.go);
   const order = useOpsStore((state) => {
     const match = state.orders.find((item) => item.id === id);
     if (match) return match;
@@ -22,13 +25,18 @@ export function AdminOrderDetailView({ id }: { id: string }) {
     return undefined;
   });
   const plans = useOpsStore((state) => state.plans);
-  const patchOrder = useOpsStore((state) => state.patchOrder);
+  const upsertOrder = useOpsStore((state) => state.upsertOrder);
   const setOrderStatus = useOpsStore((state) => state.setOrderStatus);
   const templates = useOpsStore((state) => state.templates);
   const settings = useOpsStore((state) => state.settings);
   const notify = useToastStore((state) => state.notify);
-  const [open, setOpen] = useState(false);
-  const [note, setNote] = useState(order?.note ?? "");
+  const [draft, setDraft] = useState<MockOrder | null>(null);
+
+  const channelOptions = useMemo(() => {
+    const enabled = new Set((settings.channels ?? []).filter((item) => item.enabled).map((item) => item.id));
+    if (!enabled.size) return CHANNELS;
+    return CHANNELS.filter((item) => enabled.has(item) || item === (draft?.channel ?? order?.channel));
+  }, [settings.channels, draft?.channel, order?.channel]);
 
   if (!order) {
     return <p className="text-sm text-slate-500">{copy.orders.empty}</p>;
@@ -36,6 +44,35 @@ export function AdminOrderDetailView({ id }: { id: string }) {
 
   const seed = plans.find((item) => item.slug === order.planSlug);
   const planName = adminPlanName(locale, seed, order.planName);
+
+  function save(next: MockOrder, fromId: string) {
+    const id = next.id.trim() || fromId;
+    const male = Math.max(0, next.male);
+    const female = Math.max(0, next.female);
+    const saved: MockOrder = {
+      ...next,
+      id,
+      male,
+      female,
+      riders: male + female,
+      time: next.time.slice(0, 5),
+      totalJpy: Math.max(0, next.totalJpy),
+    };
+    const taken = useOpsStore.getState().orders.some((item) => item.id === saved.id && item.id !== fromId);
+    if (taken) {
+      notify(copy.orders.idTaken);
+      return;
+    }
+    const prev = useOpsStore.getState().orders.find((item) => item.id === fromId);
+    upsertOrder(saved, fromId);
+    setDraft(null);
+    if (saved.id !== fromId) go(`/admin/orders/${saved.id}`);
+    if (prev && prev.status !== saved.status) {
+      void sendStatusMail(saved.status, saved, templates, settings, locale).then(notify);
+      return;
+    }
+    notify(copy.orders.saved);
+  }
 
   return (
     <div className="space-y-4">
@@ -62,8 +99,11 @@ export function AdminOrderDetailView({ id }: { id: string }) {
           <div className="sm:col-span-2">{copy.orders.addons}：{order.addons.join("、") || copy.common.none}</div>
           <div className="sm:col-span-2">{copy.orders.note}：{order.note || "—"}</div>
         </dl>
+        <div className="mt-6">
+          <OrderDocs locale={locale} />
+        </div>
         <div className="mt-6 flex flex-wrap gap-3">
-          <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setOpen(true)}>
+          <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setDraft({ ...order })}>
             {copy.orders.editTitle}
           </button>
           {(["pending", "confirmed", "cancelled", "completed"] as OrderStatus[]).map((status) => (
@@ -83,38 +123,30 @@ export function AdminOrderDetailView({ id }: { id: string }) {
       </div>
 
       <Modal
-        open={open}
+        open={Boolean(draft)}
         title={copy.orders.editTitle}
-        onClose={() => setOpen(false)}
+        onClose={() => setDraft(null)}
+        wide
         footer={
-          <button
-            type="button"
-            className="cta-btn px-5 py-2.5"
-            onClick={() => {
-              patchOrder(order.id, { note });
-              setOpen(false);
-              notify(copy.orders.saved);
-            }}
-          >
-            {copy.common.save}
-          </button>
+          <>
+            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setDraft(null)}>
+              {copy.common.cancel}
+            </button>
+            <button type="button" className="cta-btn px-5 py-2.5" onClick={() => draft && save(draft, order.id)}>
+              {copy.common.save}
+            </button>
+          </>
         }
       >
-        <label className="admin-field">
-          {copy.orders.note}
-          <textarea className="admin-input min-h-28" value={note} onChange={(e) => setNote(e.target.value)} />
-        </label>
-        <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-          <span className="text-sm">{copy.orderStatus.confirmed}</span>
-          <NeonToggle
-            checked={order.status === "confirmed" || order.status === "completed"}
-            onChange={(on) => {
-              const status = on ? "confirmed" : "pending";
-              setOrderStatus(order.id, status);
-              void sendStatusMail(status, { ...order, status }, templates, settings, locale).then(notify);
-            }}
+        {draft ? (
+          <OrderEditFields
+            order={draft}
+            plans={plans}
+            channelOptions={channelOptions}
+            locale={locale}
+            onChange={setDraft}
           />
-        </div>
+        ) : null}
       </Modal>
     </div>
   );

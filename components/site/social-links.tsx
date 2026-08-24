@@ -1,22 +1,29 @@
-import { SITE_CONTACT } from "@/lib/contact";
+"use client";
+
+import { useLiveCms } from "@/lib/live-cms";
 
 type SocialLinksProps = {
   className?: string;
 };
 
 const LINKS = [
-  { href: SITE_CONTACT.instagram, label: "Instagram", icon: InstagramIcon },
-  { href: SITE_CONTACT.x, label: "X", icon: XIcon },
-  { href: SITE_CONTACT.youtube, label: "YouTube", icon: YoutubeIcon },
-  { href: SITE_CONTACT.tiktok, label: "TikTok", icon: TikTokIcon },
-  { href: SITE_CONTACT.facebook, label: "Facebook", icon: FacebookIcon },
-  { href: SITE_CONTACT.line, label: "LINE", icon: LineIcon },
-] as const;
+  { key: "instagram" as const, label: "Instagram", icon: InstagramIcon },
+  { key: "x" as const, label: "X", icon: XIcon },
+  { key: "youtube" as const, label: "YouTube", icon: YoutubeIcon },
+  { key: "tiktok" as const, label: "TikTok", icon: TikTokIcon },
+  { key: "facebook" as const, label: "Facebook", icon: FacebookIcon },
+  { key: "line" as const, label: "LINE", icon: LineIcon },
+];
 
 export function SocialLinks({ className }: SocialLinksProps) {
+  const cms = useLiveCms();
+  const items = LINKS.map((item) => ({ ...item, href: cms.site.social[item.key]?.trim() })).filter((item) => item.href);
+
+  if (!items.length) return null;
+
   return (
     <nav className={className ?? "social-links"} aria-label="Social">
-      {LINKS.map((item) => (
+      {items.map((item) => (
         <a
           key={item.label}
           href={item.href}

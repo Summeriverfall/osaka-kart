@@ -11,9 +11,10 @@ type ModalProps = {
   children: React.ReactNode;
   footer?: React.ReactNode;
   wide?: boolean;
+  top?: boolean;
 };
 
-export function Modal({ open, title, onClose, children, footer, wide }: ModalProps) {
+export function Modal({ open, title, onClose, children, footer, wide, top }: ModalProps) {
   useEffect(() => {
     if (!open) return;
     function onKey(event: KeyboardEvent) {
@@ -31,13 +32,17 @@ export function Modal({ open, title, onClose, children, footer, wide }: ModalPro
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-end justify-center bg-black/80 p-3 sm:items-center sm:p-4"
+      className={cn(
+        "fixed inset-0 z-[90] flex justify-center bg-black/80 p-3",
+        top ? "items-start pt-4 sm:pt-10" : "items-end sm:items-center sm:p-4",
+      )}
       onClick={onClose}
     >
       <div
         className={cn(
           "admin-modal-panel max-h-[92dvh] w-full overflow-auto rounded-2xl border border-white/10 bg-[#12121A] p-4 shadow-[0_0_40px_rgb(255_46_147_/_18%)] sm:p-6",
           wide ? "max-w-3xl" : "max-w-lg",
+          top && "max-h-[calc(100dvh-3.5rem)] sm:max-h-[calc(100dvh-5.5rem)]",
         )}
         onClick={(event) => event.stopPropagation()}
       >

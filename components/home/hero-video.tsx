@@ -40,6 +40,7 @@ export function HeroVideo({
     if (!video || !active) return;
 
     const jumpToStart = () => {
+      if (startAt <= 0) return;
       if (Math.abs(video.currentTime - startAt) > 0.35) {
         video.currentTime = startAt;
       }
@@ -84,7 +85,12 @@ export function HeroVideo({
       preload={active ? preload : "none"}
       {...(poster ? { poster } : {})}
     >
-      {active ? <source src={`${src}#t=${startAt}`} type="video/mp4" /> : null}
+      {active ? (
+        <source
+          src={src.startsWith("data:") || src.startsWith("blob:") ? src : `${src}#t=${startAt}`}
+          type={src.startsWith("data:video/webm") ? "video/webm" : "video/mp4"}
+        />
+      ) : null}
     </video>
   );
 }

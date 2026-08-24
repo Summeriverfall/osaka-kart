@@ -1,20 +1,24 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
-import { ChevronLeft, Mail, MapPin, Phone, Star } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { ChevronLeft, MapPin, Star } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { RideNoteChecks, allNotesChecked, emptyNoteChecks, type NoteKey } from "@/components/notes/ride-notes";
 import { BookingExtras, bookingTotal } from "@/components/booking/booking-extras";
 import { MonthCalendar } from "@/components/booking/month-calendar";
 import type { LandingCopy } from "@/components/landing/copy";
-import { PRESS_CARDS, SITE_CONTACT, SOCIAL_CARDS } from "@/lib/contact";
+import { CmsVideoMedia } from "@/components/site/cms-video-media";
+import { BookingChannels } from "@/components/site/booking-channels";
+import { PRESS_CARDS, SOCIAL_CARDS } from "@/lib/contact";
 import { FEATURE_IMAGES } from "@/lib/media";
 import { asset } from "@/lib/asset";
 import { formatJpy } from "@/lib/format";
 import { parseIsoDate } from "@/lib/calendar";
-import { useLiveCatalog, useLiveInventory, useLiveStoreContact } from "@/lib/live-catalog";
+import { useLiveCatalog, useLiveInventory } from "@/lib/live-catalog";
+import { cmsBySlot, cmsMediaSrc, localeText, localizedList, resolveCmsVideo, useBookingContact, useLiveCms } from "@/lib/live-cms";
+import { MOCK_CMS } from "@/lib/mock/cms";
 import { BOOKING_SLOTS } from "@/lib/booking/slots";
 import { DEFAULT_STORE_ID } from "@/lib/store-id";
 import { withSlash } from "@/lib/paths";
@@ -77,6 +81,7 @@ export function LandingCommerce({ plans, addons, locale, theme, copy }: Commerce
       <LandingFlow copy={copy} theme={theme} />
       <LandingReviews copy={copy} theme={theme} />
       <LandingFaq copy={copy} theme={theme} />
+      <LandingExperience theme={theme} />
       <LandingNotes theme={theme} />
       <LandingFeatures copy={copy} theme={theme} />
       <LandingVisit copy={copy} theme={theme} />
@@ -85,19 +90,31 @@ export function LandingCommerce({ plans, addons, locale, theme, copy }: Commerce
 }
 
 export function LandingGallery({ copy }: { copy: LandingCopy }) {
+  const locale = useLocale();
+  const cms = useLiveCms();
+  const clip = cmsBySlot(cms.videos, "gallery")[0];
+  const resolved = resolveCmsVideo(clip, "/videos/street-run.mp4");
+  const title = localeText(cms.labels.videosTitle, locale, copy.videosTitle);
+  const lead = localeText(cms.labels.videosLead, locale, copy.videosLead);
+  const caption = clip ? localeText(clip.title, locale) : copy.videos[0]?.title;
+
   return (
     <section id="videos" className="shop-block shop-gallery-band">
       <div className="shop-wrap">
         <p className="shop-kicker">01</p>
-        <h2>{copy.videosTitle}</h2>
-        <p className="shop-lead">{copy.videosLead}</p>
+        <h2>{title}</h2>
+        <p className="shop-lead">{lead}</p>
         <div className="shop-gallery shop-gallery-stack">
           <figure className="shop-gallery-video">
-            <LazyLoopVideo
-              src={asset("/videos/street-run.mp4")}
-              poster={asset("/images/hero/poster.jpg")}
-            />
-            <figcaption>{copy.videos[0]?.title}</figcaption>
+            {resolved?.kind === "youtube" ? (
+              <CmsVideoMedia video={clip} autoPlay className="h-full w-full" />
+            ) : (
+              <LazyLoopVideo
+                src={resolved?.kind === "file" ? resolved.src : asset("/videos/street-run.mp4")}
+                poster={resolved?.poster ?? asset("/images/hero/poster.jpg")}
+              />
+            )}
+            <figcaption>{caption}</figcaption>
           </figure>
           <div className="shop-gallery-grid">
             {SOCIAL_CARDS.slice(0, 4).map((card, index) => (
@@ -362,27 +379,33 @@ function LandingFlow({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) {
 }
 
 function LandingReviews({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) {
+  const locale = useLocale();
+  const cms = useLiveCms();
   const shop = useTranslations("Shop");
+  const reviews = localizedList(cms.reviews);
+  const title = localeText(cms.labels.reviewsTitle, locale, copy.reviewsTitle);
+  const lead = localeText(cms.labels.reviewsLead, locale, shop("reviewLead"));
+  if (!reviews.length) return null;
 
   if (theme === "oni") {
     return (
       <section id="reviews" className="oni-ema">
         <div className="oni-wrap">
           <p className="shop-kicker">05</p>
-          <h2>{copy.reviewsTitle}</h2>
-          <p className="oni-lead">{shop("reviewLead")}</p>
+          <h2>{title}</h2>
+          <p className="oni-lead">{lead}</p>
           <div className="oni-ema-hang">
-            {copy.reviews.map((item, index) => (
-              <blockquote key={item.name} className={`tilt-${index}`}>
+            {reviews.map((item, index) => (
+              <blockquote key={item.id} className={`tilt-${index}`}>
                 <div className="oni-ema-stars" aria-hidden>
                   {Array.from({ length: 5 }).map((_, star) => (
                     <Star key={star} className="size-3.5 fill-current" />
                   ))}
                 </div>
-                <p>{item.quote}</p>
+                <p>{localeText(item.quote, locale)}</p>
                 <footer>
                   {item.name}
-                  <span>{item.meta}</span>
+                  <span>{item.country}</span>
                 </footer>
               </blockquote>
             ))}
@@ -396,20 +419,20 @@ function LandingReviews({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }
     <section id="reviews" className="shop-block">
       <div className="shop-wrap">
         <p className="shop-kicker">05</p>
-        <h2>{copy.reviewsTitle}</h2>
-        <p className="shop-lead">{shop("reviewLead")}</p>
+        <h2>{title}</h2>
+        <p className="shop-lead">{lead}</p>
         <div className="shop-reviews">
-          {copy.reviews.map((item) => (
-            <article key={item.name} className="shop-review">
+          {reviews.map((item) => (
+            <article key={item.id} className="shop-review">
               <p className="shop-stars" aria-hidden>
                 {Array.from({ length: 5 }).map((_, star) => (
                   <Star key={star} className="size-4 fill-current" />
                 ))}
               </p>
-              <blockquote>“{item.quote}”</blockquote>
+              <blockquote>“{localeText(item.quote, locale)}”</blockquote>
               <footer>
                 <strong>{item.name}</strong>
-                <span>{item.meta}</span>
+                <span>{item.country}</span>
               </footer>
             </article>
           ))}
@@ -420,21 +443,29 @@ function LandingReviews({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }
 }
 
 function LandingFaq({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) {
+  const locale = useLocale();
+  const cms = useLiveCms();
   const shop = useTranslations("Shop");
+  const faqs = localizedList(cms.faqs).filter((item) => item.home);
+  const title = localeText(cms.labels.faqTitle, locale, copy.faqTitle);
+  const lead = localeText(cms.labels.faqLead, locale, shop("faqLead"));
+  const items = faqs.length
+    ? faqs.map((item) => ({ q: localeText(item.q, locale), a: localeText(item.a, locale) }))
+    : copy.faqs;
 
   if (theme === "oni") {
     return (
       <section id="faq" className="oni-fold">
         <div className="oni-fold-head">
           <p className="shop-kicker">FAQ</p>
-          <h2>{copy.faqTitle}</h2>
-          <p>{shop("faqLead")}</p>
+          <h2>{title}</h2>
+          <p>{lead}</p>
           <Link href={withSlash("/faq")} className="shop-text-link">
             {shop("moreHelp")}
           </Link>
         </div>
         <div className="oni-fold-list">
-          {copy.faqs.map((item, index) => (
+          {items.map((item, index) => (
             <details key={item.q} open={index === 0}>
               <summary>{item.q}</summary>
               <p>{item.a}</p>
@@ -450,14 +481,14 @@ function LandingFaq({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) {
       <div className="shop-wrap shop-faq-grid">
         <div>
           <p className="shop-kicker">FAQ</p>
-          <h2>{copy.faqTitle}</h2>
-          <p className="shop-lead">{shop("faqLead")}</p>
+          <h2>{title}</h2>
+          <p className="shop-lead">{lead}</p>
           <Link href={withSlash("/faq")} className="shop-text-link">
             {shop("moreHelp")}
           </Link>
         </div>
         <div className="shop-faq">
-          {copy.faqs.map((item, index) => (
+          {items.map((item, index) => (
             <details key={item.q} open={index === 0}>
               <summary>{item.q}</summary>
               <p>{item.a}</p>
@@ -469,21 +500,101 @@ function LandingFaq({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) {
   );
 }
 
+function LandingExperience({ theme }: { theme: SiteTheme }) {
+  const locale = useLocale();
+  const cms = useLiveCms();
+  const listed = cmsBySlot(cms.videos, "experience");
+  const seeded = cmsBySlot(MOCK_CMS.videos, "experience");
+  const videos = [...listed];
+  for (const clip of seeded) {
+    if (videos.length >= 6) break;
+    if (videos.some((item) => item.id === clip.id)) continue;
+    videos.push(clip);
+  }
+  if (!videos.length) return null;
+  const title = localeText(cms.labels.experienceTitle, locale);
+  const lead = localeText(cms.labels.experienceLead, locale);
+
+  const cards = (
+    <div className={theme === "oni" ? "oni-clip shop-xp" : "shop-xp"}>
+      {videos.slice(0, 6).map((item) => {
+        const resolved = resolveCmsVideo(item);
+        const caption = localeText(item.title, locale);
+        return (
+          <article key={item.id}>
+            <div className="shop-xp-media">
+              {resolved ? (
+                <CmsVideoMedia video={item} autoPlay startAt={item.startAt ?? 0} className="h-full w-full" />
+              ) : (
+                <img src={asset("/images/hero/poster.jpg")} alt="" />
+              )}
+            </div>
+            <h3>{caption}</h3>
+          </article>
+        );
+      })}
+    </div>
+  );
+
+  if (theme === "oni") {
+    return (
+      <section id="experience" className="oni-papers">
+        <div className="oni-wrap">
+          <p className="shop-kicker">Video</p>
+          <h2>{title}</h2>
+          <p className="oni-lead">{lead}</p>
+          {cards}
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section id="experience" className="shop-block shop-news-band">
+      <div className="shop-wrap">
+        <p className="shop-kicker">Video</p>
+        <h2>{title}</h2>
+        <p className="shop-lead">{lead}</p>
+        {cards}
+      </div>
+    </section>
+  );
+}
+
 function LandingNotes({ theme }: { theme: SiteTheme }) {
+  const locale = useLocale();
+  const cms = useLiveCms();
   const press = useTranslations("Press");
+  const items = localizedList(cms.press).slice(0, 3);
+  const title = localeText(cms.labels.pressTitle, locale, press("title"));
+  const cards = items.length
+    ? items.map((item) => ({
+        id: item.id,
+        img: item.image ? cmsMediaSrc(item.image) : asset("/images/news/n1.webp"),
+        source: localeText(item.source, locale),
+        headline: localeText(item.title, locale),
+        href: item.href,
+      }))
+    : PRESS_CARDS.slice(0, 3).map((item) => ({
+        id: item.titleKey,
+        img: asset(item.img),
+        source: press(item.sourceKey),
+        headline: press(item.titleKey),
+        href: "",
+      }));
 
   if (theme === "oni") {
     return (
       <section id="press" className="oni-papers">
         <div className="oni-wrap">
           <p className="shop-kicker">Press</p>
-          <h2>{press("title")}</h2>
+          <h2>{title}</h2>
           <div className="oni-clip">
-            {PRESS_CARDS.slice(0, 3).map((item) => (
-              <article key={item.titleKey}>
-                <img src={asset(item.img)} alt="" />
-                <p>{press(item.sourceKey)}</p>
-                <h3>{press(item.titleKey)}</h3>
+            {cards.map((item) => (
+              <article key={item.id}>
+                <img src={item.img} alt="" />
+                <p>{item.source}</p>
+                <h3>{item.headline}</h3>
               </article>
             ))}
           </div>
@@ -496,13 +607,23 @@ function LandingNotes({ theme }: { theme: SiteTheme }) {
     <section id="press" className="shop-block shop-news-band">
       <div className="shop-wrap">
         <p className="shop-kicker">Press</p>
-        <h2>{press("title")}</h2>
+        <h2>{title}</h2>
         <div className="shop-news">
-          {PRESS_CARDS.slice(0, 3).map((item) => (
-            <article key={item.titleKey}>
-              <img src={asset(item.img)} alt="" />
-              <p>{press(item.sourceKey)}</p>
-              <h3>{press(item.titleKey)}</h3>
+          {cards.map((item) => (
+            <article key={item.id}>
+              {item.href ? (
+                <a href={item.href} target="_blank" rel="noreferrer">
+                  <img src={item.img} alt="" />
+                  <p>{item.source}</p>
+                  <h3>{item.headline}</h3>
+                </a>
+              ) : (
+                <>
+                  <img src={item.img} alt="" />
+                  <p>{item.source}</p>
+                  <h3>{item.headline}</h3>
+                </>
+              )}
             </article>
           ))}
         </div>
@@ -572,11 +693,18 @@ function LandingFeatures({ copy, theme }: { copy: LandingCopy; theme: SiteTheme 
 }
 
 function LandingVisit({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) {
+  const locale = useLocale();
+  const cms = useLiveCms();
   const contact = useTranslations("Contact");
   const shop = useTranslations("Shop");
-  const store = useLiveStoreContact();
-  const hours = store.hours || SITE_CONTACT.hours;
-  const phone = store.phone || SITE_CONTACT.phone;
+  const book = useBookingContact();
+  const title = localeText(cms.meetup.title, locale, copy.access.title);
+  const walk = localeText(cms.meetup.walk, locale, copy.access.walk);
+  const address = localeText(cms.meetup.address, locale, copy.access.address);
+  const lead = localeText(cms.meetup.lead, locale, shop("visitLead"));
+  const howTitle = localeText(book.title, locale, contact("title"));
+  const maps = cms.meetup.mapsUrl;
+  const hours = book.hours;
 
   return (
     <section id="access" className={cn("shop-visit", theme === "oni" && "oni-visit")}>
@@ -584,15 +712,21 @@ function LandingVisit({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) 
         {theme === "oni" ? (
           <div className="oni-visit-copy">
             <p className="shop-kicker">Access</p>
-            <h2>{copy.access.title}</h2>
-            <p className="shop-lead">{shop("visitLead")}</p>
+            <h2>{title}</h2>
+            <p className="shop-lead">{lead}</p>
             <ol>
               <li>
                 <MapPin className="size-4" />
-                <span>{copy.access.walk}</span>
+                <span>{walk}</span>
               </li>
               <li>
-                <span>{copy.access.address}</span>
+                {maps ? (
+                  <a href={maps} target="_blank" rel="noreferrer">
+                    {address}
+                  </a>
+                ) : (
+                  <span>{address}</span>
+                )}
               </li>
               <li>
                 <span>{contact("hours", { hours })}</span>
@@ -602,39 +736,25 @@ function LandingVisit({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) 
         ) : (
           <div>
             <p className="shop-kicker">Access</p>
-            <h2>{copy.access.title}</h2>
-            <p className="shop-lead">{shop("visitLead")}</p>
+            <h2>{title}</h2>
+            <p className="shop-lead">{lead}</p>
             <p className="shop-walk">
               <MapPin className="size-5" />
-              {copy.access.walk}
+              {walk}
             </p>
-            <p className="shop-addr">{copy.access.address}</p>
+            {maps ? (
+              <a className="shop-addr" href={maps} target="_blank" rel="noreferrer">
+                {address}
+              </a>
+            ) : (
+              <p className="shop-addr">{address}</p>
+            )}
             <p className="shop-hours">{contact("hours", { hours })}</p>
           </div>
         )}
         <div className="shop-contact">
-          <h3>{contact("title")}</h3>
-          <a href="#book" className="cta-btn cta-btn-solid">
-            {contact("online")}
-          </a>
-          <a
-            href={SITE_CONTACT.whatsapp}
-            className="cta-btn has-tip"
-            data-tip={contact("whatsappHint")}
-            title={contact("whatsappHint")}
-            target="_blank"
-            rel="noreferrer"
-          >
-            WhatsApp
-          </a>
-          <a href={SITE_CONTACT.tel} className="cta-btn cta-btn-ghost">
-            <Phone className="size-4 shrink-0" aria-hidden />
-            {phone}
-          </a>
-          <a href={SITE_CONTACT.mailto} className="cta-btn cta-btn-ghost">
-            <Mail className="size-4 shrink-0" aria-hidden />
-            {SITE_CONTACT.email}
-          </a>
+          <h3>{howTitle}</h3>
+          <BookingChannels className="contents" />
         </div>
       </div>
     </section>

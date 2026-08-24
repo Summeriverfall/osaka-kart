@@ -6,6 +6,10 @@ import { useLocale } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { StoreSwitcher } from "@/components/admin/store-switcher";
 import { AdminLangSwitch } from "@/components/admin/admin-lang-switch";
+import { AdminBookingNav } from "@/components/admin/admin-booking-nav";
+import { AdminContentNav } from "@/components/admin/admin-content-nav";
+import { AdminReportNav } from "@/components/admin/admin-report-nav";
+import { AdminSettingsNav } from "@/components/admin/admin-settings-nav";
 import { AdminWorkspace } from "@/components/admin/admin-workspace";
 import { navForRole, normalizeAdminTab } from "@/lib/admin/nav";
 import { adminCopy, adminRoleLabel } from "@/lib/admin/copy";
@@ -105,6 +109,50 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <p className="px-3 pb-4 text-sm text-slate-500">{copy.brandSub}</p>
         <nav className="grid gap-1">
           {items.map((item) => {
+            if (item.href === "/admin/bookings") {
+              return (
+                <AdminBookingNav
+                  key={item.href}
+                  current={current}
+                  role={role}
+                  copy={copy}
+                  onGo={go}
+                />
+              );
+            }
+            if (item.href === "/admin/content") {
+              return (
+                <AdminContentNav
+                  key={item.href}
+                  current={current}
+                  role={role}
+                  copy={copy}
+                  onGo={go}
+                />
+              );
+            }
+            if (item.href === "/admin/reports") {
+              return (
+                <AdminReportNav
+                  key={item.href}
+                  current={current}
+                  role={role}
+                  copy={copy}
+                  onGo={go}
+                />
+              );
+            }
+            if (item.href === "/admin/settings") {
+              return (
+                <AdminSettingsNav
+                  key={item.href}
+                  current={current}
+                  role={role}
+                  copy={copy}
+                  onGo={go}
+                />
+              );
+            }
             const active = current === item.href || current.startsWith(`${item.href}/`);
             return (
               <button

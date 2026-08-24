@@ -1,7 +1,7 @@
 "use client";
 
 import { Mail, Phone } from "lucide-react";
-import { SITE_CONTACT } from "@/lib/contact";
+import { useBookingContact } from "@/lib/live-cms";
 import { cn } from "@/lib/utils";
 
 type ContactTickerProps = {
@@ -11,21 +11,47 @@ type ContactTickerProps = {
 
 const TICKER_PAIRS = 4;
 
+export function NavBookingContact({ onClick }: { onClick?: () => void }) {
+  const book = useBookingContact();
+  if (!book.showPhone && !book.showEmail) return null;
+  return (
+    <div className="site-bar-contact-list">
+      {book.showPhone ? (
+        <a href={book.tel} onClick={onClick}>
+          <Phone className="size-4" />
+          {book.phone}
+        </a>
+      ) : null}
+      {book.showEmail ? (
+        <a href={book.mailto} onClick={onClick}>
+          <Mail className="size-4" />
+          {book.email}
+        </a>
+      ) : null}
+    </div>
+  );
+}
+
 export function ContactTicker({ className, onNavigate }: ContactTickerProps) {
+  const book = useBookingContact();
+  if (!book.showPhone && !book.showEmail) return null;
+
   return (
     <div className={cn("contact-ticker", className)}>
       <div className="contact-ticker-track">
-        <ContactTickerSet onNavigate={onNavigate} />
-        <ContactTickerSet onNavigate={onNavigate} clone />
+        <ContactTickerSet book={book} onNavigate={onNavigate} />
+        <ContactTickerSet book={book} onNavigate={onNavigate} clone />
       </div>
     </div>
   );
 }
 
 function ContactTickerSet({
+  book,
   onNavigate,
   clone = false,
 }: {
+  book: ReturnType<typeof useBookingContact>;
   onNavigate?: () => void;
   clone?: boolean;
 }) {
@@ -36,6 +62,7 @@ function ContactTickerSet({
         return (
           <ContactTickerPair
             key={index}
+            book={book}
             tabbable={tabbable}
             onNavigate={onNavigate}
           />
@@ -46,31 +73,36 @@ function ContactTickerSet({
 }
 
 function ContactTickerPair({
+  book,
   tabbable,
   onNavigate,
 }: {
+  book: ReturnType<typeof useBookingContact>;
   tabbable: boolean;
   onNavigate?: () => void;
 }) {
   return (
     <>
-      <a
-        href={SITE_CONTACT.tel}
-        tabIndex={tabbable ? undefined : -1}
-        onClick={onNavigate}
-      >
-        <Phone className="size-5" />
-        {SITE_CONTACT.phone}
-      </a>
-      <a
-        href={SITE_CONTACT.mailto}
-        tabIndex={tabbable ? undefined : -1}
-        onClick={onNavigate}
-      >
-        <Mail className="size-5" />
-        {SITE_CONTACT.email}
-      </a>
+      {book.showPhone ? (
+        <a
+          href={book.tel}
+          tabIndex={tabbable ? undefined : -1}
+          onClick={onNavigate}
+        >
+          <Phone className="size-5" />
+          {book.phone}
+        </a>
+      ) : null}
+      {book.showEmail ? (
+        <a
+          href={book.mailto}
+          tabIndex={tabbable ? undefined : -1}
+          onClick={onNavigate}
+        >
+          <Mail className="size-5" />
+          {book.email}
+        </a>
+      ) : null}
     </>
   );
 }
-

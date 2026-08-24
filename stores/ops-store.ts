@@ -13,6 +13,7 @@ import {
 import { MOCK_SETTINGS, MOCK_EMAIL_TEMPLATES, MOCK_STORES, type MockSettings, type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
 import { MOCK_VEHICLES, type MockVehicle } from "@/lib/mock/vehicles";
 import { MOCK_STAFF, type MockStaff } from "@/lib/mock/staff";
+import { MOCK_CMS, mergeCms, type CmsState } from "@/lib/mock/cms";
 import { applySlotPatch, syncOrderInventory } from "@/lib/ops-inventory";
 import { DEFAULT_STORE_ID, storeIdOf } from "@/lib/store-id";
 import { OPS_STORAGE_KEY, opsPersistStorage } from "@/lib/ops-storage";
@@ -47,7 +48,8 @@ type OpsState = {
   templates: MockEmailTemplate[];
   stores: MockStore[];
   logs: MockLog[];
-  upsertOrder: (order: MockOrder) => void;
+  cms: CmsState;
+  upsertOrder: (order: MockOrder, fromId?: string) => void;
   patchOrder: (id: string, patch: Partial<MockOrder>) => void;
   setOrderStatus: (id: string, status: OrderStatus) => void;
   upsertAddon: (addon: MockAddon) => void;
@@ -69,6 +71,7 @@ type OpsState = {
   addSpecialDate: (row: MockSpecialDate) => void;
   pushLog: (entry: Omit<MockLog, "id" | "time" | "ip"> & { time?: string; ip?: string }) => void;
   commitWebsiteBooking: (input: WebsiteBookingInput) => { ok: boolean; already: boolean; order: MockOrder | null };
+  patchCms: (patch: Partial<CmsState>) => void;
 };
 
 function replaceById<T extends { id: string }>(list: T[], item: T) {
@@ -151,11 +154,14 @@ export const useOpsStore = create<OpsState>()(
       templates: MOCK_EMAIL_TEMPLATES,
       stores: MOCK_STORES,
       logs: MOCK_LOGS,
-      upsertOrder: (order) =>
+      cms: MOCK_CMS,
+      upsertOrder: (order, fromId) =>
         set((state) => {
-          const prev = state.orders.find((item) => item.id === order.id);
+          const lookup = fromId || order.id;
+          const prev = state.orders.find((item) => item.id === lookup);
+          const base = fromId && fromId !== order.id ? state.orders.filter((item) => item.id !== fromId) : state.orders;
           return {
-            orders: replaceById(state.orders, order),
+            orders: replaceById(base, order),
             vehicleSlots: syncOrderInventory(state.vehicleSlots, prev, order, state.vehicles),
             logs: [
               makeLog("订单修改", `${prev ? "更新" : "新建"} ${order.id}`, order.storeId, "后台", "店长"),
@@ -337,10 +343,14 @@ export const useOpsStore = create<OpsState>()(
         });
         return { ok: true, already: false, order };
       },
+      patchCms: (patch) =>
+        set((state) => ({
+          cms: { ...state.cms, ...patch },
+        })),
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 2,
+      version: 3,
       storage: opsPersistStorage,
       partialize: (state) => ({
         orders: state.orders,
@@ -354,6 +364,7 @@ export const useOpsStore = create<OpsState>()(
         templates: state.templates,
         stores: state.stores,
         logs: state.logs.slice(0, 200),
+        cms: state.cms,
       }),
       merge: (persisted, current) => {
         const extra = (persisted ?? {}) as Partial<OpsState>;
@@ -384,7 +395,12 @@ export const useOpsStore = create<OpsState>()(
           }),
           addons: extra.addons ?? current.addons,
           vehicleSlots: extra.vehicleSlots ?? current.vehicleSlots,
-          settings: { ...MOCK_SETTINGS, ...extra.settings },
+          settings: {
+            ...MOCK_SETTINGS,
+            ...extra.settings,
+            channels: extra.settings?.channels?.length ? extra.settings.channels : MOCK_SETTINGS.channels,
+          },
+          cms: mergeCms(MOCK_CMS, extra.cms),
         };
       },
     },

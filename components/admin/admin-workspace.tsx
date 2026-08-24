@@ -10,11 +10,13 @@ import { AdminOrdersView } from "@/components/admin/admin-orders";
 import { AdminPageFrame } from "@/components/admin/admin-page-frame";
 import { AdminPlansView } from "@/components/admin/admin-plans";
 import { AdminReportsView } from "@/components/admin/admin-reports";
+import { AdminAnalyticsView } from "@/components/admin/admin-analytics";
 import { AdminRoleGate } from "@/components/admin/admin-role-gate";
 import { AdminSettingsView } from "@/components/admin/admin-settings";
 import { AdminStaffView } from "@/components/admin/admin-staff";
 import { AdminVehiclesView } from "@/components/admin/admin-vehicles";
-import { ADMIN_PAGE_META, adminTabFromLocation, normalizeAdminTab } from "@/lib/admin/nav";
+import { AdminCmsView } from "@/components/admin/admin-cms";
+import { ADMIN_PAGE_META, adminTabFromLocation, BOOKING_HOME, CONTENT_HOME, normalizeAdminTab, REPORT_HOME, SETTINGS_HOME } from "@/lib/admin/nav";
 import { adminCopy } from "@/lib/admin/copy";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { useLocale } from "next-intl";
@@ -45,10 +47,35 @@ function viewFor(tab: string) {
     case "/admin/plans":
     case "/admin/addons":
       return <AdminPlansView />;
+    case "/admin/content/videos":
+      return <AdminCmsView section="videos" />;
+    case "/admin/content/reviews":
+      return <AdminCmsView section="reviews" />;
+    case "/admin/content/faq":
+      return <AdminCmsView section="faq" />;
+    case "/admin/content/press":
+      return <AdminCmsView section="press" />;
+    case "/admin/content/meetup":
+      return <AdminCmsView section="meetup" />;
+    case "/admin/bookings/how":
+      return <AdminCmsView section="how" />;
+    case "/admin/site":
+      return (
+        <AdminRoleGate allow={["admin"]}>
+          <AdminCmsView section="site" />
+        </AdminRoleGate>
+      );
     case "/admin/reports":
+    case "/admin/reports/overview":
       return (
         <AdminRoleGate allow={["admin"]}>
           <AdminReportsView />
+        </AdminRoleGate>
+      );
+    case "/admin/reports/analytics":
+      return (
+        <AdminRoleGate allow={["admin"]}>
+          <AdminAnalyticsView />
         </AdminRoleGate>
       );
     case "/admin/staff":
@@ -58,9 +85,30 @@ function viewFor(tab: string) {
         </AdminRoleGate>
       );
     case "/admin/settings":
+    case "/admin/settings/pay":
       return (
         <AdminRoleGate allow={["admin"]}>
-          <AdminSettingsView />
+          <AdminSettingsView section="pay" />
+        </AdminRoleGate>
+      );
+    case "/admin/settings/channels":
+      return (
+        <AdminRoleGate allow={["admin"]}>
+          <AdminSettingsView section="channels" />
+        </AdminRoleGate>
+      );
+    case "/admin/settings/stores":
+      return (
+        <AdminRoleGate allow={["admin"]}>
+          <AdminSettingsView section="stores" />
+        </AdminRoleGate>
+      );
+    case "/admin/settings/email":
+    case "/admin/settings/send":
+    case "/admin/settings/mail":
+      return (
+        <AdminRoleGate allow={["admin"]}>
+          <AdminSettingsView section="email" />
         </AdminRoleGate>
       );
     case "/admin/settings/logs":
@@ -78,11 +126,21 @@ export function AdminWorkspace() {
   const pathname = usePathname() ?? "";
   const locale = useLocale();
   const override = useAdminNavStore((state) => state.tab);
+  const go = useAdminNavStore((state) => state.go);
   const syncFromWindow = useAdminNavStore((state) => state.syncFromWindow);
 
   useEffect(() => {
     syncFromWindow();
   }, [pathname, syncFromWindow]);
+
+  useEffect(() => {
+    const loc = adminTabFromLocation();
+    if (loc === "/admin/bookings") go(BOOKING_HOME);
+    if (loc === "/admin/content") go(CONTENT_HOME);
+    if (loc === "/admin/reports") go(REPORT_HOME);
+    if (loc === "/admin/settings") go(SETTINGS_HOME);
+    if (loc === "/admin/settings/send" || loc === "/admin/settings/mail") go("/admin/settings/email");
+  }, [pathname, go]);
 
   const tab = normalizeAdminTab(override ?? adminTabFromLocation() ?? (pathname || "/admin/dashboard"));
   const meta = metaFor(tab, locale);

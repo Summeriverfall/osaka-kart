@@ -21,6 +21,7 @@ export function OniLanding({ plans, addons, locale, copy }: Props) {
       <HtmlTheme theme="oni" />
       <SiteNav
         theme="oni"
+        experience={copy.nav.experience}
         plans={copy.nav.plans}
         faq={copy.nav.faq}
         calendar={copy.nav.calendar}

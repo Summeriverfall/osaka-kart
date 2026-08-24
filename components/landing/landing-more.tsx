@@ -1,14 +1,14 @@
 "use client";
 
-import { Mail, Phone } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { MonthCalendar } from "@/components/booking/month-calendar";
-import { PRESS_CARDS, PRESS_OUTLETS, SITE_CONTACT, SOCIAL_CARDS } from "@/lib/contact";
+import { BookingChannels } from "@/components/site/booking-channels";
+import { PRESS_CARDS, PRESS_OUTLETS, SOCIAL_CARDS } from "@/lib/contact";
 import { asset } from "@/lib/asset";
 import { formatJpy } from "@/lib/format";
-import { useLivePlans, useLiveStoreContact } from "@/lib/live-catalog";
+import { useLivePlans } from "@/lib/live-catalog";
+import { cmsMediaSrc, localeText, localizedList, useBookingContact, useLiveCms } from "@/lib/live-cms";
 import { bookingHref } from "@/lib/booking/path";
 import { withSlash } from "@/lib/paths";
 import { useBookingStore } from "@/stores/booking-store";
@@ -29,8 +29,25 @@ export function LandingMore({ plans: seedPlans, locale, theme }: LandingMoreProp
   const router = useRouter();
   const store = useBookingStore();
   const plans = useLivePlans(seedPlans, locale);
-  const shop = useLiveStoreContact();
+  const cms = useLiveCms();
+  const book = useBookingContact();
   const plan = plans.find((item) => item.slug === store.planSlug) ?? plans[0];
+  const pressTitle = localeText(cms.labels.pressTitle, locale, press("title"));
+  const pressItems = localizedList(cms.press);
+  const cards = pressItems.length
+    ? pressItems.map((item) => ({
+        img: item.image ? cmsMediaSrc(item.image) : asset("/images/news/n1.webp"),
+        source: localeText(item.source, locale),
+        title: localeText(item.title, locale),
+        key: item.id,
+      }))
+    : PRESS_CARDS.map((item) => ({
+        img: asset(item.img),
+        source: press(item.sourceKey),
+        title: press(item.titleKey),
+        key: item.titleKey,
+      }));
+  const howTitle = localeText(book.title, locale, contact("title"));
 
   function goBook() {
     if (!store.date || !store.time || !plan) return;
@@ -41,7 +58,7 @@ export function LandingMore({ plans: seedPlans, locale, theme }: LandingMoreProp
   return (
     <>
       <section id="press" className="press-block">
-        <h2>{press("title")}</h2>
+        <h2>{pressTitle}</h2>
         <p className="press-outlets" aria-hidden>
           <span>
             {Array.from({ length: 4 })
@@ -51,11 +68,11 @@ export function LandingMore({ plans: seedPlans, locale, theme }: LandingMoreProp
         </p>
         <div className="press-viewport">
           <div className="press-track">
-            {[...PRESS_CARDS, ...PRESS_CARDS].map((item, index) => (
-              <article key={`${item.img}-${index}`}>
-                <img src={asset(item.img)} alt="" />
-                <p>{press(item.sourceKey)}</p>
-                <h3>{press(item.titleKey)}</h3>
+            {[...cards, ...cards].map((item, index) => (
+              <article key={`${item.key}-${index}`}>
+                <img src={item.img} alt="" />
+                <p>{item.source}</p>
+                <h3>{item.title}</h3>
               </article>
             ))}
           </div>
@@ -109,34 +126,10 @@ export function LandingMore({ plans: seedPlans, locale, theme }: LandingMoreProp
 
       <section id="contact" className="contact-band">
         <div>
-          <h2>{contact("title")}</h2>
-          <p>{contact("hours", { hours: shop.hours || SITE_CONTACT.hours })}</p>
+          <h2>{howTitle}</h2>
+          <p>{contact("hours", { hours: book.hours })}</p>
         </div>
-        <div className="contact-actions">
-          <a href={SITE_CONTACT.tel} className="cta-btn cta-phone">
-            <span className="cta-phone-line">
-              <Phone className="size-4" />
-              {shop.phone || SITE_CONTACT.phone}
-            </span>
-          </a>
-          <a href={SITE_CONTACT.mailto} className="cta-btn">
-            <Mail className="size-4" />
-            {SITE_CONTACT.email}
-          </a>
-          <a
-            href={SITE_CONTACT.whatsapp}
-            className="cta-btn has-tip"
-            data-tip={contact("whatsappHint")}
-            title={contact("whatsappHint")}
-            target="_blank"
-            rel="noreferrer"
-          >
-            WhatsApp
-          </a>
-          <Link href={withSlash("/booking")} className="cta-btn">
-            {contact("online")}
-          </Link>
-        </div>
+        <BookingChannels stacked={false} className="contact-actions" onlineHref={withSlash("/booking")} />
       </section>
     </>
   );

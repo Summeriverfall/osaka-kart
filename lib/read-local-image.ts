@@ -1,9 +1,30 @@
-export const PLAN_IMAGE_LIMIT = {
+export type ImageLimit = {
+  maxBytes: number;
+  minEdge: number;
+  maxEdge: number;
+  compressEdge: number;
+};
+
+export const PLAN_IMAGE_LIMIT: ImageLimit = {
   maxBytes: 2 * 1024 * 1024,
   minEdge: 600,
   maxEdge: 4000,
   compressEdge: 1400,
-} as const;
+};
+
+export const CMS_IMAGE_LIMIT: ImageLimit = {
+  maxBytes: 2 * 1024 * 1024,
+  minEdge: 200,
+  maxEdge: 4000,
+  compressEdge: 1400,
+};
+
+export const LOGO_IMAGE_LIMIT: ImageLimit = {
+  maxBytes: 1 * 1024 * 1024,
+  minEdge: 32,
+  maxEdge: 2000,
+  compressEdge: 512,
+};
 
 export function planImageLimitHint() {
   return `宽和高均不少于 ${PLAN_IMAGE_LIMIT.minEdge}px，最长边不超过 ${PLAN_IMAGE_LIMIT.maxEdge}px，文件不超过 ${PLAN_IMAGE_LIMIT.maxBytes / 1024 / 1024}MB。上传后转 WebP，图存在本机 IndexedDB，不进页面主缓存。`;
@@ -30,13 +51,17 @@ export function readLocalImageErrorMessage(code: string) {
   return "图片读取失败，请换一张再试";
 }
 
-export function readLocalImage(file: File, maxEdge = PLAN_IMAGE_LIMIT.compressEdge): Promise<string> {
+export function readLocalImage(
+  file: File,
+  maxEdge = PLAN_IMAGE_LIMIT.compressEdge,
+  limits: ImageLimit = PLAN_IMAGE_LIMIT,
+): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!/^image\/(jpeg|jpg|png|webp)$/i.test(file.type)) {
       reject(new Error("type"));
       return;
     }
-    if (file.size > PLAN_IMAGE_LIMIT.maxBytes) {
+    if (file.size > limits.maxBytes) {
       reject(new Error("size"));
       return;
     }
@@ -46,11 +71,11 @@ export function readLocalImage(file: File, maxEdge = PLAN_IMAGE_LIMIT.compressEd
       URL.revokeObjectURL(url);
       const min = Math.min(image.width, image.height);
       const max = Math.max(image.width, image.height);
-      if (min < PLAN_IMAGE_LIMIT.minEdge) {
+      if (min < limits.minEdge) {
         reject(new Error("small"));
         return;
       }
-      if (max > PLAN_IMAGE_LIMIT.maxEdge) {
+      if (max > limits.maxEdge) {
         reject(new Error("large"));
         return;
       }
@@ -74,4 +99,12 @@ export function readLocalImage(file: File, maxEdge = PLAN_IMAGE_LIMIT.compressEd
     };
     image.src = url;
   });
+}
+
+export function readLocalLogo(file: File) {
+  return readLocalImage(file, LOGO_IMAGE_LIMIT.compressEdge, LOGO_IMAGE_LIMIT);
+}
+
+export function readCmsImage(file: File) {
+  return readLocalImage(file, CMS_IMAGE_LIMIT.compressEdge, CMS_IMAGE_LIMIT);
 }

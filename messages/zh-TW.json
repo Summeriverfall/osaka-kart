@@ -8,6 +8,7 @@
     "plans": "套餐",
     "faq": "FAQ",
     "videos": "現場",
+    "experience": "視頻",
     "booking": "立即預約",
     "calendar": "預約",
     "menu": "選單"
@@ -46,7 +47,7 @@
     "v8": "車隊合影"
   },
   "ReviewsHome": {
-    "title": "車手怎麼說",
+    "title": "用戶評價",
     "r1Name": "Alex M.",
     "r1Country": "USA",
     "r1Quote": "從卡丁車上看出去，這座城完全不一樣。大阪最棒的一晚。",
@@ -234,7 +235,7 @@
     "age": "18+",
     "faqLead": "上路前最常被問到的幾件事。駕照細則按國家不同。",
     "moreHelp": "查看各國駕照說明",
-    "reviewLead": "來過的人怎麼說。",
+    "reviewLead": "客人帶走的感受。",
     "visitLead": "集合在難波。確切門牌預訂後發送。",
     "nextDate": "已選套餐，接下來選日期",
     "summary": "本次預約"

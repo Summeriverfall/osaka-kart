@@ -1,7 +1,9 @@
 "use client";
 
 import { HeroVideo } from "@/components/home/hero-video";
+import { CmsVideoMedia } from "@/components/site/cms-video-media";
 import { asset } from "@/lib/asset";
+import { heroMediaOf, useLiveCms } from "@/lib/live-cms";
 import { LOOK_VIDEO, type SiteTheme } from "@/lib/visual-theme";
 
 type HeroMediaProps = {
@@ -9,17 +11,31 @@ type HeroMediaProps = {
 };
 
 export function HeroMedia({ theme }: HeroMediaProps) {
+  const cms = useLiveCms();
   const clip = LOOK_VIDEO[theme];
+  const hero = heroMediaOf(cms, theme);
+  const youtube = hero.resolved?.kind === "youtube";
 
   return (
     <div className="hero-media" aria-hidden>
-      <HeroVideo
-        src={asset(clip.src)}
-        startAt={clip.startAt}
-        poster={asset("/images/hero/poster.jpg")}
-        preload="none"
-        className="absolute inset-0 z-0 h-full w-full object-cover"
-      />
+      {youtube ? (
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <CmsVideoMedia
+            video={hero.video}
+            fallback={clip.src}
+            autoPlay
+            className="absolute inset-0 h-[140%] w-[140%] -translate-x-[14%] -translate-y-[14%] object-cover"
+          />
+        </div>
+      ) : (
+        <HeroVideo
+          src={hero.resolved?.kind === "file" ? hero.resolved.src : asset(clip.src)}
+          startAt={hero.startAt}
+          poster={hero.resolved?.poster ?? asset("/images/hero/poster.jpg")}
+          preload="none"
+          className="absolute inset-0 z-0 h-full w-full object-cover"
+        />
+      )}
 
       {theme === "neon" && (
         <>

@@ -27,6 +27,7 @@ export function NeonLanding({ plans, addons, locale, copy }: Props) {
       <div className="neon-grain" aria-hidden />
       <SiteNav
         theme="neon"
+        experience={copy.nav.experience}
         plans={copy.nav.plans}
         faq={copy.nav.faq}
         calendar={copy.nav.calendar}

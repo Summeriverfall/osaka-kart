@@ -2,13 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
-import { Ban, Check, Eye, Pencil } from "lucide-react";
+import { Ban, Check, ChevronRight, Eye, Pencil, Plus, Search } from "lucide-react";
 import { ChannelBadge } from "@/components/admin/channel-badge";
 import { StatusSelect } from "@/components/admin/status-select";
 import { Modal } from "@/components/ui/modal";
 import { adminChannel, adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
 import { todayIsoDate } from "@/lib/booking/slots";
 import { formatYenShort } from "@/lib/format";
+import { OrderDocs } from "@/components/admin/order-docs";
+import { OrderEditFields } from "@/components/admin/order-edit-fields";
 import { CHANNELS, type MockOrder, type OrderChannel, type OrderStatus } from "@/lib/mock/orders";
 import { MOCK_PLANS } from "@/lib/mock/plans";
 import { cn } from "@/lib/utils";
@@ -87,9 +89,11 @@ function OrderOps({
           {copy.orders.confirm}
         </button>
       </div>
-      <button type="button" className="order-ops-detail" onClick={onDetail}>
+      <span className="order-ops-gutter" aria-hidden />
+      <button type="button" className="order-ops-detail" title={copy.orders.detail} onClick={onDetail}>
         <Eye className="size-3.5" />
         {copy.orders.detail}
+        <ChevronRight className="size-3.5" />
       </button>
     </div>
   );
@@ -108,6 +112,7 @@ export function AdminOrdersView() {
   const [sortKey, setSortKey] = useState<SortKey>("time");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [editing, setEditing] = useState<MockOrder | null>(null);
+  const [editingFromId, setEditingFromId] = useState("");
   const [detail, setDetail] = useState<MockOrder | null>(null);
   const [refund, setRefund] = useState<MockOrder | null>(null);
   const today = todayIsoDate();
@@ -139,6 +144,12 @@ export function AdminOrdersView() {
     return map;
   }, [storeOrders]);
 
+  const channelOptions = useMemo(() => {
+    const enabled = new Set((settings.channels ?? []).filter((item) => item.enabled).map((item) => item.id));
+    if (!enabled.size) return CHANNELS;
+    return CHANNELS.filter((id) => enabled.has(id) || id === editing?.channel);
+  }, [settings.channels, editing?.channel]);
+
   function toggleSort(key: SortKey) {
     if (sortKey !== key) {
       setSortKey(key);
@@ -148,10 +159,43 @@ export function AdminOrdersView() {
     setSortDir((current) => (current === "desc" ? "asc" : "desc"));
   }
 
+  function openEdit(order: MockOrder) {
+    setEditingFromId(order.id);
+    setEditing({ ...order });
+  }
+
+  function openAdd() {
+    setEditingFromId("");
+    setEditing({ ...EMPTY, date: picked || today, storeId });
+  }
+
   function save(order: MockOrder) {
-    const id = order.id || `FK-${Date.now().toString(36).toUpperCase()}`;
-    upsertOrder({ ...order, id, storeId: order.storeId || storeId });
+    const id = order.id.trim() || `FK-${Date.now().toString(36).toUpperCase()}`;
+    const male = Math.max(0, order.male);
+    const female = Math.max(0, order.female);
+    const next: MockOrder = {
+      ...order,
+      id,
+      male,
+      female,
+      riders: male + female,
+      time: order.time.slice(0, 5),
+      totalJpy: Math.max(0, order.totalJpy),
+      storeId: order.storeId || storeId,
+    };
+    const taken = useOpsStore.getState().orders.some((item) => item.id === next.id && item.id !== editingFromId);
+    if (taken) {
+      notify(copy.orders.idTaken);
+      return;
+    }
+    const prev = editingFromId ? useOpsStore.getState().orders.find((item) => item.id === editingFromId) : undefined;
+    upsertOrder(next, editingFromId || undefined);
     setEditing(null);
+    setEditingFromId("");
+    if (prev && prev.status !== next.status) {
+      void sendStatusMail(next.status, next, templates, settings, locale).then(notify);
+      return;
+    }
     notify(copy.orders.saved);
   }
 
@@ -177,64 +221,79 @@ export function AdminOrdersView() {
 
   return (
     <div className="space-y-4">
-      <section className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-        <div className="flex flex-wrap items-end gap-2">
-          <label className="grid gap-1 text-xs text-slate-500">
-            {copy.orders.date}
+      <section className="order-toolbar">
+        <div className="order-toolbar-main">
+          <label className="order-toolbar-search">
+            <Search />
             <input
-              className="admin-input mt-0 w-auto min-w-[11rem] max-w-44"
+              type="search"
+              placeholder={copy.orders.search}
+              aria-label={copy.orders.search}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </label>
+          <div className="order-toolbar-dates">
+            <input
               type="date"
+              aria-label={copy.orders.date}
               value={picked}
               onChange={(event) => setPicked(event.target.value)}
             />
-          </label>
-          <button type="button" className="h-11 rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-600" onClick={() => setPicked(today)}>
-            {copy.orders.today}
-          </button>
-          <button type="button" className="h-11 rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-600" onClick={() => setPicked("")}>
-            {copy.orders.allDates}
-          </button>
-          <input
-            className="admin-input mt-0 min-w-52 flex-1"
-            placeholder={copy.orders.search}
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-          <select className="admin-input mt-0 max-w-36" value={status} onChange={(event) => setStatus(event.target.value as OrderStatus | "all")}>
+            <button
+              type="button"
+              className={cn(picked === today && "is-on")}
+              onClick={() => setPicked(today)}
+            >
+              {copy.orders.today}
+            </button>
+            <button
+              type="button"
+              className={cn(!picked && "is-on")}
+              onClick={() => setPicked("")}
+            >
+              {copy.orders.allDates}
+            </button>
+          </div>
+          <select
+            className="order-toolbar-status"
+            aria-label={copy.orders.status}
+            value={status}
+            onChange={(event) => setStatus(event.target.value as OrderStatus | "all")}
+          >
             <option value="all">{copy.orders.allStatus}</option>
             {Object.keys(copy.orderStatus).map((key) => (
               <option key={key} value={key}>{copy.orderStatus[key]}</option>
             ))}
           </select>
-          <button type="button" className="cta-btn h-11 px-5" onClick={() => setEditing({ ...EMPTY, date: picked || today, storeId })}>
+          <button
+            type="button"
+            className="cta-btn order-toolbar-add"
+            onClick={openAdd}
+          >
+            <Plus className="size-4" />
             {copy.orders.add}
           </button>
         </div>
-        <p className="mt-2 text-xs text-slate-400">
-          {picked ? copy.orders.filtering(picked, rows.length) : copy.orders.allDatesCount(rows.length)}
-        </p>
+        <div className="order-toolbar-channels">
+          {([["all", copy.orders.allChannels], ...CHANNELS.map((item) => [item, adminChannel(locale, item)])] as [OrderChannel | "all", string][]).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setChannel(id)}
+              className={cn("order-toolbar-chip", channel === id && "is-on")}
+            >
+              {copy.orders.channelChip(label, channelCounts.get(id) ?? 0)}
+            </button>
+          ))}
+          <p className="order-toolbar-meta">
+            {picked ? copy.orders.filtering(picked, rows.length) : copy.orders.allDatesCount(rows.length)}
+          </p>
+        </div>
       </section>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {([["all", copy.orders.allChannels], ...CHANNELS.map((item) => [item, adminChannel(locale, item)])] as [OrderChannel | "all", string][]).map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setChannel(id)}
-            className={cn(
-              "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
-              channel === id
-                ? "border-blue-600 bg-blue-600 text-white"
-                : "border-slate-200 bg-white text-slate-600 hover:border-blue-400",
-            )}
-          >
-            {copy.orders.channelChip(label, channelCounts.get(id) ?? 0)}
-          </button>
-        ))}
-      </div>
-
       <div className="hidden overflow-x-auto rounded-xl border border-slate-200 bg-white md:block">
-        <table className="admin-table">
+        <table className="admin-table order-table">
           <thead>
             <tr>
               <th>{copy.orders.id}</th>
@@ -275,12 +334,12 @@ export function AdminOrdersView() {
                 <td>
                   <StatusSelect status={order.status} onChange={(next) => changeStatus(order.id, next)} />
                 </td>
-                <td>
+                <td className="order-ops-cell">
                   <OrderOps
                     order={order}
                     copy={copy}
                     onDetail={() => setDetail(order)}
-                    onEdit={() => setEditing(order)}
+                    onEdit={() => openEdit(order)}
                     onRefund={() => setRefund(order)}
                     onConfirm={() => changeStatus(order.id, "confirmed")}
                   />
@@ -306,13 +365,13 @@ export function AdminOrdersView() {
                 <StatusSelect status={order.status} onChange={(next) => changeStatus(order.id, next)} />
               </div>
             </div>
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="order-ops-mobile">
               <span className="text-sm">{formatYenShort(order.totalJpy)}</span>
               <OrderOps
                 order={order}
                 copy={copy}
                 onDetail={() => setDetail(order)}
-                onEdit={() => setEditing(order)}
+                onEdit={() => openEdit(order)}
                 onRefund={() => setRefund(order)}
                 onConfirm={() => changeStatus(order.id, "confirmed")}
               />
@@ -323,37 +382,36 @@ export function AdminOrdersView() {
 
       <Modal
         open={Boolean(editing)}
-        title={editing?.id ? copy.orders.editTitle : copy.orders.addTitle}
-        onClose={() => setEditing(null)}
+        title={editingFromId ? copy.orders.editTitle : copy.orders.addTitle}
+        onClose={() => {
+          setEditing(null);
+          setEditingFromId("");
+        }}
+        wide
         footer={
           <>
-            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setEditing(null)}>{copy.common.cancel}</button>
+            <button
+              type="button"
+              className="rounded-full border border-slate-200 px-4 py-2 text-sm"
+              onClick={() => {
+                setEditing(null);
+                setEditingFromId("");
+              }}
+            >
+              {copy.common.cancel}
+            </button>
             <button type="button" className="cta-btn px-5 py-2.5" onClick={() => editing && save(editing)}>{copy.common.save}</button>
           </>
         }
       >
         {editing ? (
-          <>
-            <label className="admin-field">{copy.orders.customerName}<input className="admin-input" value={editing.customer} onChange={(event) => setEditing({ ...editing, customer: event.target.value })} /></label>
-            <label className="admin-field">{copy.orders.email}<input className="admin-input" value={editing.email} onChange={(event) => setEditing({ ...editing, email: event.target.value })} /></label>
-            <label className="admin-field">{copy.orders.passport}<input className="admin-input" value={editing.passport} onChange={(event) => setEditing({ ...editing, passport: event.target.value })} /></label>
-            <label className="admin-field">
-              {copy.orders.plan}
-              <select className="admin-input" value={editing.planSlug} onChange={(event) => {
-                const plan = plans.find((item) => item.slug === event.target.value) ?? plans[0];
-                setEditing({ ...editing, planSlug: plan.slug, planName: plan.name, totalJpy: plan.priceJpy * editing.riders });
-              }}>
-                {plans.map((plan) => <option key={plan.id} value={plan.slug}>{adminPlanName(locale, plan, plan.name)}</option>)}
-              </select>
-            </label>
-            <label className="admin-field">
-              {copy.orders.channel}
-              <select className="admin-input" value={editing.channel} onChange={(event) => setEditing({ ...editing, channel: event.target.value as OrderChannel })}>
-                {CHANNELS.map((item) => <option key={item} value={item}>{adminChannel(locale, item)}</option>)}
-              </select>
-            </label>
-            <label className="admin-field">{copy.orders.note}<textarea className="admin-input min-h-24" value={editing.note} onChange={(event) => setEditing({ ...editing, note: event.target.value })} /></label>
-          </>
+          <OrderEditFields
+            order={editing}
+            plans={plans}
+            channelOptions={channelOptions}
+            locale={locale}
+            onChange={setEditing}
+          />
         ) : null}
       </Modal>
 
@@ -379,6 +437,7 @@ export function AdminOrdersView() {
             <p>{copy.orders.amount}：{formatYenShort(detail.totalJpy)} · {detail.paid ? copy.common.paid : copy.common.unpaid}</p>
             <p>{copy.orders.channel}：<ChannelBadge channel={detail.channel} /></p>
             <p>{copy.orders.status}：{adminOrderStatus(locale, detail.status)}</p>
+            <OrderDocs locale={locale} />
           </div>
         ) : null}
       </Modal>

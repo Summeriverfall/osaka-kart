@@ -8,6 +8,7 @@
     "plans": "플랜",
     "faq": "FAQ",
     "videos": "현장",
+    "experience": "영상",
     "booking": "지금 예약",
     "calendar": "예약",
     "menu": "메뉴"
@@ -46,7 +47,7 @@
     "v8": "팀 사진"
   },
   "ReviewsHome": {
-    "title": "라이더 후기",
+    "title": "이용 후기",
     "r1Name": "Alex M.",
     "r1Country": "USA",
     "r1Quote": "카트에서 보는 도시는 완전히 달랐다. 오사카에서 가장 좋은 밤.",

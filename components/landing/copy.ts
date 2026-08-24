@@ -31,6 +31,7 @@ export async function getLandingCopy() {
     nav: {
       plans: nav("plans"),
       videos: nav("videos"),
+      experience: nav("experience"),
       faq: nav("faq"),
       booking: nav("booking"),
       calendar: nav("calendar"),

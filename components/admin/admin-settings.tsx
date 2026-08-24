@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
-import { LogsTable } from "@/components/admin/logs-table";
 import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import {
+  adminChannel,
   adminCopy,
   adminMailLocale,
   adminMailType,
@@ -15,16 +15,16 @@ import {
 } from "@/lib/admin/copy";
 import { type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
 import { sendTestMail } from "@/lib/ops-notify";
-import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 
-export function AdminSettingsView() {
+export type SettingsSection = "pay" | "channels" | "stores" | "email";
+
+export function AdminSettingsView({ section }: { section: SettingsSection }) {
   const locale = useLocale();
   const copy = adminCopy(locale);
   const { settings, patchSettings, templates, patchTemplate, stores, upsertStore } = useOpsStore();
   const notify = useToastStore((state) => state.notify);
-  const go = useAdminNavStore((state) => state.go);
   const [tpl, setTpl] = useState<MockEmailTemplate | null>(null);
   const [store, setStore] = useState<MockStore | null>(null);
   const [testing, setTesting] = useState(false);
@@ -41,263 +41,300 @@ export function AdminSettingsView() {
 
   return (
     <div className="grid min-w-0 gap-6">
-      <nav className="flex flex-wrap gap-2">
-        {[
-          ["settings-pay", copy.settings.tabPay],
-          ["settings-stores", copy.settings.tabStores],
-          ["settings-send", copy.settings.tabSend],
-          ["settings-mail", copy.settings.tabMail],
-          ["settings-logs", copy.settings.tabLogs],
-        ].map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-blue-400 hover:text-blue-700"
-            onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-
-      <section id="settings-pay" className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
-        <h2 className="font-black">{copy.settings.pay}</h2>
-        {payments.map((item, index) => (
-          <div key={item.id} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="font-black">{adminPayName(locale, item.id, item.name)}</p>
-                {item.reserved ? (
-                  <span className="text-xs text-[#6B7280]">{copy.settings.reserved}</span>
-                ) : (
-                  <span className="text-xs text-emerald-600">{item.enabled ? copy.settings.on : copy.settings.off}</span>
-                )}
-              </div>
-              <NeonToggle
-                checked={item.enabled}
-                onChange={(on) => {
-                  if (item.reserved) return;
-                  const next = payments.map((row, i) => (i === index ? { ...row, enabled: on } : row));
-                  patchSettings({ payments: next });
-                }}
-              />
-            </div>
-            {item.id === "stripe" ? (
-              <div className="mt-3 flex items-center justify-between gap-3 text-sm">
-                <span>{copy.settings.testMode}</span>
+      {section === "pay" ? (
+        <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
+          {payments.map((item, index) => (
+            <div key={item.id} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-black">{adminPayName(locale, item.id, item.name)}</p>
+                  {item.reserved ? (
+                    <span className="text-xs text-[#6B7280]">{copy.settings.reserved}</span>
+                  ) : (
+                    <span className="text-xs text-emerald-600">{item.enabled ? copy.settings.on : copy.settings.off}</span>
+                  )}
+                </div>
                 <NeonToggle
-                  checked={Boolean(item.testMode)}
+                  checked={item.enabled}
                   onChange={(on) => {
-                    const next = payments.map((row, i) => (i === index ? { ...row, testMode: on } : row));
+                    if (item.reserved) return;
+                    const next = payments.map((row, i) => (i === index ? { ...row, enabled: on } : row));
                     patchSettings({ payments: next });
                   }}
                 />
               </div>
-            ) : null}
-            {item.fieldLabel && !item.reserved ? (
+              {item.id === "stripe" ? (
+                <div className="mt-3 flex items-center justify-between gap-3 text-sm">
+                  <span>{copy.settings.testMode}</span>
+                  <NeonToggle
+                    checked={Boolean(item.testMode)}
+                    onChange={(on) => {
+                      const next = payments.map((row, i) => (i === index ? { ...row, testMode: on } : row));
+                      patchSettings({ payments: next });
+                    }}
+                  />
+                </div>
+              ) : null}
+              {item.fieldLabel && !item.reserved ? (
+                <label className="admin-field mt-3 min-w-0">
+                  {item.fieldLabel}
+                  <input
+                    className="admin-input"
+                    type="password"
+                    value={item.fieldValue ?? ""}
+                    onChange={(e) => {
+                      const next = payments.map((row, i) => (i === index ? { ...row, fieldValue: e.target.value } : row));
+                      patchSettings({ payments: next });
+                    }}
+                  />
+                </label>
+              ) : null}
+            </div>
+          ))}
+          <button type="button" className="cta-btn w-full px-5 py-2.5 sm:w-auto" onClick={() => notify(copy.settings.paySaved)}>
+            {copy.settings.savePay}
+          </button>
+        </section>
+      ) : null}
+
+      {section === "channels" ? (
+        <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
+          {(settings.channels ?? []).map((item, index) => (
+            <div key={item.id} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-black">{adminChannel(locale, item.id)}</p>
+                  {item.locked ? (
+                    <span className="text-xs text-slate-500">{copy.settings.channelLocked}</span>
+                  ) : (
+                    <span className={item.enabled ? "text-xs text-emerald-600" : "text-xs text-slate-500"}>
+                      {item.enabled ? copy.settings.on : copy.settings.off}
+                    </span>
+                  )}
+                </div>
+                <div className={item.locked ? "pointer-events-none opacity-40" : undefined}>
+                  <NeonToggle
+                    checked={item.enabled}
+                    onChange={(on) => {
+                      if (item.locked) return;
+                      const next = (settings.channels ?? []).map((row, i) => (i === index ? { ...row, enabled: on } : row));
+                      patchSettings({ channels: next });
+                    }}
+                  />
+                </div>
+              </div>
               <label className="admin-field mt-3 min-w-0">
-                {item.fieldLabel}
+                {copy.settings.channelCut}
                 <input
                   className="admin-input"
-                  type="password"
-                  value={item.fieldValue ?? ""}
-                  onChange={(e) => {
-                    const next = payments.map((row, i) => (i === index ? { ...row, fieldValue: e.target.value } : row));
-                    patchSettings({ payments: next });
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={0.1}
+                  value={Number((item.cut * 100).toFixed(1))}
+                  onChange={(event) => {
+                    const pct = Math.min(100, Math.max(0, Number(event.target.value) || 0));
+                    const next = (settings.channels ?? []).map((row, i) => (i === index ? { ...row, cut: pct / 100 } : row));
+                    patchSettings({ channels: next });
                   }}
                 />
               </label>
-            ) : null}
-          </div>
-        ))}
-        <button type="button" className="cta-btn w-full px-5 py-2.5 sm:w-auto" onClick={() => notify(copy.settings.paySaved)}>
-          {copy.settings.savePay}
-        </button>
-      </section>
-
-      <section id="settings-stores" className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-black">{copy.settings.stores}</h2>
-          <button
-            type="button"
-            className="cta-btn px-4 py-2 text-sm"
-            onClick={() =>
-              setStore({
-                id: `st-${Date.now()}`,
-                name: "",
-                address: "",
-                phone: "",
-                hours: "10:00 – 21:00",
-                maps: "",
-                status: "预留",
-                created: "2026-08-20",
-              })
-            }
-          >
-            {copy.settings.addStore}
+              {item.fieldLabel ? (
+                <label className="admin-field mt-3 min-w-0">
+                  {item.fieldLabel}
+                  <input
+                    className="admin-input"
+                    type="password"
+                    value={item.fieldValue ?? ""}
+                    onChange={(event) => {
+                      const next = (settings.channels ?? []).map((row, i) => (i === index ? { ...row, fieldValue: event.target.value } : row));
+                      patchSettings({ channels: next });
+                    }}
+                  />
+                </label>
+              ) : null}
+            </div>
+          ))}
+          <button type="button" className="cta-btn w-full px-5 py-2.5 sm:w-auto" onClick={() => notify(copy.settings.channelSaved)}>
+            {copy.settings.saveChannels}
           </button>
-        </div>
-        <ul className="mt-4 space-y-3">
-          {stores.map((item) => (
-            <li
-              key={item.id}
-              className="flex flex-col gap-3 rounded-xl border border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+        </section>
+      ) : null}
+
+      {section === "stores" ? (
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              className="cta-btn px-4 py-2 text-sm"
+              onClick={() =>
+                setStore({
+                  id: `st-${Date.now()}`,
+                  name: "",
+                  address: "",
+                  phone: "",
+                  hours: "10:00 – 21:00",
+                  maps: "",
+                  status: "预留",
+                  created: "2026-08-20",
+                })
+              }
             >
-              <div className="min-w-0">
-                <b>{adminStoreName(locale, item.id, item.name)}</b>
-                <p className="mt-1 break-words text-sm leading-6 text-slate-500">
-                  <span className="block sm:inline">{adminStoreAddress(locale, item.id, item.address)}</span>
-                  <span className="hidden sm:inline"> · </span>
-                  <span className="block sm:inline">{item.hours === "待定" ? copy.common.undecided : item.hours}</span>
-                  <span className="hidden sm:inline"> · </span>
-                  <span className="block sm:inline">{/待开通/.test(item.phone) ? copy.common.notOpen : item.phone}</span>
-                </p>
-              </div>
-              <button type="button" className="self-start text-xs text-blue-600 sm:self-center" onClick={() => setStore(item)}>
-                {copy.common.edit}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
+              {copy.settings.addStore}
+            </button>
+          </div>
+          <ul className="mt-4 space-y-3">
+            {stores.map((item) => (
+              <li
+                key={item.id}
+                className="flex flex-col gap-3 rounded-xl border border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <b>{adminStoreName(locale, item.id, item.name)}</b>
+                  <p className="mt-1 break-words text-sm leading-6 text-slate-500">
+                    <span className="block sm:inline">{adminStoreAddress(locale, item.id, item.address)}</span>
+                    <span className="hidden sm:inline"> · </span>
+                    <span className="block sm:inline">{item.hours === "待定" ? copy.common.undecided : item.hours}</span>
+                    <span className="hidden sm:inline"> · </span>
+                    <span className="block sm:inline">{/待开通/.test(item.phone) ? copy.common.notOpen : item.phone}</span>
+                  </p>
+                </div>
+                <button type="button" className="self-start text-xs text-blue-600 sm:self-center" onClick={() => setStore(item)}>
+                  {copy.common.edit}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
-      <section id="settings-send" className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
-        <h2 className="font-black">{copy.settings.send}</h2>
-        <p className="text-sm leading-6 text-slate-500">
-          {copy.settings.sendLead}{" "}
-          <a className="text-blue-600" href="https://www.emailjs.com" target="_blank" rel="noreferrer">
-            emailjs.com
-          </a>
-        </p>
-        <label className="admin-field">
-          {copy.settings.mailFrom}
-          <input
-            className="admin-input"
-            type="email"
-            placeholder="book@osakakart.jp"
-            value={settings.mailFrom ?? ""}
-            onChange={(event) => patchSettings({ mailFrom: event.target.value })}
-          />
-        </label>
-        <label className="admin-field">
-          {copy.settings.mailTo}
-          <input
-            className="admin-input"
-            type="email"
-            placeholder={copy.settings.mailToPh}
-            value={settings.mailTo ?? ""}
-            onChange={(event) => patchSettings({ mailTo: event.target.value })}
-          />
-        </label>
-        <label className="admin-field">
-          EmailJS Public Key
-          <input
-            className="admin-input"
-            type="password"
-            autoComplete="off"
-            value={settings.mailPublicKey ?? ""}
-            onChange={(event) => patchSettings({ mailPublicKey: event.target.value })}
-          />
-        </label>
-        <label className="admin-field">
-          Service ID
-          <input
-            className="admin-input"
-            value={settings.mailServiceId ?? ""}
-            onChange={(event) => patchSettings({ mailServiceId: event.target.value })}
-          />
-        </label>
-        <label className="admin-field">
-          Template ID
-          <input
-            className="admin-input"
-            value={settings.mailTemplateId ?? ""}
-            onChange={(event) => patchSettings({ mailTemplateId: event.target.value })}
-          />
-        </label>
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            className="cta-btn px-5 py-2.5"
-            onClick={() => notify(copy.settings.sendSaved)}
-          >
-            {copy.common.save}
-          </button>
-          <button
-            type="button"
-            className="rounded-full border border-slate-200 px-5 py-2.5 text-sm text-slate-700 hover:border-blue-400"
-            disabled={testing}
-            onClick={() => {
-              setTesting(true);
-              void sendTestMail(useOpsStore.getState().settings, locale)
-                .then((result) => notify(result.message))
-                .finally(() => setTesting(false));
-            }}
-          >
-            {testing ? copy.settings.testing : copy.settings.testSend}
-          </button>
-        </div>
-      </section>
+      {section === "email" ? (
+        <>
+        <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
+          <h2 className="font-black">{copy.settings.send}</h2>
+          <p className="text-sm leading-6 text-slate-500">
+            {copy.settings.sendLead}{" "}
+            <a className="text-blue-600" href="https://www.emailjs.com" target="_blank" rel="noreferrer">
+              emailjs.com
+            </a>
+          </p>
+          <label className="admin-field">
+            {copy.settings.mailFrom}
+            <input
+              className="admin-input"
+              type="email"
+              placeholder="book@osakakart.jp"
+              value={settings.mailFrom ?? ""}
+              onChange={(event) => patchSettings({ mailFrom: event.target.value })}
+            />
+          </label>
+          <label className="admin-field">
+            {copy.settings.mailTo}
+            <input
+              className="admin-input"
+              type="email"
+              placeholder={copy.settings.mailToPh}
+              value={settings.mailTo ?? ""}
+              onChange={(event) => patchSettings({ mailTo: event.target.value })}
+            />
+          </label>
+          <label className="admin-field">
+            EmailJS Public Key
+            <input
+              className="admin-input"
+              type="password"
+              autoComplete="off"
+              value={settings.mailPublicKey ?? ""}
+              onChange={(event) => patchSettings({ mailPublicKey: event.target.value })}
+            />
+          </label>
+          <label className="admin-field">
+            Service ID
+            <input
+              className="admin-input"
+              value={settings.mailServiceId ?? ""}
+              onChange={(event) => patchSettings({ mailServiceId: event.target.value })}
+            />
+          </label>
+          <label className="admin-field">
+            Template ID
+            <input
+              className="admin-input"
+              value={settings.mailTemplateId ?? ""}
+              onChange={(event) => patchSettings({ mailTemplateId: event.target.value })}
+            />
+          </label>
+          <div className="flex flex-wrap gap-3">
+            <button type="button" className="cta-btn px-5 py-2.5" onClick={() => notify(copy.settings.sendSaved)}>
+              {copy.common.save}
+            </button>
+            <button
+              type="button"
+              className="rounded-full border border-slate-200 px-5 py-2.5 text-sm text-slate-700 hover:border-blue-400"
+              disabled={testing}
+              onClick={() => {
+                setTesting(true);
+                void sendTestMail(useOpsStore.getState().settings, locale)
+                  .then((result) => notify(result.message))
+                  .finally(() => setTesting(false));
+              }}
+            >
+              {testing ? copy.settings.testing : copy.settings.testSend}
+            </button>
+          </div>
+        </section>
 
-      <section id="settings-mail" className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
-        <h2 className="font-black">{copy.settings.templates}</h2>
-        <div className="mt-4 hidden overflow-x-auto md:block">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>{copy.settings.type}</th>
-                <th>{copy.settings.locale}</th>
-                <th>{copy.settings.updated}</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {templates.map((item) => (
-                <tr key={item.id}>
-                  <td>{adminMailType(locale, item.type)}</td>
-                  <td>{adminMailLocale(locale, item.locale)}</td>
-                  <td>{item.updated}</td>
-                  <td>
-                    <button type="button" className="text-xs text-blue-600" onClick={() => setTpl(item)}>
-                      {copy.common.edit}
-                    </button>
-                  </td>
+        <section className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
+          <h2 className="font-black">{copy.settings.templates}</h2>
+          <div className="mt-4 hidden overflow-x-auto md:block">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>{copy.settings.type}</th>
+                  <th>{copy.settings.locale}</th>
+                  <th>{copy.settings.updated}</th>
+                  <th />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="mt-4 grid gap-3 md:hidden">
-          {templateGroups.map(([type, items]) => (
-            <article key={type} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="font-black">{adminMailType(locale, type)}</p>
-              <ul className="mt-3 space-y-2">
-                {items.map((item) => (
-                  <li key={item.id} className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold">{adminMailLocale(locale, item.locale)}</p>
-                      <p className="text-xs text-slate-500">{item.updated}</p>
-                    </div>
-                    <button type="button" className="shrink-0 text-xs text-blue-600" onClick={() => setTpl(item)}>
-                      {copy.common.edit}
-                    </button>
-                  </li>
+              </thead>
+              <tbody>
+                {templates.map((item) => (
+                  <tr key={item.id}>
+                    <td>{adminMailType(locale, item.type)}</td>
+                    <td>{adminMailLocale(locale, item.locale)}</td>
+                    <td>{item.updated}</td>
+                    <td>
+                      <button type="button" className="text-xs text-blue-600" onClick={() => setTpl(item)}>
+                        {copy.common.edit}
+                      </button>
+                    </td>
+                  </tr>
                 ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section id="settings-logs" className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-black">{copy.settings.logs}</h2>
-          <button type="button" className="order-ops-detail" onClick={() => go("/admin/settings/logs")}>
-            {copy.settings.detail}
-          </button>
-        </div>
-        <LogsTable limit={20} />
-      </section>
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4 grid gap-3 md:hidden">
+            {templateGroups.map(([type, items]) => (
+              <article key={type} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="font-black">{adminMailType(locale, type)}</p>
+                <ul className="mt-3 space-y-2">
+                  {items.map((item) => (
+                    <li key={item.id} className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold">{adminMailLocale(locale, item.locale)}</p>
+                        <p className="text-xs text-slate-500">{item.updated}</p>
+                      </div>
+                      <button type="button" className="shrink-0 text-xs text-blue-600" onClick={() => setTpl(item)}>
+                        {copy.common.edit}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+        </section>
+        </>
+      ) : null}
 
       <Modal
         open={Boolean(tpl)}

@@ -24,6 +24,37 @@ export function addDaysIso(iso: string, count: number) {
   return isoFromDate(date);
 }
 
+export function addMonthsIso(iso: string, count: number) {
+  const date = parseIsoDate(iso);
+  const day = date.getDate();
+  const next = new Date(date.getFullYear(), date.getMonth() + count, 1);
+  const last = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+  next.setDate(Math.min(day, last));
+  return isoFromDate(next);
+}
+
+export function addYearsIso(iso: string, count: number) {
+  return addMonthsIso(iso, count * 12);
+}
+
+export function monthStartIso(iso: string) {
+  return `${iso.slice(0, 7)}-01`;
+}
+
+export function monthEndIso(iso: string) {
+  const date = parseIsoDate(iso);
+  return isoFromDate(new Date(date.getFullYear(), date.getMonth() + 1, 0));
+}
+
+export function eachIso(from: string, to: string) {
+  const days: string[] = [];
+  if (!from || !to || from > to) return days;
+  for (let cursor = from; cursor <= to; cursor = addDaysIso(cursor, 1)) {
+    days.push(cursor);
+  }
+  return days;
+}
+
 /** 周一为一周起始（周视图用）。月历仍按周日对齐。 */
 export function weekStartMonday(iso: string) {
   const date = parseIsoDate(iso);
@@ -33,15 +64,37 @@ export function weekStartMonday(iso: string) {
   return isoFromDate(date);
 }
 
+export function weekEndSunday(iso: string) {
+  return addDaysIso(weekStartMonday(iso), 6);
+}
+
 export function weekdayLabelZh(iso: string) {
   return ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][parseIsoDate(iso).getDay()];
 }
 
 export function weekdayLabel(iso: string, locale: string) {
+  const day = parseIsoDate(iso).getDay();
   if (locale.startsWith("ja")) {
-    return ["日", "月", "火", "水", "木", "金", "土"][parseIsoDate(iso).getDay()];
+    return ["日", "月", "火", "水", "木", "金", "土"][day];
+  }
+  if (locale.startsWith("en")) {
+    return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day];
   }
   return weekdayLabelZh(iso);
+}
+
+export function formatIsoRange(startIso: string, endIso: string, locale: string) {
+  if (!locale.startsWith("en")) return formatIsoRangeZh(startIso, endIso);
+  const start = parseIsoDate(startIso);
+  const end = parseIsoDate(endIso);
+  const fmt = (date: Date) => new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(date);
+  return `${fmt(start)} – ${fmt(end)}`;
+}
+
+export function calendarIntlLocale(locale: string) {
+  if (locale.startsWith("ja")) return "ja-JP";
+  if (locale.startsWith("en")) return "en";
+  return "zh-TW";
 }
 
 export function formatIsoRangeZh(startIso: string, endIso: string) {

@@ -1,3 +1,5 @@
+import { type OrderChannel } from "@/lib/mock/orders";
+
 export type MockPayChannel = {
   id: string;
   name: string;
@@ -27,6 +29,15 @@ export type MockStore = {
   created: string;
 };
 
+export type MockBookChannel = {
+  id: OrderChannel;
+  enabled: boolean;
+  locked?: boolean;
+  cut: number;
+  fieldLabel?: string;
+  fieldValue?: string;
+};
+
 export type MockSettings = {
   paypay: boolean;
   stripe: boolean;
@@ -45,6 +56,7 @@ export type MockSettings = {
   mailServiceId: string;
   mailTemplateId: string;
   payments: MockPayChannel[];
+  channels: MockBookChannel[];
 };
 
 export const MOCK_PAYMENTS: MockPayChannel[] = [
@@ -53,6 +65,15 @@ export const MOCK_PAYMENTS: MockPayChannel[] = [
   { id: "google", name: "Google Pay", enabled: false, reserved: false, fieldLabel: "Merchant ID", fieldValue: "" },
   { id: "alipay", name: "支付宝跨境", enabled: false, reserved: true },
   { id: "wechat", name: "微信支付跨境", enabled: false, reserved: true },
+];
+
+export const MOCK_BOOK_CHANNELS: MockBookChannel[] = [
+  { id: "Klook", enabled: true, cut: 0.18, fieldLabel: "API Key", fieldValue: "" },
+  { id: "官网", enabled: true, locked: true, cut: 0 },
+  { id: "Viator", enabled: true, cut: 0.2, fieldLabel: "API Key", fieldValue: "" },
+  { id: "微信", enabled: true, cut: 0.05 },
+  { id: "WhatsApp", enabled: true, cut: 0 },
+  { id: "线下", enabled: true, cut: 0 },
 ];
 
 const TYPES = ["预订确认", "出发提醒", "退款通知", "回访评价"] as const;
@@ -357,4 +378,5 @@ export const MOCK_SETTINGS: MockSettings = {
   mailServiceId: "",
   mailTemplateId: "",
   payments: MOCK_PAYMENTS,
+  channels: MOCK_BOOK_CHANNELS,
 };

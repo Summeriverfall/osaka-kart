@@ -140,7 +140,12 @@ function eachIso(from: string, to: string) {
   return days;
 }
 
-export function reportsFromOrders(orders: MockOrder[], range?: ReportRange, locale = "zh-TW") {
+export function reportsFromOrders(
+  orders: MockOrder[],
+  range?: ReportRange,
+  locale = "zh-TW",
+  cuts?: Record<string, number>,
+) {
   const scoped = range ? orders.filter((item) => item.date >= range.from && item.date <= range.to) : orders;
   const live = scoped.filter((item) => item.status !== "cancelled");
   const cancelled = scoped.filter((item) => item.status === "cancelled");
@@ -161,9 +166,10 @@ export function reportsFromOrders(orders: MockOrder[], range?: ReportRange, loca
     channelMap.set(item.channel, current);
   }
   const channels = [...channelMap.entries()].map(([key, found]) => ({
+    id: key,
     name: adminChannel(locale, key),
     fill: CHANNEL_FILL[key] ?? "#9CA3AF",
-    cut: CHANNEL_CUT[key] ?? 0,
+    cut: cuts?.[key] ?? CHANNEL_CUT[key] ?? 0,
     orders: found.orders,
     revenue: found.revenue,
     value: found.orders,

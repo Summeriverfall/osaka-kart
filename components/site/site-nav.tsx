@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, Mail, Menu, Phone, X } from "lucide-react";
+import { Calendar, Menu, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useAppPathname } from "@/lib/use-app-pathname";
 import { BrandMark } from "@/components/site/brand-mark";
-import { ContactTicker } from "@/components/site/contact-ticker";
+import { ContactTicker, NavBookingContact } from "@/components/site/contact-ticker";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
-import { SITE_CONTACT } from "@/lib/contact";
 import { siteHome, withSlash } from "@/lib/paths";
 import { useSiteLook } from "@/lib/site-look";
 import { isSiteTheme, type SiteTheme } from "@/lib/visual-theme";
@@ -45,18 +44,7 @@ export function SiteNav({ look }: SiteNavProps) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const contact = (
-    <div className="site-bar-contact-list">
-      <a href={SITE_CONTACT.tel} onClick={() => setOpen(false)}>
-        <Phone className="size-4" />
-        {SITE_CONTACT.phone}
-      </a>
-      <a href={SITE_CONTACT.mailto} onClick={() => setOpen(false)}>
-        <Mail className="size-4" />
-        {SITE_CONTACT.email}
-      </a>
-    </div>
-  );
+  const contact = <NavBookingContact onClick={() => setOpen(false)} />;
 
   return (
     <>

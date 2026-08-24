@@ -26,6 +26,7 @@ export function AcidLanding({ plans, addons, locale, copy }: Props) {
       <PageRails theme="acid" />
       <SiteNav
         theme="acid"
+        experience={copy.nav.experience}
         plans={copy.nav.plans}
         faq={copy.nav.faq}
         calendar={copy.nav.calendar}
