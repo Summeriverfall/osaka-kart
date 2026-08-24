@@ -17,7 +17,7 @@ export const PRESS_CARDS = [
   { img: "/images/news/n1.webp", sourceKey: "s1" as const, titleKey: "n1" as const },
   { img: "/images/news/n2.webp", sourceKey: "s2" as const, titleKey: "n2" as const },
   { img: "/images/news/n3.webp", sourceKey: "s3" as const, titleKey: "n3" as const },
-  { img: "/images/news/n4.jpg", sourceKey: "s4" as const, titleKey: "n4" as const },
+  { img: "/images/news/n4.webp", sourceKey: "s4" as const, titleKey: "n4" as const },
   { img: "/images/hero/poster.jpg", sourceKey: "s5" as const, titleKey: "n5" as const },
   { img: "/images/social/tsutenkaku-kart.webp", sourceKey: "s6" as const, titleKey: "n6" as const },
 ];

@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useLocale } from "next-intl";
 import { AdminLangSwitch } from "@/components/admin/admin-lang-switch";
-import { adminCopy, adminRoleLabel } from "@/lib/admin/copy";
+import { adminCopy, adminRoleLabel, adminStoreName } from "@/lib/admin/copy";
 import { goToAppPath } from "@/lib/file-href";
 import { MOCK_STORES } from "@/lib/mock/settings";
 import { boundStoreIdFromEmail, staffRecordForEmail } from "@/lib/staff-bind";
@@ -30,9 +30,13 @@ export function AdminLoginForm() {
     : copy.manager;
   const previewStore =
     email.trim() && roleFromEmail(email) === "manager"
-      ? staffRecordForEmail(email)?.store
-        ?? MOCK_STORES.find((item) => item.id === boundStoreIdFromEmail(email))?.name
-        ?? copy.nambaStore
+      ? adminStoreName(
+          locale,
+          boundStoreIdFromEmail(email),
+          staffRecordForEmail(email)?.store
+            ?? MOCK_STORES.find((item) => item.id === boundStoreIdFromEmail(email))?.name
+            ?? copy.nambaStore,
+        )
       : null;
 
   return (

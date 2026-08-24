@@ -11,19 +11,19 @@ export function HomeSafety() {
       icon: HardHat,
       title: t("s1Title"),
       body: t("s1Body"),
-      photo: asset("/images/safety/helmet.png"),
+      photo: asset("/images/safety/helmet.webp"),
     },
     {
       icon: Shield,
       title: t("s2Title"),
       body: t("s2Body"),
-      photo: asset("/images/plans/standard.png"),
+      photo: asset("/images/plans/standard.webp"),
     },
     {
       icon: UserRound,
       title: t("s3Title"),
       body: t("s3Body"),
-      photo: asset("/images/plans/costume.png"),
+      photo: asset("/images/plans/costume.webp"),
     },
   ];
 

@@ -1,5 +1,9 @@
+"use client";
+
+import { useLocale } from "next-intl";
+import { adminOrderStatus } from "@/lib/admin/copy";
 import { cn } from "@/lib/utils";
-import { ORDER_STATUS_LABEL, type OrderStatus } from "@/lib/mock/orders";
+import type { OrderStatus } from "@/lib/mock/orders";
 
 const TONE: Record<OrderStatus, string> = {
   pending: "border-amber-200 bg-amber-50 text-amber-800",
@@ -9,9 +13,10 @@ const TONE: Record<OrderStatus, string> = {
 };
 
 export function StatusBadge({ status }: { status: OrderStatus }) {
+  const locale = useLocale();
   return (
     <span className={cn("inline-flex rounded-full border px-2.5 py-0.5 text-xs font-semibold", TONE[status])}>
-      {ORDER_STATUS_LABEL[status]}
+      {adminOrderStatus(locale, status)}
     </span>
   );
 }

@@ -39,7 +39,7 @@ export function PlanShowcase({ plans: seedPlans, locale, labels }: PlanShowcaseP
         const selected = plan.slug === activeSlug;
         return (
           <article key={plan.id} className={cn("plan-card", selected && "is-on")}>
-            <img className="plan-card-shot" src={coverOf(plan)} alt="" />
+            <img className="plan-card-shot" src={coverOf(plan)} alt="" decoding="async" />
             <div className="plan-card-body">
               <h3>{plan.translation.name}</h3>
               <p className="plan-card-price">
@@ -61,6 +61,8 @@ export function PlanShowcase({ plans: seedPlans, locale, labels }: PlanShowcaseP
                   className="plan-card-route"
                   src={routeOf(plan)}
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : null}
               {selected ? (

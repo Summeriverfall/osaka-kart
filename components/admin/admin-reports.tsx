@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useLocale } from "next-intl";
 import {
   Bar,
   BarChart,
@@ -16,8 +17,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { BOOKING_DAYPARTS } from "@/lib/booking/slots";
-import { reportsFromOrders } from "@/lib/mock/reports";
+import { adminCopy } from "@/lib/admin/copy";
+import { addDaysIso } from "@/lib/calendar";
+import { todayIsoDate } from "@/lib/booking/slots";
+import { reportsFromOrders, resolveReportRange, type RangeKind } from "@/lib/mock/reports";
 import { formatYenShort } from "@/lib/format";
 import { CountUp } from "@/components/admin/count-up";
 import { useStoreData } from "@/lib/use-store-data";
@@ -44,33 +47,16 @@ function useNarrow() {
   return narrow;
 }
 
-function compactYen(value: number) {
-  if (Math.abs(value) >= 10000) return `${Math.round(value / 10000)}万`;
-  return String(value);
-}
-
-function DaypartTick({ x = 0, y = 0, payload }: { x?: number; y?: number; payload?: { value: string } }) {
-  const part = BOOKING_DAYPARTS.find((item) => item.label === payload?.value);
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text textAnchor="middle" dy={12} fill="#334155" fontSize={11} fontWeight={600}>
-        {payload?.value}
-      </text>
-      <text textAnchor="middle" dy={26} fill="#94a3b8" fontSize={9}>
-        {part?.range}
-      </text>
-    </g>
-  );
-}
-
 function ChartBox({
   title,
   mobileTitle,
+  exportLabel,
   children,
   onExport,
 }: {
   title: string;
   mobileTitle?: string;
+  exportLabel: string;
   children: React.ReactNode;
   onExport: () => void;
 }) {
@@ -86,7 +72,7 @@ function ChartBox({
           className="shrink-0 rounded-full border border-slate-200 px-3 py-1 text-xs hover:border-blue-400"
           onClick={onExport}
         >
-          导出 CSV
+          {exportLabel}
         </button>
       </div>
       {children}
@@ -95,40 +81,88 @@ function ChartBox({
 }
 
 export function AdminReportsView() {
+  const locale = useLocale();
+  const copy = adminCopy(locale);
   const notify = useToastStore((state) => state.notify);
-  const [range, setRange] = useState("month");
+  const today = todayIsoDate();
+  const [kind, setKind] = useState<RangeKind>("month");
+  const [custom, setCustom] = useState(() => ({ from: addDaysIso(today, -13), to: today }));
   const { orders } = useStoreData();
-  const report = useMemo(() => reportsFromOrders(orders), [orders]);
-  const exportOk = () => notify("导出成功");
+  const range = useMemo(() => resolveReportRange(kind, today, custom), [kind, today, custom]);
+  const report = useMemo(() => reportsFromOrders(orders, range, locale), [orders, range, locale]);
+  const exportOk = () => notify(copy.reports.exportOk);
   const totalRev = report.channels.reduce((sum, item) => sum + item.revenue, 0) || 1;
   const narrow = useNarrow();
   const pieRadius = narrow ? 58 : 80;
   const axisTick = { fill: "#6B7280", fontSize: narrow ? 10 : 11 };
+  const dayCount = Math.max(report.trend.length, 1);
+
+  const presets = [
+    ["today", copy.reports.today],
+    ["week", copy.reports.week],
+    ["month", copy.reports.month],
+    ["custom", copy.reports.custom],
+  ] as const;
+
+  function compactYen(value: number) {
+    if (Math.abs(value) >= 10000) return `${Math.round(value / 10000)}${copy.common.wan}`;
+    return String(value);
+  }
 
   return (
     <div className="grid min-w-0 gap-5 md:gap-6">
-      <div className="flex flex-wrap gap-2">
-        {([["today", "今日"], ["week", "本周"], ["month", "本月"], ["custom", "自定义"]] as const).map(([id, label]) => (
+      <div className="flex flex-wrap items-center gap-2">
+        {presets.map(([id, label]) => (
           <button
             key={id}
             type="button"
-            className={`rounded-full border px-3 py-1.5 text-sm ${range === id ? "border-blue-600 bg-blue-600 text-white" : "border-slate-200 text-slate-500"}`}
+            className={`rounded-full border px-3 py-1.5 text-sm ${kind === id ? "border-blue-600 bg-blue-600 text-white" : "border-slate-200 text-slate-500"}`}
             onClick={() => {
-              setRange(id);
-              notify(`已切换${label}`);
+              setKind(id);
+              notify(copy.reports.switched(label));
             }}
           >
             {label}
           </button>
         ))}
+        <span className="text-xs text-slate-400">
+          {copy.reports.rangeCaption} {range.from} – {range.to}
+        </span>
       </div>
+
+      {kind === "custom" ? (
+        <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+          <label className="grid gap-1 text-xs text-slate-500">
+            {copy.reports.from}
+            <input
+              className="admin-input mt-0 w-auto"
+              type="date"
+              value={custom.from}
+              max={custom.to}
+              onChange={(event) => setCustom((prev) => ({ ...prev, from: event.target.value }))}
+            />
+          </label>
+          <span className="pb-2 text-slate-400">–</span>
+          <label className="grid gap-1 text-xs text-slate-500">
+            {copy.reports.to}
+            <input
+              className="admin-input mt-0 w-auto"
+              type="date"
+              value={custom.to}
+              min={custom.from}
+              onChange={(event) => setCustom((prev) => ({ ...prev, to: event.target.value }))}
+            />
+          </label>
+          <p className="pb-2 text-xs text-slate-400">{copy.reports.customHint}</p>
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {[
-          { label: "总营收", value: report.summary.revenue, yen: true },
-          { label: "总订单数", value: report.summary.orders },
-          { label: "客单价", value: report.summary.avg, yen: true },
-          { label: "退款总额", value: report.summary.refunds, yen: true },
+          { label: copy.reports.revenue, value: report.summary.revenue, yen: true },
+          { label: copy.reports.orderCount, value: report.summary.orders },
+          { label: copy.reports.aov, value: report.summary.avg, yen: true },
+          { label: copy.reports.refunds, value: report.summary.refunds, yen: true },
         ].map((card) => (
           <article key={card.label} className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 sm:p-6">
             <p className="text-xs text-slate-500 sm:text-sm">{card.label}</p>
@@ -139,7 +173,12 @@ export function AdminReportsView() {
         ))}
       </div>
 
-      <ChartBox title="30 天营收趋势（本期 vs 上期）" mobileTitle="营收趋势" onExport={exportOk}>
+      <ChartBox
+        title={copy.reports.trend(dayCount)}
+        mobileTitle={copy.reports.trendMobile}
+        exportLabel={copy.reports.exportCsv}
+        onExport={exportOk}
+      >
         <div className="report-chart h-64 sm:h-72">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={report.trend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -147,7 +186,7 @@ export function AdminReportsView() {
               <XAxis
                 dataKey="day"
                 stroke="#6B7280"
-                interval={narrow ? 4 : 2}
+                interval={narrow ? Math.max(Math.ceil(dayCount / 6) - 1, 0) : Math.max(Math.ceil(dayCount / 12) - 1, 0)}
                 tick={axisTick}
                 minTickGap={8}
               />
@@ -162,15 +201,15 @@ export function AdminReportsView() {
                 formatter={(value) => formatYenShort(Number(value ?? 0))}
               />
               <Legend wrapperStyle={{ color: "#374151", fontSize: 12 }} />
-              <Line type="monotone" dataKey="current" name="本期" stroke="#2563eb" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="previous" name="上期" stroke="#94a3b8" strokeWidth={2} strokeDasharray="6 6" dot={false} />
+              <Line type="monotone" dataKey="current" name={copy.reports.current} stroke="#2563eb" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="previous" name={copy.reports.previous} stroke="#94a3b8" strokeWidth={2} strokeDasharray="6 6" dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </ChartBox>
 
       <div className="grid min-w-0 gap-5 lg:grid-cols-2 md:gap-6">
-        <ChartBox title="渠道分析" onExport={exportOk}>
+        <ChartBox title={copy.reports.channels} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
           <div className="report-chart h-56 sm:h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -188,11 +227,11 @@ export function AdminReportsView() {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>渠道</th>
-                  <th>订单</th>
-                  <th>营收</th>
-                  <th>抽成</th>
-                  <th>到账</th>
+                  <th>{copy.reports.channel}</th>
+                  <th>{copy.reports.orders}</th>
+                  <th>{copy.reports.revenueCol}</th>
+                  <th>{copy.reports.cut}</th>
+                  <th>{copy.reports.net}</th>
                 </tr>
               </thead>
               <tbody>
@@ -216,14 +255,18 @@ export function AdminReportsView() {
                   <span className="text-sm tabular-nums">{formatYenShort(item.revenue)}</span>
                 </div>
                 <p className="mt-1 text-xs text-slate-500">
-                  {item.orders} 单 · 抽成 {Math.round(item.cut * 100)}% · 到账 {formatYenShort(Math.round(item.revenue * (1 - item.cut)))}
+                  {copy.reports.channelCard(
+                    item.orders,
+                    Math.round(item.cut * 100),
+                    formatYenShort(Math.round(item.revenue * (1 - item.cut))),
+                  )}
                 </p>
               </li>
             ))}
           </ul>
         </ChartBox>
 
-        <ChartBox title="套餐销量" onExport={exportOk}>
+        <ChartBox title={copy.reports.plans} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
           <div className="report-chart h-64 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -242,7 +285,7 @@ export function AdminReportsView() {
                 />
                 <YAxis stroke="#6B7280" width={narrow ? 28 : 40} tick={axisTick} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="sold" name="销量" fill="#A855F7" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="sold" name={copy.reports.sold} fill="#A855F7" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -250,9 +293,9 @@ export function AdminReportsView() {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>套餐</th>
-                  <th>销量</th>
-                  <th>营收占比</th>
+                  <th>{copy.reports.plan}</th>
+                  <th>{copy.reports.sold}</th>
+                  <th>{copy.reports.share}</th>
                 </tr>
               </thead>
               <tbody>
@@ -271,7 +314,7 @@ export function AdminReportsView() {
               <li key={item.name} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
                 <span className="min-w-0 truncate font-semibold">{item.name}</span>
                 <span className="shrink-0 text-sm text-slate-500">
-                  {item.sold} 单 · {Math.round((item.revenue / totalRev) * 100)}%
+                  {copy.reports.planCard(item.sold, Math.round((item.revenue / totalRev) * 100))}
                 </span>
               </li>
             ))}
@@ -280,7 +323,7 @@ export function AdminReportsView() {
       </div>
 
       <div className="grid min-w-0 gap-5 lg:grid-cols-2 md:gap-6">
-        <ChartBox title="国籍分布" onExport={exportOk}>
+        <ChartBox title={copy.reports.nations} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
           <div className="report-chart h-56 sm:h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -295,7 +338,7 @@ export function AdminReportsView() {
             </ResponsiveContainer>
           </div>
         </ChartBox>
-        <ChartBox title="性别比例" onExport={exportOk}>
+        <ChartBox title={copy.reports.genderTitle} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
           <div className="report-chart h-56 sm:h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -310,7 +353,7 @@ export function AdminReportsView() {
             </ResponsiveContainer>
           </div>
         </ChartBox>
-        <ChartBox title="年龄段" onExport={exportOk}>
+        <ChartBox title={copy.reports.ages} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
           <div className="report-chart h-56 sm:h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={report.ages} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -318,26 +361,46 @@ export function AdminReportsView() {
                 <XAxis dataKey="band" stroke="#6B7280" interval={0} tick={axisTick} />
                 <YAxis stroke="#6B7280" width={narrow ? 28 : 40} tick={axisTick} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="people" name="人数" fill="#22D3EE" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="people" name={copy.reports.people} fill="#22D3EE" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </ChartBox>
-        <ChartBox title="预订时间段" onExport={exportOk}>
+        <ChartBox title={copy.reports.daypartTitle} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
           <div className="report-chart h-64 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={report.daypart} margin={{ top: 8, right: 4, left: 0, bottom: 8 }}>
                 <CartesianGrid stroke="rgba(15,23,42,0.08)" />
-                <XAxis dataKey="band" stroke="#6B7280" interval={0} height={40} tick={<DaypartTick />} />
+                <XAxis
+                  dataKey="band"
+                  stroke="#6B7280"
+                  interval={0}
+                  height={40}
+                  tick={(props) => {
+                    const part = report.daypart.find((item) => item.band === String(props.payload?.value ?? ""));
+                    const x = Number(props.x ?? 0);
+                    const y = Number(props.y ?? 0);
+                    return (
+                      <g transform={`translate(${x},${y})`}>
+                        <text textAnchor="middle" dy={12} fill="#334155" fontSize={11} fontWeight={600}>
+                          {props.payload?.value}
+                        </text>
+                        <text textAnchor="middle" dy={26} fill="#94a3b8" fontSize={9}>
+                          {part?.range}
+                        </text>
+                      </g>
+                    );
+                  }}
+                />
                 <YAxis stroke="#6B7280" width={narrow ? 28 : 40} tick={axisTick} />
                 <Tooltip
                   contentStyle={tooltipStyle}
                   labelFormatter={(label) => {
-                    const part = BOOKING_DAYPARTS.find((item) => item.label === label);
-                    return part ? `${part.label}（${part.range}）` : String(label);
+                    const part = report.daypart.find((item) => item.band === label);
+                    return part ? `${part.band}（${part.range}）` : String(label);
                   }}
                 />
-                <Bar dataKey="people" name="人数" fill="#2563eb" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="people" name={copy.reports.people} fill="#2563eb" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

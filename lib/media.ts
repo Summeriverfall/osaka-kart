@@ -11,9 +11,9 @@ export function planImage(slug: string) {
 }
 
 export const PLAN_ROUTES: Record<string, string> = {
-  standard: asset("/images/routes/namba-60.png"),
-  "night-run": asset("/images/routes/tsutenkaku-90.png"),
-  "grand-tour": asset("/images/routes/osaka-castle-120.png"),
+  standard: asset("/images/routes/namba-60.webp"),
+  "night-run": asset("/images/routes/tsutenkaku-90.webp"),
+  "grand-tour": asset("/images/routes/osaka-castle-120.webp"),
 };
 
 export function planRoute(slug: string) {
@@ -29,9 +29,9 @@ export function routeOf(plan: { slug: string; detail_image?: string | null }) {
 }
 
 export const ADDON_IMAGES: Record<string, string> = {
-  gopro: asset("/images/videos/cover-1.jpg"),
-  costume: asset("/images/plans/costume.png"),
-  photos: asset("/images/reviews/r3.png"),
+  gopro: asset("/images/videos/cover-1.webp"),
+  costume: asset("/images/plans/costume.webp"),
+  photos: asset("/images/reviews/r3.webp"),
 };
 
 export function addonImage(slug: string) {
@@ -39,7 +39,7 @@ export function addonImage(slug: string) {
 }
 
 export const FEATURE_IMAGES = [
-  asset("/images/safety/insurance.png"),
-  asset("/images/safety/helmet.png"),
-  asset("/images/safety/guide.png"),
+  asset("/images/safety/insurance.webp"),
+  asset("/images/safety/helmet.webp"),
+  asset("/images/safety/guide.webp"),
 ] as const;

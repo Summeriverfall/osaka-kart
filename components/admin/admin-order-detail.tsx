@@ -1,22 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
+import { adminChannel, adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
 import { formatYenShort } from "@/lib/format";
-import { ORDER_STATUS_LABEL, type OrderStatus } from "@/lib/mock/orders";
+import { type OrderStatus } from "@/lib/mock/orders";
 import { sendStatusMail } from "@/lib/ops-notify";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 
 export function AdminOrderDetailView({ id }: { id: string }) {
+  const locale = useLocale();
+  const copy = adminCopy(locale);
   const order = useOpsStore((state) => {
     const match = state.orders.find((item) => item.id === id);
     if (match) return match;
     if (id === "demo") return state.orders[0];
     return undefined;
   });
+  const plans = useOpsStore((state) => state.plans);
   const patchOrder = useOpsStore((state) => state.patchOrder);
   const setOrderStatus = useOpsStore((state) => state.setOrderStatus);
   const templates = useOpsStore((state) => state.templates);
@@ -26,8 +31,11 @@ export function AdminOrderDetailView({ id }: { id: string }) {
   const [note, setNote] = useState(order?.note ?? "");
 
   if (!order) {
-    return <p className="text-sm text-slate-500">找不到这笔订单。它可能是新加的动态单，请从列表里用弹窗查看。</p>;
+    return <p className="text-sm text-slate-500">{copy.orders.empty}</p>;
   }
+
+  const seed = plans.find((item) => item.slug === order.planSlug);
+  const planName = adminPlanName(locale, seed, order.planName);
 
   return (
     <div className="space-y-4">
@@ -40,23 +48,23 @@ export function AdminOrderDetailView({ id }: { id: string }) {
           <StatusBadge status={order.status} />
         </div>
         <dl className="mt-6 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
-          <div>国籍：{order.nationality}</div>
-          <div>邮箱：{order.email}</div>
-          <div>电话：{order.phone}</div>
-          <div>套餐：{order.planName}</div>
+          <div>{copy.orders.nationality}：{adminNation(locale, order.nationality)}</div>
+          <div>{copy.orders.email}：{order.email}</div>
+          <div>{copy.orders.phone}：{order.phone}</div>
+          <div>{copy.orders.plan}：{planName}</div>
           <div>
-            日期：{order.date} {order.time}
+            {copy.orders.date}：{order.date} {order.time}
           </div>
-          <div>证件：{order.passport}</div>
-          <div>人数：{order.riders}（{order.male}男/{order.female}女）</div>
-          <div>渠道：{order.channel}</div>
-          <div>金额：{formatYenShort(order.totalJpy)} · {order.paid ? "已支付" : "未支付"}</div>
-          <div className="sm:col-span-2">附加项：{order.addons.join("、") || "无"}</div>
-          <div className="sm:col-span-2">备注：{order.note || "—"}</div>
+          <div>{copy.orders.passport}：{order.passport}</div>
+          <div>{copy.orders.riders}：{order.riders}{copy.orders.mf(order.male, order.female)}</div>
+          <div>{copy.orders.channel}：{adminChannel(locale, order.channel)}</div>
+          <div>{copy.orders.amount}：{formatYenShort(order.totalJpy)} · {order.paid ? copy.common.paid : copy.common.unpaid}</div>
+          <div className="sm:col-span-2">{copy.orders.addons}：{order.addons.join("、") || copy.common.none}</div>
+          <div className="sm:col-span-2">{copy.orders.note}：{order.note || "—"}</div>
         </dl>
         <div className="mt-6 flex flex-wrap gap-3">
           <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setOpen(true)}>
-            编辑订单
+            {copy.orders.editTitle}
           </button>
           {(["pending", "confirmed", "cancelled", "completed"] as OrderStatus[]).map((status) => (
             <button
@@ -65,10 +73,10 @@ export function AdminOrderDetailView({ id }: { id: string }) {
               className="rounded-full border border-slate-200 px-3 py-2 text-xs hover:border-blue-400"
               onClick={() => {
                 setOrderStatus(order.id, status);
-                void sendStatusMail(status, { ...order, status }, templates, settings).then(notify);
+                void sendStatusMail(status, { ...order, status }, templates, settings, locale).then(notify);
               }}
             >
-              {ORDER_STATUS_LABEL[status]}
+              {adminOrderStatus(locale, status)}
             </button>
           ))}
         </div>
@@ -76,7 +84,7 @@ export function AdminOrderDetailView({ id }: { id: string }) {
 
       <Modal
         open={open}
-        title="编辑订单"
+        title={copy.orders.editTitle}
         onClose={() => setOpen(false)}
         footer={
           <button
@@ -85,25 +93,25 @@ export function AdminOrderDetailView({ id }: { id: string }) {
             onClick={() => {
               patchOrder(order.id, { note });
               setOpen(false);
-              notify("订单已保存");
+              notify(copy.orders.saved);
             }}
           >
-            保存
+            {copy.common.save}
           </button>
         }
       >
         <label className="admin-field">
-          备注
+          {copy.orders.note}
           <textarea className="admin-input min-h-28" value={note} onChange={(e) => setNote(e.target.value)} />
         </label>
         <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-          <span className="text-sm">已到店确认</span>
+          <span className="text-sm">{copy.orderStatus.confirmed}</span>
           <NeonToggle
             checked={order.status === "confirmed" || order.status === "completed"}
             onChange={(on) => {
               const status = on ? "confirmed" : "pending";
               setOrderStatus(order.id, status);
-              void sendStatusMail(status, { ...order, status }, templates, settings).then(notify);
+              void sendStatusMail(status, { ...order, status }, templates, settings, locale).then(notify);
             }}
           />
         </div>

@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { weekdayLabelZh } from "@/lib/calendar";
+import { useLocale } from "next-intl";
+import { weekdayLabel } from "@/lib/calendar";
 import { formatYenShort } from "@/lib/format";
-import { ORDER_STATUS_LABEL, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
+import { adminChannel, adminCopy, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
+import { type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import type { MockPlan } from "@/lib/mock/plans";
 import { TIMELINE_END_HOUR, TIMELINE_START_HOUR } from "@/lib/mock/vehicle-timeline";
 import { cn } from "@/lib/utils";
@@ -85,6 +87,8 @@ function statusClass(status: OrderStatus) {
 }
 
 export function WeekTimeline({ value, orders, days, compact = false, onSelectDate }: Props) {
+  const locale = useLocale();
+  const copy = adminCopy(locale);
   const plans = useOpsStore((state) => state.plans);
   const byDate = useMemo(() => {
     const map = new Map<string, LaidOut[]>();
@@ -101,7 +105,7 @@ export function WeekTimeline({ value, orders, days, compact = false, onSelectDat
       <div className={cn("week-scroll", compact && "is-three")}>
         <div className={cn("week-grid", compact && "is-three")} style={{ ["--hour-h" as string]: `${HOUR_H}px` }}>
           <div className="week-axis week-axis-head" aria-hidden>
-            <span>时间</span>
+            <span>{copy.calendar.time}</span>
           </div>
           {days.map((iso) => {
             const count = byDate.get(iso)?.length ?? 0;
@@ -113,7 +117,7 @@ export function WeekTimeline({ value, orders, days, compact = false, onSelectDat
                 className={cn("week-day-head", picked && "is-picked")}
                 onClick={() => onSelectDate(iso)}
               >
-                <span className="week-day-wd">{weekdayLabelZh(iso)}</span>
+                <span className="week-day-wd">{weekdayLabel(iso, locale)}</span>
                 <b>{Number(iso.slice(8))}</b>
                 <span className="week-day-count">{count}</span>
               </button>
@@ -180,25 +184,23 @@ export function WeekTimeline({ value, orders, days, compact = false, onSelectDat
       <ul className="week-legend">
         <li>
           <i className="is-confirmed" />
-          已确认
+          {copy.orderStatus.confirmed}
         </li>
         <li>
           <i className="is-pending" />
-          待确认
+          {copy.orderStatus.pending}
         </li>
         <li>
           <i className="is-cancelled" />
-          已取消
+          {copy.orderStatus.cancelled}
         </li>
         <li>
           <i className="is-completed" />
-          已完成
+          {copy.orderStatus.completed}
         </li>
       </ul>
       <p className="week-hint">
-        {compact
-          ? "竖屏每次看三天，点上方箭头换三天。手机横过来可看完整一周。"
-          : "色块高度=套餐时长。点击日期列或色块，下方列表切换到当天。"}
+        {compact ? copy.calendar.compactHint : copy.calendar.weekHint}
       </p>
 
       {tip ? (
@@ -209,13 +211,13 @@ export function WeekTimeline({ value, orders, days, compact = false, onSelectDat
         >
           <p className="week-tip-name">
             {tip.order.customer}
-            <span>{ORDER_STATUS_LABEL[tip.order.status]}</span>
+            <span>{adminOrderStatus(locale, tip.order.status)}</span>
           </p>
           <p>
-            {tip.order.time} · {tip.duration} 分钟 · {tip.order.planName}
+            {tip.order.time} · {copy.calendar.minutes(tip.duration)} · {adminPlanName(locale, plans.find((item) => item.slug === tip.order.planSlug), tip.order.planName)}
           </p>
           <p>
-            {tip.order.channel} · {formatYenShort(tip.order.totalJpy)} · {tip.order.id}
+            {adminChannel(locale, tip.order.channel)} · {formatYenShort(tip.order.totalJpy)} · {tip.order.id}
           </p>
         </div>
       ) : null}

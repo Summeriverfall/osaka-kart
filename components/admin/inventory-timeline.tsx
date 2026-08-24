@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useLocale } from "next-intl";
 import { Modal } from "@/components/ui/modal";
+import { adminCopy, adminDaypart, adminVehicleStatus } from "@/lib/admin/copy";
 import { BOOKING_DAYPARTS, BOOKING_SLOTS } from "@/lib/booking/slots";
-import { VEHICLE_STATUS_LABEL, type MockVehicle, type VehicleStatus } from "@/lib/mock/vehicles";
+import { type MockVehicle, type VehicleStatus } from "@/lib/mock/vehicles";
 import {
   addIsoDays,
   mergeSlotGroups,
@@ -33,14 +35,16 @@ function cellKey(vehicleId: string, time: string) {
   return `${vehicleId}__${time}`;
 }
 
-function toneLabel(tone: OccupancyTone) {
-  if (tone === "free") return "宽松";
-  if (tone === "tight") return "紧张";
-  if (tone === "full") return "爆满";
-  return "休";
+function toneLabel(tone: OccupancyTone, copy: ReturnType<typeof adminCopy>) {
+  if (tone === "free") return copy.inventory.free;
+  if (tone === "tight") return copy.inventory.tight;
+  if (tone === "full") return copy.inventory.full;
+  return copy.inventory.idle;
 }
 
 export function InventoryTimeline() {
+  const locale = useLocale();
+  const copy = adminCopy(locale);
   const {
     addSpecialDate,
     patchVehicleSlot,
@@ -191,7 +195,7 @@ export function InventoryTimeline() {
               }}
               onMouseLeave={() => setTip(null)}
             >
-              {group.tone === "idle" ? "休" : `剩 ${group.cell.remaining}/${group.cell.capacity}`}
+              {group.tone === "idle" ? copy.inventory.idle : copy.inventory.remain(group.cell.remaining, group.cell.capacity)}
             </button>
           </div>
         );
@@ -204,9 +208,9 @@ export function InventoryTimeline() {
   return (
     <section className="inventory-board" onMouseUp={finishDrag} onMouseLeave={() => drag && finishDrag()}>
       <div className="inventory-toolbar">
-        <button type="button" className={cn("ib-btn", picked === addIsoDays(TODAY, -1) && "is-on")} onClick={() => setPicked(addIsoDays(TODAY, -1))}>昨</button>
-        <button type="button" className={cn("ib-btn", picked === TODAY && "is-on")} onClick={() => setPicked(TODAY)}>今</button>
-        <button type="button" className={cn("ib-btn", picked === addIsoDays(TODAY, 1) && "is-on")} onClick={() => setPicked(addIsoDays(TODAY, 1))}>明</button>
+        <button type="button" className={cn("ib-btn", picked === addIsoDays(TODAY, -1) && "is-on")} onClick={() => setPicked(addIsoDays(TODAY, -1))}>{copy.inventory.yest}</button>
+        <button type="button" className={cn("ib-btn", picked === TODAY && "is-on")} onClick={() => setPicked(TODAY)}>{copy.inventory.today}</button>
+        <button type="button" className={cn("ib-btn", picked === addIsoDays(TODAY, 1) && "is-on")} onClick={() => setPicked(addIsoDays(TODAY, 1))}>{copy.inventory.tom}</button>
         <input className="ib-input" type="date" value={picked} onChange={(event) => setPicked(event.target.value)} />
         <div className="ib-filter">
           <button
@@ -214,38 +218,38 @@ export function InventoryTimeline() {
             className={cn("ib-btn", (filterOpen || filterActive) && "is-on")}
             onClick={() => setFilterOpen((open) => !open)}
           >
-            筛选{filterActive ? " · 已筛" : ""}
+            {copy.inventory.filter}{filterActive ? copy.inventory.filtered : ""}
           </button>
           {filterOpen ? (
             <>
-              <button type="button" className="ib-filter-mask" aria-label="关闭筛选" onClick={() => setFilterOpen(false)} />
+              <button type="button" className="ib-filter-mask" aria-label={copy.inventory.closeFilter} onClick={() => setFilterOpen(false)} />
               <div className="ib-filter-panel">
                 <input
                   className="ib-input"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="车辆编号 / 车型"
+                  placeholder={copy.inventory.vehiclePh}
                 />
                 <select className="ib-select" value={status} onChange={(event) => setStatus(event.target.value as VehicleStatus | "all")}>
-                  <option value="all">全部状态</option>
-                  <option value="available">空闲/可用</option>
-                  <option value="repair">维修</option>
-                  <option value="retired">停驶</option>
+                  <option value="all">{copy.inventory.allStatus}</option>
+                  <option value="available">{copy.inventory.stAvail}</option>
+                  <option value="repair">{copy.inventory.stRepair}</option>
+                  <option value="retired">{copy.inventory.stRetired}</option>
                 </select>
               </div>
             </>
           ) : null}
         </div>
         <span className="ib-toolbar-spacer" />
-        <button type="button" className="ib-btn" onClick={() => setSpecialOpen(true)}>特殊日期</button>
-        <button type="button" className="ib-btn ib-btn-ghost" onClick={() => setConfirm("clear")}>一键清空今日库存</button>
-        <button type="button" className="ib-btn" onClick={() => setConfirm("reset")}>恢复默认库存</button>
+        <button type="button" className="ib-btn" onClick={() => setSpecialOpen(true)}>{copy.inventory.special}</button>
+        <button type="button" className="ib-btn ib-btn-ghost" onClick={() => setConfirm("clear")}>{copy.inventory.clearToday}</button>
+        <button type="button" className="ib-btn" onClick={() => setConfirm("reset")}>{copy.inventory.reset}</button>
       </div>
 
       <div className="inventory-scroller hidden md:block">
           <div className="inventory-grid">
             <div className="inventory-axis">
-              <div className="ib-sticky">车辆</div>
+              <div className="ib-sticky">{copy.inventory.vehicle}</div>
               {TICKS.map((tick) => (
                 <span key={tick}>{tick.endsWith(":00") ? tick : ""}</span>
               ))}
@@ -257,7 +261,7 @@ export function InventoryTimeline() {
                     <i className={cn("ib-dot", vehicle.status === "available" ? "ok" : vehicle.status === "repair" ? "repair" : "off")} />
                     {vehicle.code}
                   </p>
-                  <p className="ib-model">{VEHICLE_STATUS_LABEL[vehicle.status]} · {vehicle.model}</p>
+                  <p className="ib-model">{adminVehicleStatus(locale, vehicle.status)} · {vehicle.model}</p>
                 </div>
                 {renderBlocks(vehicle, vehicleIndex)}
               </div>
@@ -284,16 +288,16 @@ export function InventoryTimeline() {
                     <i className={cn("ib-dot", vehicle.status === "available" ? "ok" : vehicle.status === "repair" ? "repair" : "off")} />
                     {vehicle.code}
                   </b>
-                  <span className="ml-2 text-xs text-slate-500">{VEHICLE_STATUS_LABEL[vehicle.status]}</span>
+                  <span className="ml-2 text-xs text-slate-500">{adminVehicleStatus(locale, vehicle.status)}</span>
                 </span>
-                <span className="text-xs text-slate-500">{open ? "收起" : "展开"}</span>
+                <span className="text-xs text-slate-500">{open ? copy.inventory.collapse : copy.inventory.expand}</span>
               </button>
               {open ? (
                 <div className="ib-vaxis">
                   {BOOKING_DAYPARTS.map((part) => (
                     <div key={part.id} className="ib-vaxis-part">
                       <p className="ib-vaxis-label">
-                        <span>{part.label}</span>
+                        <span>{adminDaypart(locale, part.id)}</span>
                         <small>{part.range}</small>
                       </p>
                       <div className="ib-vaxis-list">
@@ -323,8 +327,8 @@ export function InventoryTimeline() {
                                 <span className="ib-vaxis-fill" style={{ width: `${fill}%` }} />
                               </span>
                               <span className="ib-vaxis-stat">
-                                {tone === "idle" ? "休" : `剩 ${cell.remaining}/${cell.capacity}`}
-                                <small>{toneLabel(tone)}</small>
+                                {tone === "idle" ? copy.inventory.idle : copy.inventory.remain(cell.remaining, cell.capacity)}
+                                <small>{toneLabel(tone, copy)}</small>
                               </span>
                             </button>
                           );
@@ -340,28 +344,28 @@ export function InventoryTimeline() {
       </div>
 
       <div className="inventory-legend">
-        <span><i className="free" />宽松</span>
-        <span><i className="tight" />紧张</span>
-        <span><i className="full" />爆满</span>
-        <span><i className="idle" />维修 / 停驶</span>
-        <span>相邻同状态会合并成长条，可拖拽批量修改</span>
+        <span><i className="free" />{copy.inventory.free}</span>
+        <span><i className="tight" />{copy.inventory.tight}</span>
+        <span><i className="full" />{copy.inventory.full}</span>
+        <span><i className="idle" />{copy.inventory.idleLong}</span>
+        <span>{copy.inventory.mergeHint}</span>
       </div>
 
       {tip ? (
         <div className="ib-tip" style={{ left: tip.x, top: tip.y }}>
           <p>{tip.vehicle.code} · {tip.range}</p>
-          <p>总座位 {tip.cell.capacity} · 已订 {tip.cell.booked} · 剩余 {tip.cell.remaining}（{toneLabel(occupancyTone(tip.cell))}）</p>
-          <p>{tip.cell.closed ? "状态：维修 / 停驶" : `客人：${tip.cell.customers.join("、") || "暂无"}`}</p>
+          <p>{copy.inventory.tipCap(tip.cell.capacity, tip.cell.booked, tip.cell.remaining, toneLabel(occupancyTone(tip.cell), copy))}</p>
+          <p>{tip.cell.closed ? copy.inventory.tipClosed : copy.inventory.tipGuests(tip.cell.customers.join("、") || copy.inventory.noGuests)}</p>
         </div>
       ) : null}
 
       <Modal
         open={Boolean(edit)}
-        title={edit ? `编辑库存 · ${vehicles.find((item) => item.id === edit.vehicleId)?.code ?? ""}` : ""}
+        title={edit ? copy.inventory.editTitle(vehicles.find((item) => item.id === edit.vehicleId)?.code ?? "") : ""}
         onClose={() => setEdit(null)}
         footer={
           <div className="ib-form-actions">
-            <button type="button" className="ib-office-btn" onClick={() => setEdit(null)}>取消</button>
+            <button type="button" className="ib-office-btn" onClick={() => setEdit(null)}>{copy.common.cancel}</button>
             <button
               type="button"
               className="ib-office-btn primary"
@@ -374,30 +378,30 @@ export function InventoryTimeline() {
                   customers: edit.closed ? [] : cellOf(edit.vehicleId, edit.time)?.customers ?? [],
                 });
                 setEdit(null);
-                notify("库存已保存，官网时段余位会同步");
+                notify(copy.inventory.saved);
               }}
             >
-              保存
+              {copy.common.save}
             </button>
           </div>
         }
       >
         {edit ? (
           <div className="ib-form">
-            <label className="admin-field">时段<input className="admin-input" value={edit.range} readOnly /></label>
+            <label className="admin-field">{copy.inventory.slot}<input className="admin-input" value={edit.range} readOnly /></label>
             <label className="admin-field">
-              总座位数
+              {copy.inventory.seats}
               <input className="admin-input" type="number" min={1} value={edit.capacity} onChange={(event) => setEdit({ ...edit, capacity: Number(event.target.value) })} />
             </label>
             <label className="admin-field">
-              已预订数
+              {copy.inventory.booked}
               <input className="admin-input" type="number" min={0} value={edit.booked} onChange={(event) => setEdit({ ...edit, booked: Number(event.target.value) })} />
             </label>
             <label className="admin-field">
-              状态
+              {copy.inventory.status}
               <select className="admin-input" value={edit.closed ? "closed" : "open"} onChange={(event) => setEdit({ ...edit, closed: event.target.value === "closed" })}>
-                <option value="open">可预订</option>
-                <option value="closed">维修 / 停驶</option>
+                <option value="open">{copy.inventory.open}</option>
+                <option value="closed">{copy.inventory.closed}</option>
               </select>
             </label>
           </div>
@@ -406,11 +410,11 @@ export function InventoryTimeline() {
 
       <Modal
         open={Boolean(batch)}
-        title={`批量修改 ${batch?.keys.length ?? 0} 个时段`}
+        title={copy.inventory.batchTitle(batch?.keys.length ?? 0)}
         onClose={() => setBatch(null)}
         footer={
           <div className="ib-form-actions">
-            <button type="button" className="ib-office-btn" onClick={() => setBatch(null)}>取消</button>
+            <button type="button" className="ib-office-btn" onClick={() => setBatch(null)}>{copy.common.cancel}</button>
             <button
               type="button"
               className="ib-office-btn"
@@ -425,10 +429,10 @@ export function InventoryTimeline() {
                   { closed: true, booked: 0 },
                 );
                 setBatch(null);
-                notify("库存已保存，官网时段余位会同步");
+                notify(copy.inventory.saved);
               }}
             >
-              设为维修
+              {copy.inventory.setRepair}
             </button>
             <button
               type="button"
@@ -444,24 +448,24 @@ export function InventoryTimeline() {
                   { closed: false, booked: 0 },
                 );
                 setBatch(null);
-                notify("库存已保存，官网时段余位会同步");
+                notify(copy.inventory.saved);
               }}
             >
-              恢复可订
+              {copy.inventory.setOpen}
             </button>
           </div>
         }
       >
-        <p className="text-sm text-slate-500">已选中连续时段，可统一设为维修或恢复可订。</p>
+        <p className="text-sm text-slate-500">{copy.inventory.batchLead}</p>
       </Modal>
 
       <Modal
         open={Boolean(confirm)}
-        title={confirm === "clear" ? "确认清空今日库存？" : "确认恢复默认库存？"}
+        title={confirm === "clear" ? copy.inventory.clearAsk : copy.inventory.resetAsk}
         onClose={() => setConfirm(null)}
         footer={
           <div className="ib-form-actions">
-            <button type="button" className="ib-office-btn" onClick={() => setConfirm(null)}>取消</button>
+            <button type="button" className="ib-office-btn" onClick={() => setConfirm(null)}>{copy.common.cancel}</button>
             <button
               type="button"
               className={confirm === "clear" ? "ib-office-btn danger" : "ib-office-btn primary"}
@@ -469,28 +473,26 @@ export function InventoryTimeline() {
                 if (confirm === "clear") clearDayInventory(picked, vehicles.map((item) => item.id));
                 if (confirm === "reset") resetDayInventory(picked, vehicles.map((item) => item.id));
                 setConfirm(null);
-                notify("库存已保存，官网时段余位会同步");
+                notify(copy.inventory.saved);
               }}
             >
-              {confirm === "clear" ? "确认清空" : "确认恢复"}
+              {confirm === "clear" ? copy.inventory.clearOk : copy.inventory.resetOk}
             </button>
           </div>
         }
       >
         <p className="text-sm text-slate-500">
-          {confirm === "clear"
-            ? "此操作会把当日所有车辆时段标为已满，无法继续预订。请确认后再执行。"
-            : "将按当前车辆状态和订单重新生成当日时间轴。"}
+          {confirm === "clear" ? copy.inventory.clearLead : copy.inventory.resetLead}
         </p>
       </Modal>
 
       {specialOpen ? (
         <>
-          <button type="button" className="ib-drawer-mask" aria-label="关闭特殊日期" onClick={() => setSpecialOpen(false)} />
+          <button type="button" className="ib-drawer-mask" aria-label={copy.inventory.closeSpecial} onClick={() => setSpecialOpen(false)} />
           <aside className="ib-drawer">
             <div className="ib-drawer-head">
-              <h2 className="text-base font-semibold">特殊日期</h2>
-              <button type="button" className="ib-office-btn" onClick={() => setSpecialOpen(false)}>关闭</button>
+              <h2 className="text-base font-semibold">{copy.inventory.special}</h2>
+              <button type="button" className="ib-office-btn" onClick={() => setSpecialOpen(false)}>{copy.common.close}</button>
             </div>
             <div className="ib-drawer-body">
               <form
@@ -500,20 +502,20 @@ export function InventoryTimeline() {
                   if (!specialForm.label.trim()) return;
                   addSpecialDate({ ...specialForm, storeId });
                   setSpecialForm({ date: "2026-08-26", label: "", closed: true });
-                  notify("特殊日期已添加，休业日官网日历会关闭");
+                  notify(copy.inventory.specialAdded);
                 }}
               >
-                <label className="admin-field">日期<input className="admin-input" type="date" value={specialForm.date} onChange={(event) => setSpecialForm({ ...specialForm, date: event.target.value })} /></label>
-                <label className="admin-field">原因<input className="admin-input" value={specialForm.label} onChange={(event) => setSpecialForm({ ...specialForm, label: event.target.value })} placeholder="如：夏季夜跑加场" /></label>
+                <label className="admin-field">{copy.inventory.date}<input className="admin-input" type="date" value={specialForm.date} onChange={(event) => setSpecialForm({ ...specialForm, date: event.target.value })} /></label>
+                <label className="admin-field">{copy.inventory.reason}<input className="admin-input" value={specialForm.label} onChange={(event) => setSpecialForm({ ...specialForm, label: event.target.value })} placeholder={copy.inventory.reasonPh} /></label>
                 <label className="admin-field">
-                  类型
+                  {copy.inventory.type}
                   <select className="admin-input" value={specialForm.closed ? "close" : "open"} onChange={(event) => setSpecialForm({ ...specialForm, closed: event.target.value === "close" })}>
-                    <option value="close">全天休业</option>
-                    <option value="open">加开</option>
+                    <option value="close">{copy.inventory.closeDay}</option>
+                    <option value="open">{copy.inventory.extra}</option>
                   </select>
                 </label>
                 <div className="ib-form-actions">
-                  <button type="submit" className="ib-office-btn primary">添加</button>
+                  <button type="submit" className="ib-office-btn primary">{copy.common.add}</button>
                 </div>
               </form>
               <div className="mt-4">
@@ -521,7 +523,7 @@ export function InventoryTimeline() {
                   <div key={`${item.date}-${item.label}`} className="ib-special-row">
                     <b>{item.date}</b>
                     <span className="text-slate-600">{item.label}</span>
-                    <span className={item.closed ? "text-slate-400" : "text-emerald-600"}>{item.closed ? "休业" : "加开"}</span>
+                    <span className={item.closed ? "text-slate-400" : "text-emerald-600"}>{item.closed ? copy.inventory.closeDay : copy.inventory.extra}</span>
                   </div>
                 ))}
               </div>

@@ -1,5 +1,6 @@
+import { adminCopy, adminOrderStatus } from "@/lib/admin/copy";
 import { formatYenShort } from "@/lib/format";
-import { ORDER_STATUS_LABEL, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
+import { type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import type { MockEmailTemplate, MockSettings } from "@/lib/mock/settings";
 import { isMailConfigured, mailSettingsOf, sendMail, sendMailToAll } from "@/lib/ops-mail";
 
@@ -50,21 +51,20 @@ export async function sendStatusMail(
   order: MockOrder,
   templates: MockEmailTemplate[],
   settings: MockSettings,
+  uiLocale = "zh-TW",
 ) {
+  const copy = adminCopy(uiLocale);
+  const label = adminOrderStatus(uiLocale, status);
   const type = templateTypeForStatus(status);
-  if (!type) return `已改为${ORDER_STATUS_LABEL[status]}`;
+  if (!type) return copy.notify.status(label);
   if (!isMailConfigured(settings)) {
-    return `已改为${ORDER_STATUS_LABEL[status]}。尚未配置发信，请到系统设置填写发信箱、收件箱和 EmailJS`;
+    return copy.notify.statusNoMail(label);
   }
 
   const template = pickTemplate(templates, type, localeOfOrder(order));
   const filled = template ? fillBody(template.body, order) : "";
-  const subject = template
-    ? subjectOf(filled)
-    : `Furture Kart Osaka — ${ORDER_STATUS_LABEL[status]} ${order.id}`;
-  const body = template
-    ? bodyWithoutSubject(filled) || filled
-    : `订单 ${order.id} 已改为${ORDER_STATUS_LABEL[status]}。`;
+  const subject = template ? subjectOf(filled) : `Furture Kart Osaka — ${label} ${order.id}`;
+  const body = template ? bodyWithoutSubject(filled) || filled : copy.notify.status(label);
 
   const shop = mailSettingsOf(settings).to;
   const result = await sendMailToAll({
@@ -74,40 +74,41 @@ export async function sendStatusMail(
     body,
     settings,
   });
-  if (result.ok) return `已改为${ORDER_STATUS_LABEL[status]}。${result.message}`;
-  return `已改为${ORDER_STATUS_LABEL[status]}，但发信失败：${result.message}`;
+  if (result.ok) return copy.notify.statusOk(label, result.message);
+  return copy.notify.statusFail(label, result.message);
 }
 
-export async function sendNewBookingMail(order: MockOrder, settings: MockSettings) {
+export async function sendNewBookingMail(order: MockOrder, settings: MockSettings, uiLocale = "zh-TW") {
   if (!isMailConfigured(settings)) return;
+  const copy = adminCopy(uiLocale);
   const shop = mailSettingsOf(settings).to;
-  const subject = `官网新订单 ${order.id}`;
-  const body = [
-    "官网刚完成一笔支付，待后台确认。",
-    "",
-    `预约号：${order.id}`,
-    `客人：${order.customer}`,
-    `邮箱：${order.email}`,
-    `电话：${order.phone}`,
-    `套餐：${order.planName}`,
-    `日期：${order.date} ${order.time}`,
-    `人数：${order.riders}`,
-    `金额：${formatYenShort(order.totalJpy)}`,
-  ].join("\n");
+  const subject = copy.notify.newOrderSubject(order.id);
+  const body = copy.notify.newOrderBody({
+    id: order.id,
+    customer: order.customer,
+    email: order.email,
+    phone: order.phone,
+    planName: order.planName,
+    date: order.date,
+    time: order.time,
+    riders: order.riders,
+    total: formatYenShort(order.totalJpy),
+  });
   await sendMail({ to: shop, subject, body, settings });
 }
 
-export async function sendTestMail(settings: MockSettings) {
+export async function sendTestMail(settings: MockSettings, uiLocale = "zh-TW") {
+  const copy = adminCopy(uiLocale);
   if (!isMailConfigured(settings)) {
-    return { ok: false as const, message: "请先填写发信箱、收件箱和 EmailJS 三项密钥" };
+    return { ok: false as const, message: copy.notify.testNeed };
   }
   const mail = mailSettingsOf(settings);
   const result = await sendMail({
     to: mail.to,
-    subject: "Furture Kart Osaka 发信测试",
-    body: `这是后台测试信。\n发信箱：${mail.from}\n收件箱：${mail.to}`,
+    subject: copy.notify.testSubject,
+    body: copy.notify.testBody(mail.from, mail.to),
     settings,
   });
-  if (result.ok) return { ok: true as const, message: `测试信已发送 → ${mail.to}` };
+  if (result.ok) return { ok: true as const, message: copy.notify.testOk(mail.to) };
   return result;
 }

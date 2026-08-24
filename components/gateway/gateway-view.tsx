@@ -10,9 +10,9 @@ import { siteHome } from "@/lib/paths";
 import { SITE_THEMES, type SiteTheme } from "@/lib/visual-theme";
 
 const PREVIEWS: Record<SiteTheme, string> = {
-  neon: asset("/images/plans/standard.png"),
-  acid: asset("/images/reviews/r1.png"),
-  oni: asset("/images/reviews/r2.png"),
+  neon: asset("/images/plans/standard.webp"),
+  acid: asset("/images/reviews/r1.webp"),
+  oni: asset("/images/reviews/r2.webp"),
 };
 
 type GatewayViewProps = {
@@ -57,7 +57,12 @@ export function GatewayView({ fromPrice, locale }: GatewayViewProps) {
                 }}
               >
                 <div className="gw-shot">
-                  <img src={PREVIEWS[look]} alt="" />
+                  <img
+                    src={PREVIEWS[look]}
+                    alt=""
+                    decoding="async"
+                    fetchPriority={look === "neon" ? "high" : "low"}
+                  />
                 </div>
                 <div className="gw-copy">
                   <em>{t("enter")} →</em>

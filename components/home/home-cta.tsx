@@ -12,7 +12,7 @@ export function HomeCta() {
   return (
     <section id="cta" className="relative overflow-hidden px-4 py-24">
       <img
-        src={asset("/images/reviews/r2.png")}
+        src={asset("/images/reviews/r2.webp")}
         alt=""
         className="absolute inset-0 h-full w-full object-cover"
       />

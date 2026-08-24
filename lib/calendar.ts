@@ -37,6 +37,13 @@ export function weekdayLabelZh(iso: string) {
   return ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][parseIsoDate(iso).getDay()];
 }
 
+export function weekdayLabel(iso: string, locale: string) {
+  if (locale.startsWith("ja")) {
+    return ["日", "月", "火", "水", "木", "金", "土"][parseIsoDate(iso).getDay()];
+  }
+  return weekdayLabelZh(iso);
+}
+
 export function formatIsoRangeZh(startIso: string, endIso: string) {
   const start = parseIsoDate(startIso);
   const end = parseIsoDate(endIso);

@@ -1,9 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useLocale } from "next-intl";
 import { LogsTable } from "@/components/admin/logs-table";
 import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
+import {
+  adminCopy,
+  adminMailLocale,
+  adminMailType,
+  adminPayName,
+  adminStoreAddress,
+  adminStoreName,
+} from "@/lib/admin/copy";
 import { type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
 import { sendTestMail } from "@/lib/ops-notify";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
@@ -11,6 +20,8 @@ import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 
 export function AdminSettingsView() {
+  const locale = useLocale();
+  const copy = adminCopy(locale);
   const { settings, patchSettings, templates, patchTemplate, stores, upsertStore } = useOpsStore();
   const notify = useToastStore((state) => state.notify);
   const go = useAdminNavStore((state) => state.go);
@@ -32,11 +43,11 @@ export function AdminSettingsView() {
     <div className="grid min-w-0 gap-6">
       <nav className="flex flex-wrap gap-2">
         {[
-          ["settings-pay", "支付配置"],
-          ["settings-stores", "门店管理"],
-          ["settings-send", "邮件发送"],
-          ["settings-mail", "邮件模板"],
-          ["settings-logs", "操作日志"],
+          ["settings-pay", copy.settings.tabPay],
+          ["settings-stores", copy.settings.tabStores],
+          ["settings-send", copy.settings.tabSend],
+          ["settings-mail", copy.settings.tabMail],
+          ["settings-logs", copy.settings.tabLogs],
         ].map(([id, label]) => (
           <button
             key={id}
@@ -50,16 +61,16 @@ export function AdminSettingsView() {
       </nav>
 
       <section id="settings-pay" className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
-        <h2 className="font-black">支付配置</h2>
+        <h2 className="font-black">{copy.settings.pay}</h2>
         {payments.map((item, index) => (
           <div key={item.id} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-black">{item.name}</p>
+                <p className="font-black">{adminPayName(locale, item.id, item.name)}</p>
                 {item.reserved ? (
-                  <span className="text-xs text-[#6B7280]">预留通道，暂不开放</span>
+                  <span className="text-xs text-[#6B7280]">{copy.settings.reserved}</span>
                 ) : (
-                  <span className="text-xs text-emerald-600">{item.enabled ? "已启用" : "已关闭"}</span>
+                  <span className="text-xs text-emerald-600">{item.enabled ? copy.settings.on : copy.settings.off}</span>
                 )}
               </div>
               <NeonToggle
@@ -73,7 +84,7 @@ export function AdminSettingsView() {
             </div>
             {item.id === "stripe" ? (
               <div className="mt-3 flex items-center justify-between gap-3 text-sm">
-                <span>测试模式</span>
+                <span>{copy.settings.testMode}</span>
                 <NeonToggle
                   checked={Boolean(item.testMode)}
                   onChange={(on) => {
@@ -99,14 +110,14 @@ export function AdminSettingsView() {
             ) : null}
           </div>
         ))}
-        <button type="button" className="cta-btn w-full px-5 py-2.5 sm:w-auto" onClick={() => notify("支付通道已保存，官网结账页只显示已开启的方式")}>
-          保存配置
+        <button type="button" className="cta-btn w-full px-5 py-2.5 sm:w-auto" onClick={() => notify(copy.settings.paySaved)}>
+          {copy.settings.savePay}
         </button>
       </section>
 
       <section id="settings-stores" className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-black">门店管理</h2>
+          <h2 className="font-black">{copy.settings.stores}</h2>
           <button
             type="button"
             className="cta-btn px-4 py-2 text-sm"
@@ -123,7 +134,7 @@ export function AdminSettingsView() {
               })
             }
           >
-            添加门店
+            {copy.settings.addStore}
           </button>
         </div>
         <ul className="mt-4 space-y-3">
@@ -133,17 +144,17 @@ export function AdminSettingsView() {
               className="flex flex-col gap-3 rounded-xl border border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
-                <b>{item.name}</b>
+                <b>{adminStoreName(locale, item.id, item.name)}</b>
                 <p className="mt-1 break-words text-sm leading-6 text-slate-500">
-                  <span className="block sm:inline">{item.address}</span>
+                  <span className="block sm:inline">{adminStoreAddress(locale, item.id, item.address)}</span>
                   <span className="hidden sm:inline"> · </span>
-                  <span className="block sm:inline">{item.hours}</span>
+                  <span className="block sm:inline">{item.hours === "待定" ? copy.common.undecided : item.hours}</span>
                   <span className="hidden sm:inline"> · </span>
-                  <span className="block sm:inline">{item.phone}</span>
+                  <span className="block sm:inline">{/待开通/.test(item.phone) ? copy.common.notOpen : item.phone}</span>
                 </p>
               </div>
               <button type="button" className="self-start text-xs text-blue-600 sm:self-center" onClick={() => setStore(item)}>
-                编辑
+                {copy.common.edit}
               </button>
             </li>
           ))}
@@ -151,17 +162,15 @@ export function AdminSettingsView() {
       </section>
 
       <section id="settings-send" className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
-        <h2 className="font-black">邮件发送</h2>
+        <h2 className="font-black">{copy.settings.send}</h2>
         <p className="text-sm leading-6 text-slate-500">
-          静态站不能填邮箱密码。请到{" "}
+          {copy.settings.sendLead}{" "}
           <a className="text-blue-600" href="https://www.emailjs.com" target="_blank" rel="noreferrer">
             emailjs.com
-          </a>{" "}
-          用发信箱绑定 Gmail / Outlook，模板收件人填 <code>{"{{to_email}}"}</code>、主题{" "}
-          <code>{"{{subject}}"}</code>、正文 <code>{"{{message}}"}</code>。Allowed Origins 加上本站域名。客人信发到订单邮箱，店长抄送发到收件箱。
+          </a>
         </p>
         <label className="admin-field">
-          发信箱
+          {copy.settings.mailFrom}
           <input
             className="admin-input"
             type="email"
@@ -171,11 +180,11 @@ export function AdminSettingsView() {
           />
         </label>
         <label className="admin-field">
-          收件箱
+          {copy.settings.mailTo}
           <input
             className="admin-input"
             type="email"
-            placeholder="店长接收新订单和抄送"
+            placeholder={copy.settings.mailToPh}
             value={settings.mailTo ?? ""}
             onChange={(event) => patchSettings({ mailTo: event.target.value })}
           />
@@ -210,9 +219,9 @@ export function AdminSettingsView() {
           <button
             type="button"
             className="cta-btn px-5 py-2.5"
-            onClick={() => notify("发信设置已保存")}
+            onClick={() => notify(copy.settings.sendSaved)}
           >
-            保存
+            {copy.common.save}
           </button>
           <button
             type="button"
@@ -220,37 +229,37 @@ export function AdminSettingsView() {
             disabled={testing}
             onClick={() => {
               setTesting(true);
-              void sendTestMail(useOpsStore.getState().settings)
+              void sendTestMail(useOpsStore.getState().settings, locale)
                 .then((result) => notify(result.message))
                 .finally(() => setTesting(false));
             }}
           >
-            {testing ? "发送中…" : "发送测试信"}
+            {testing ? copy.settings.testing : copy.settings.testSend}
           </button>
         </div>
       </section>
 
       <section id="settings-mail" className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
-        <h2 className="font-black">邮件模板</h2>
+        <h2 className="font-black">{copy.settings.templates}</h2>
         <div className="mt-4 hidden overflow-x-auto md:block">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>类型</th>
-                <th>语言</th>
-                <th>最后修改</th>
+                <th>{copy.settings.type}</th>
+                <th>{copy.settings.locale}</th>
+                <th>{copy.settings.updated}</th>
                 <th />
               </tr>
             </thead>
             <tbody>
               {templates.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.type}</td>
-                  <td>{item.locale}</td>
+                  <td>{adminMailType(locale, item.type)}</td>
+                  <td>{adminMailLocale(locale, item.locale)}</td>
                   <td>{item.updated}</td>
                   <td>
                     <button type="button" className="text-xs text-blue-600" onClick={() => setTpl(item)}>
-                      编辑
+                      {copy.common.edit}
                     </button>
                   </td>
                 </tr>
@@ -261,16 +270,16 @@ export function AdminSettingsView() {
         <div className="mt-4 grid gap-3 md:hidden">
           {templateGroups.map(([type, items]) => (
             <article key={type} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="font-black">{type}</p>
+              <p className="font-black">{adminMailType(locale, type)}</p>
               <ul className="mt-3 space-y-2">
                 {items.map((item) => (
                   <li key={item.id} className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold">{item.locale}</p>
+                      <p className="text-sm font-semibold">{adminMailLocale(locale, item.locale)}</p>
                       <p className="text-xs text-slate-500">{item.updated}</p>
                     </div>
                     <button type="button" className="shrink-0 text-xs text-blue-600" onClick={() => setTpl(item)}>
-                      编辑
+                      {copy.common.edit}
                     </button>
                   </li>
                 ))}
@@ -282,9 +291,9 @@ export function AdminSettingsView() {
 
       <section id="settings-logs" className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-black">操作日志</h2>
+          <h2 className="font-black">{copy.settings.logs}</h2>
           <button type="button" className="order-ops-detail" onClick={() => go("/admin/settings/logs")}>
-            详情
+            {copy.settings.detail}
           </button>
         </div>
         <LogsTable limit={20} />
@@ -292,7 +301,7 @@ export function AdminSettingsView() {
 
       <Modal
         open={Boolean(tpl)}
-        title={tpl ? `编辑邮件模板 · ${tpl.type}（${tpl.locale}）` : "编辑邮件模板"}
+        title={tpl ? copy.settings.tplTitle(adminMailType(locale, tpl.type), adminMailLocale(locale, tpl.locale)) : copy.settings.tplEdit}
         onClose={() => setTpl(null)}
         wide
         footer={
@@ -303,17 +312,17 @@ export function AdminSettingsView() {
               if (!tpl) return;
               patchTemplate(tpl.id, tpl);
               setTpl(null);
-              notify("模板已保存");
+              notify(copy.settings.tplSaved);
             }}
           >
-            保存
+            {copy.common.save}
           </button>
         }
       >
         {tpl ? (
           <>
             <p className="break-all text-xs leading-6 text-slate-500">
-              可用变量：{"{{customer_name}} {{booking_id}} {{date}} {{time}} {{plan_name}} {{riders}} {{total}}"}
+              {copy.settings.tplVars}
             </p>
             <textarea
               className="admin-input mt-3 min-h-52 font-mono text-sm leading-relaxed sm:min-h-80"
@@ -326,7 +335,7 @@ export function AdminSettingsView() {
 
       <Modal
         open={Boolean(store)}
-        title="门店"
+        title={copy.settings.storeTitle}
         onClose={() => setStore(null)}
         footer={
           <button
@@ -336,29 +345,29 @@ export function AdminSettingsView() {
               if (!store) return;
               upsertStore(store);
               setStore(null);
-              notify("门店已保存，官网营业时间与电话会同步");
+              notify(copy.settings.storeSaved);
             }}
           >
-            保存
+            {copy.common.save}
           </button>
         }
       >
         {store ? (
           <>
             <label className="admin-field">
-              名称
+              {copy.settings.storeName}
               <input className="admin-input" value={store.name} onChange={(e) => setStore({ ...store, name: e.target.value })} />
             </label>
             <label className="admin-field">
-              地址
+              {copy.settings.address}
               <input className="admin-input" value={store.address} onChange={(e) => setStore({ ...store, address: e.target.value })} />
             </label>
             <label className="admin-field">
-              电话
+              {copy.settings.phone}
               <input className="admin-input" value={store.phone} onChange={(e) => setStore({ ...store, phone: e.target.value })} />
             </label>
             <label className="admin-field">
-              营业时间
+              {copy.settings.hours}
               <input className="admin-input" value={store.hours} onChange={(e) => setStore({ ...store, hours: e.target.value })} />
             </label>
             <label className="admin-field">

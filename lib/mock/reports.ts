@@ -1,4 +1,7 @@
 import { BOOKING_DAYPARTS } from "@/lib/booking/slots";
+import { addDaysIso } from "@/lib/calendar";
+import { adminChannel, adminDaypart, adminGender, adminNation, adminPlanName } from "@/lib/admin/copy";
+import { MOCK_PLANS } from "@/lib/mock/plans";
 import { type MockOrder } from "@/lib/mock/orders";
 
 export const REPORT_CHANNELS = [
@@ -89,39 +92,63 @@ export const REPORT_SUMMARY = {
   refunds: 34600,
 };
 
-const NATION_LABEL: Record<string, string> = {
-  USA: "美国",
-  TW: "台湾",
-  CN: "中国",
-  JP: "日本",
-  KR: "韩国",
-  UK: "英国",
-  DE: "其他",
-  FR: "其他",
-  AU: "其他",
-  SG: "其他",
-  IT: "其他",
-  HK: "其他",
+export type ReportRange = { from: string; to: string };
+export type RangeKind = "today" | "week" | "month" | "custom";
+
+const CHANNEL_CUT: Record<string, number> = {
+  Klook: 0.18,
+  官网: 0,
+  Viator: 0.2,
+  微信: 0.05,
+  WhatsApp: 0,
+  线下: 0,
+};
+
+const CHANNEL_FILL: Record<string, string> = {
+  Klook: "#38BDF8",
+  官网: "#34D399",
+  Viator: "#A855F7",
+  微信: "#F59E0B",
+  WhatsApp: "#9CA3AF",
+  线下: "#FF2E93",
 };
 
 const NATION_FILL: Record<string, string> = {
-  美国: "#FF2E93",
-  台湾: "#A855F7",
-  中国: "#A855F7",
-  日本: "#22D3EE",
-  英国: "#34D399",
-  韩国: "#F59E0B",
-  其他: "#9CA3AF",
+  USA: "#FF2E93",
+  TW: "#A855F7",
+  CN: "#C084FC",
+  JP: "#22D3EE",
+  KR: "#F59E0B",
+  UK: "#34D399",
 };
 
-export function reportsFromOrders(orders: MockOrder[]) {
-  const live = orders.filter((item) => item.status !== "cancelled");
-  const cancelled = orders.filter((item) => item.status === "cancelled");
+export function resolveReportRange(kind: RangeKind, today: string, custom: ReportRange): ReportRange {
+  if (kind === "today") return { from: today, to: today };
+  if (kind === "week") return { from: addDaysIso(today, -6), to: today };
+  if (kind === "month") return { from: `${today.slice(0, 7)}-01`, to: today };
+  const from = custom.from || addDaysIso(today, -13);
+  const to = custom.to || today;
+  return from <= to ? { from, to } : { from: to, to: from };
+}
+
+function eachIso(from: string, to: string) {
+  const days: string[] = [];
+  if (!from || !to || from > to) return days;
+  for (let cursor = from; cursor <= to; cursor = addDaysIso(cursor, 1)) {
+    days.push(cursor);
+  }
+  return days;
+}
+
+export function reportsFromOrders(orders: MockOrder[], range?: ReportRange, locale = "zh-TW") {
+  const scoped = range ? orders.filter((item) => item.date >= range.from && item.date <= range.to) : orders;
+  const live = scoped.filter((item) => item.status !== "cancelled");
+  const cancelled = scoped.filter((item) => item.status === "cancelled");
   const revenue = live.reduce((sum, item) => sum + item.totalJpy, 0);
   const refunds = cancelled.reduce((sum, item) => sum + item.totalJpy, 0);
   const summary = {
     revenue,
-    orders: orders.length,
+    orders: scoped.length,
     avg: live.length ? Math.round(revenue / live.length) : 0,
     refunds,
   };
@@ -133,55 +160,66 @@ export function reportsFromOrders(orders: MockOrder[]) {
     current.revenue += item.totalJpy;
     channelMap.set(item.channel, current);
   }
-  const channels = REPORT_CHANNELS.map((item) => {
-    const found = channelMap.get(item.name) ?? { orders: 0, revenue: 0 };
-    return {
-      ...item,
-      orders: found.orders,
-      revenue: found.revenue,
-      value: found.orders,
-    };
-  }).filter((item) => item.orders > 0);
+  const channels = [...channelMap.entries()].map(([key, found]) => ({
+    name: adminChannel(locale, key),
+    fill: CHANNEL_FILL[key] ?? "#9CA3AF",
+    cut: CHANNEL_CUT[key] ?? 0,
+    orders: found.orders,
+    revenue: found.revenue,
+    value: found.orders,
+  }));
 
   const planMap = new Map<string, { sold: number; revenue: number }>();
   for (const item of live) {
-    const current = planMap.get(item.planName) ?? { sold: 0, revenue: 0 };
+    const seed = MOCK_PLANS.find((plan) => plan.slug === item.planSlug);
+    const name = adminPlanName(locale, seed, item.planName);
+    const current = planMap.get(name) ?? { sold: 0, revenue: 0 };
     current.sold += 1;
     current.revenue += item.totalJpy;
-    planMap.set(item.planName, current);
+    planMap.set(name, current);
   }
   const plans = [...planMap.entries()].map(([name, value]) => ({ name, ...value }));
 
-  const nationMap = new Map<string, number>();
+  const nationMap = new Map<string, { value: number; fill: string }>();
   for (const item of live) {
-    const name = NATION_LABEL[item.nationality] ?? "其他";
-    nationMap.set(name, (nationMap.get(name) ?? 0) + item.riders);
+    const name = adminNation(locale, item.nationality);
+    const fill = NATION_FILL[item.nationality] ?? "#9CA3AF";
+    const current = nationMap.get(name) ?? { value: 0, fill };
+    current.value += item.riders;
+    nationMap.set(name, current);
   }
-  const nations = [...nationMap.entries()].map(([name, value]) => ({
+  const nations = [...nationMap.entries()].map(([name, found]) => ({
     name,
-    value,
-    fill: NATION_FILL[name] ?? "#9CA3AF",
+    value: found.value,
+    fill: found.fill,
   }));
 
   const male = live.reduce((sum, item) => sum + item.male, 0);
   const female = live.reduce((sum, item) => sum + item.female, 0);
   const gender = [
-    { name: "男", value: male, fill: "#22D3EE" },
-    { name: "女", value: female, fill: "#FF2E93" },
+    { name: adminGender(locale, "male"), value: male, fill: "#22D3EE" },
+    { name: adminGender(locale, "female"), value: female, fill: "#FF2E93" },
   ].filter((item) => item.value > 0);
 
   const daypart = BOOKING_DAYPARTS.map((part) => ({
-    band: part.label,
+    band: adminDaypart(locale, part.id),
     range: part.range,
+    id: part.id,
     people: live
       .filter((item) => (part.slots as readonly string[]).includes(item.time))
       .reduce((sum, item) => sum + item.riders, 0),
   }));
 
-  const trend = REPORT_TREND_30D.map((item) => {
-    const dayOrders = orders.filter((order) => order.date === item.iso && order.status !== "cancelled");
-    const current = dayOrders.reduce((sum, order) => sum + order.totalJpy, 0);
-    return { ...item, current, previous: Math.round(current * 0.8) };
+  const days = range ? eachIso(range.from, range.to) : [];
+  const span = Math.max(days.length, 1);
+  const trendSource = days.length ? days : [...new Set(live.map((item) => item.date))].sort();
+  const trend = trendSource.map((iso) => {
+    const current = live.filter((order) => order.date === iso).reduce((sum, order) => sum + order.totalJpy, 0);
+    const prevIso = addDaysIso(iso, -span);
+    const previous = orders
+      .filter((order) => order.date === prevIso && order.status !== "cancelled")
+      .reduce((sum, order) => sum + order.totalJpy, 0);
+    return { day: iso.slice(5), iso, current, previous };
   });
 
   const scale = Math.max(live.reduce((sum, item) => sum + item.riders, 0), 1) / 174;

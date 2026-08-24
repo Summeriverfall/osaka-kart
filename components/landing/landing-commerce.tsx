@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { ChevronLeft, Mail, MapPin, Phone, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -35,6 +35,41 @@ type CommerceProps = {
   copy: LandingCopy;
 };
 
+function LazyLoopVideo({ src, poster }: { src: string; poster: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [on, setOn] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setOn(true);
+        io.disconnect();
+      },
+      { rootMargin: "200px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <video
+      ref={ref}
+      poster={poster}
+      muted
+      loop
+      playsInline
+      controls
+      autoPlay
+      preload="none"
+    >
+      {on ? <source src={src} type="video/mp4" /> : null}
+    </video>
+  );
+}
+
 export function LandingCommerce({ plans, addons, locale, theme, copy }: CommerceProps) {
   return (
     <>
@@ -58,21 +93,16 @@ export function LandingGallery({ copy }: { copy: LandingCopy }) {
         <p className="shop-lead">{copy.videosLead}</p>
         <div className="shop-gallery shop-gallery-stack">
           <figure className="shop-gallery-video">
-            <video
+            <LazyLoopVideo
               src={asset("/videos/street-run.mp4")}
-              autoPlay
-              muted
-              loop
-              controls
-              playsInline
-              preload="auto"
+              poster={asset("/images/hero/poster.jpg")}
             />
             <figcaption>{copy.videos[0]?.title}</figcaption>
           </figure>
           <div className="shop-gallery-grid">
             {SOCIAL_CARDS.slice(0, 4).map((card, index) => (
               <figure key={card.nameKey}>
-                <img src={asset(card.img)} alt="" />
+                <img src={asset(card.img)} alt="" loading="lazy" decoding="async" />
                 <figcaption>{copy.videos[index + 1]?.title ?? ""}</figcaption>
               </figure>
             ))}
@@ -489,7 +519,7 @@ function LandingFeatures({ copy, theme }: { copy: LandingCopy; theme: SiteTheme 
         <div className="acid-posters">
           {copy.features.map((item, index) => (
             <article key={item.id} className={index === 1 ? "acid-poster alt" : "acid-poster"}>
-              <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" />
+              <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" loading="lazy" decoding="async" />
               <span>{item.id}</span>
               <h3>{item.title}</h3>
               <p>{item.body}</p>
@@ -508,7 +538,7 @@ function LandingFeatures({ copy, theme }: { copy: LandingCopy; theme: SiteTheme 
           <div className="oni-charm-row">
             {copy.features.map((item, index) => (
               <article key={item.id}>
-                <img src={FEATURE_IMAGES[index]} alt="" />
+                <img src={FEATURE_IMAGES[index]} alt="" loading="lazy" decoding="async" />
                 <h3>
                   <span>{item.id}</span>
                   {item.title}
@@ -529,7 +559,7 @@ function LandingFeatures({ copy, theme }: { copy: LandingCopy; theme: SiteTheme 
         <div className="neon-features">
           {copy.features.map((item, index) => (
             <article key={item.id} className="neon-glass">
-              <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" />
+              <img src={FEATURE_IMAGES[index]} alt="" className="feature-shot" loading="lazy" decoding="async" />
               <p className="neon-index">{item.id}</p>
               <h3>{item.title}</h3>
               <p>{item.body}</p>

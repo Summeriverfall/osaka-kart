@@ -1,3 +1,7 @@
+"use client";
+
+import { useLocale } from "next-intl";
+import { adminChannel } from "@/lib/admin/copy";
 import { cn } from "@/lib/utils";
 import type { OrderChannel } from "@/lib/mock/orders";
 
@@ -11,9 +15,10 @@ const TONE: Record<OrderChannel, string> = {
 };
 
 export function ChannelBadge({ channel }: { channel: OrderChannel }) {
+  const locale = useLocale();
   return (
     <span className={cn("inline-flex rounded-full border px-2.5 py-0.5 text-xs font-semibold", TONE[channel])}>
-      {channel}
+      {adminChannel(locale, channel)}
     </span>
   );
 }

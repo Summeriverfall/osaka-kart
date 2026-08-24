@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type HeroVideoProps = {
   src: string;
@@ -15,13 +15,29 @@ export function HeroVideo({
   startAt,
   poster,
   className,
-  preload = "auto",
+  preload = "none",
 }: HeroVideoProps) {
   const ref = useRef<HTMLVideoElement>(null);
+  const [active, setActive] = useState(false);
 
   useEffect(() => {
     const video = ref.current;
     if (!video) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setActive(true);
+        io.disconnect();
+      },
+      { rootMargin: "80px" },
+    );
+    io.observe(video);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video || !active) return;
 
     const jumpToStart = () => {
       if (Math.abs(video.currentTime - startAt) > 0.35) {
@@ -56,7 +72,7 @@ export function HeroVideo({
       video.removeEventListener("ended", onEnded);
       video.removeEventListener("seeked", onSeeked);
     };
-  }, [src, startAt]);
+  }, [active, src, startAt]);
 
   return (
     <video
@@ -65,10 +81,10 @@ export function HeroVideo({
       muted
       playsInline
       autoPlay
-      preload={preload}
+      preload={active ? preload : "none"}
       {...(poster ? { poster } : {})}
     >
-      <source src={`${src}#t=${startAt}`} type="video/mp4" />
+      {active ? <source src={`${src}#t=${startAt}`} type="video/mp4" /> : null}
     </video>
   );
 }

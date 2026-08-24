@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useLocale } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { WeekTimeline } from "@/components/admin/week-timeline";
+import { adminCopy } from "@/lib/admin/copy";
 import {
   addDaysIso,
   addMonths,
@@ -63,6 +65,8 @@ function useThreeDayMode() {
 }
 
 export function OrderCalendarDrill({ value, view, onView, onChange, counts: countsProp, heatFor = "orders" }: Props) {
+  const locale = useLocale();
+  const copy = adminCopy(locale);
   const { orders } = useStoreData();
   const [cursor, setCursor] = useState(() => parseIsoDate(value));
   const [threeStart, setThreeStart] = useState(value);
@@ -131,7 +135,7 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
       ? formatIsoRangeZh(weekDays[0], weekDays[weekDays.length - 1])
       : view === "day"
         ? value
-        : monthLabel(cursor, "zh-TW");
+        : monthLabel(cursor, locale.startsWith("ja") ? "ja-JP" : "zh-TW");
 
   return (
     <section className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
@@ -147,16 +151,16 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
                 view === item ? "bg-blue-600 text-white" : "text-slate-500",
               )}
             >
-              {item === "month" ? "月" : item === "week" ? (threeDay ? "3日" : "周") : "日"}
+              {item === "month" ? copy.calendar.month : item === "week" ? (threeDay ? copy.calendar.threeDay : copy.calendar.week) : copy.calendar.day}
             </button>
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <button type="button" className="plan-qty-btn" onClick={goPrev} aria-label="上一页">
+          <button type="button" className="plan-qty-btn" onClick={goPrev} aria-label={copy.calendar.prev}>
             <ChevronLeft className="size-4" />
           </button>
           <span className="min-w-28 text-center text-sm text-slate-500">{headerLabel}</span>
-          <button type="button" className="plan-qty-btn" onClick={goNext} aria-label="下一页">
+          <button type="button" className="plan-qty-btn" onClick={goNext} aria-label={copy.calendar.next}>
             <ChevronRight className="size-4" />
           </button>
         </div>
@@ -165,8 +169,8 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
       {view === "month" ? (
         <>
           <div className="mb-2 grid grid-cols-7 gap-1 text-center text-xs text-slate-500">
-            {weekdayLabels("zh-TW").map((label) => (
-              <span key={label}>{label}</span>
+            {weekdayLabels(locale.startsWith("ja") ? "ja-JP" : "zh-TW").map((label, index) => (
+              <span key={`${label}-${index}`}>{label}</span>
             ))}
           </div>
           <div className="grid grid-cols-7 gap-1">
@@ -194,7 +198,7 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
             })}
           </div>
           <p className="mt-3 text-xs text-slate-500">
-            {heatFor === "stock" ? "绿=充足，橙=紧张，红=满员。点日期看时段。" : "点击日期进入日列表。深红 >20 单，橙色 10–20，绿色 <10。"}
+            {heatFor === "stock" ? copy.calendar.heatStock : copy.calendar.heatOrders}
           </p>
         </>
       ) : null}
@@ -205,7 +209,7 @@ export function OrderCalendarDrill({ value, view, onView, onChange, counts: coun
 
       {view === "day" ? (
         <p className="text-sm text-slate-500">
-          正在查看 {value}，下方是该日完整订单列表。切回月/周可继续下钻。
+          {copy.calendar.dayHint(value)}
         </p>
       ) : null}
     </section>

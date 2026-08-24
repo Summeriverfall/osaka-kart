@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ORDER_STATUS_LABEL, type OrderStatus } from "@/lib/mock/orders";
+import { useLocale } from "next-intl";
+import { adminOrderStatus } from "@/lib/admin/copy";
+import { type OrderStatus } from "@/lib/mock/orders";
 import { cn } from "@/lib/utils";
 
 const TONE: Record<OrderStatus, string> = {
@@ -19,6 +21,7 @@ type Props = {
 };
 
 export function StatusSelect({ status, onChange }: Props) {
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
 
@@ -41,7 +44,7 @@ export function StatusSelect({ status, onChange }: Props) {
           setOpen((value) => !value);
         }}
       >
-        {ORDER_STATUS_LABEL[status]}
+        {adminOrderStatus(locale, status)}
       </button>
       {open ? (
         <div className="absolute top-full left-0 z-20 mt-1 min-w-28 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
@@ -59,7 +62,7 @@ export function StatusSelect({ status, onChange }: Props) {
                 setOpen(false);
               }}
             >
-              {ORDER_STATUS_LABEL[item]}
+              {adminOrderStatus(locale, item)}
             </button>
           ))}
         </div>

@@ -1,12 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useLocale } from "next-intl";
 import { Ban, Check, Eye, Pencil } from "lucide-react";
 import { ChannelBadge } from "@/components/admin/channel-badge";
 import { StatusSelect } from "@/components/admin/status-select";
 import { Modal } from "@/components/ui/modal";
+import { adminChannel, adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
+import { todayIsoDate } from "@/lib/booking/slots";
 import { formatYenShort } from "@/lib/format";
-import { CHANNELS, ORDER_STATUS_LABEL, type MockOrder, type OrderChannel, type OrderStatus } from "@/lib/mock/orders";
+import { CHANNELS, type MockOrder, type OrderChannel, type OrderStatus } from "@/lib/mock/orders";
 import { MOCK_PLANS } from "@/lib/mock/plans";
 import { cn } from "@/lib/utils";
 import { useOpsStore } from "@/stores/ops-store";
@@ -38,18 +41,19 @@ const EMPTY: MockOrder = {
   storeId: "namba",
 };
 
-const TODAY = "2026-08-20";
 type SortKey = "time" | "amount";
 type SortDir = "asc" | "desc";
 
 function OrderOps({
   order,
+  copy,
   onDetail,
   onEdit,
   onRefund,
   onConfirm,
 }: {
   order: MockOrder;
+  copy: ReturnType<typeof adminCopy>;
   onDetail: () => void;
   onEdit: () => void;
   onRefund: () => void;
@@ -58,40 +62,42 @@ function OrderOps({
   return (
     <div className="order-ops">
       <div className="order-ops-group">
-        <button type="button" className="is-edit" title="编辑" onClick={onEdit}>
+        <button type="button" className="is-edit" title={copy.orders.edit} onClick={onEdit}>
           <Pencil className="size-3.5" />
-          编辑
+          {copy.orders.edit}
         </button>
         <button
           type="button"
           className="is-refund"
-          title="退款/取消"
+          title={copy.orders.refund}
           disabled={order.status === "cancelled"}
           onClick={onRefund}
         >
           <Ban className="size-3.5" />
-          退款
+          {copy.orders.refund}
         </button>
         <button
           type="button"
           className="is-confirm"
-          title="确认订单"
+          title={copy.orders.confirm}
           disabled={order.status !== "pending"}
           onClick={onConfirm}
         >
           <Check className="size-3.5" />
-          确认
+          {copy.orders.confirm}
         </button>
       </div>
       <button type="button" className="order-ops-detail" onClick={onDetail}>
         <Eye className="size-3.5" />
-        详情
+        {copy.orders.detail}
       </button>
     </div>
   );
 }
 
 export function AdminOrdersView() {
+  const locale = useLocale();
+  const copy = adminCopy(locale);
   const { upsertOrder, patchOrder, setOrderStatus, templates, settings } = useOpsStore();
   const { orders: storeOrders, storeId, plans } = useStoreData();
   const notify = useToastStore((state) => state.notify);
@@ -104,6 +110,7 @@ export function AdminOrdersView() {
   const [editing, setEditing] = useState<MockOrder | null>(null);
   const [detail, setDetail] = useState<MockOrder | null>(null);
   const [refund, setRefund] = useState<MockOrder | null>(null);
+  const today = todayIsoDate();
 
   const rows = useMemo(() => {
     const filtered = storeOrders.filter((item) => {
@@ -145,17 +152,17 @@ export function AdminOrdersView() {
     const id = order.id || `FK-${Date.now().toString(36).toUpperCase()}`;
     upsertOrder({ ...order, id, storeId: order.storeId || storeId });
     setEditing(null);
-    notify("订单已保存，库存已按人数同步");
+    notify(copy.orders.saved);
   }
 
   function changeStatus(id: string, next: OrderStatus) {
     const current = useOpsStore.getState().orders.find((item) => item.id === id);
     setOrderStatus(id, next);
     if (!current) {
-      notify(`已改为${ORDER_STATUS_LABEL[next]}`);
+      notify(copy.notify.status(adminOrderStatus(locale, next)));
       return;
     }
-    void sendStatusMail(next, { ...current, status: next }, templates, settings).then(notify);
+    void sendStatusMail(next, { ...current, status: next }, templates, settings, locale).then(notify);
   }
 
   function sortMark(key: SortKey) {
@@ -163,12 +170,17 @@ export function AdminOrdersView() {
     return sortDir === "desc" ? "↓" : "↑";
   }
 
+  function planLabel(order: MockOrder) {
+    const seed = plans.find((item) => item.slug === order.planSlug);
+    return adminPlanName(locale, seed, order.planName);
+  }
+
   return (
     <div className="space-y-4">
       <section className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
         <div className="flex flex-wrap items-end gap-2">
           <label className="grid gap-1 text-xs text-slate-500">
-            日期
+            {copy.orders.date}
             <input
               className="admin-input mt-0 w-auto min-w-[11rem] max-w-44"
               type="date"
@@ -176,35 +188,35 @@ export function AdminOrdersView() {
               onChange={(event) => setPicked(event.target.value)}
             />
           </label>
-          <button type="button" className="h-11 rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-600" onClick={() => setPicked(TODAY)}>
-            今天
+          <button type="button" className="h-11 rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-600" onClick={() => setPicked(today)}>
+            {copy.orders.today}
           </button>
           <button type="button" className="h-11 rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-600" onClick={() => setPicked("")}>
-            全部日期
+            {copy.orders.allDates}
           </button>
           <input
             className="admin-input mt-0 min-w-52 flex-1"
-            placeholder="搜索订单号/客户姓名/套餐"
+            placeholder={copy.orders.search}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
           <select className="admin-input mt-0 max-w-36" value={status} onChange={(event) => setStatus(event.target.value as OrderStatus | "all")}>
-            <option value="all">全部状态</option>
-            {Object.entries(ORDER_STATUS_LABEL).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
+            <option value="all">{copy.orders.allStatus}</option>
+            {Object.keys(copy.orderStatus).map((key) => (
+              <option key={key} value={key}>{copy.orderStatus[key]}</option>
             ))}
           </select>
-          <button type="button" className="cta-btn h-11 px-5" onClick={() => setEditing({ ...EMPTY, date: picked || TODAY, storeId })}>
-            添加订单
+          <button type="button" className="cta-btn h-11 px-5" onClick={() => setEditing({ ...EMPTY, date: picked || today, storeId })}>
+            {copy.orders.add}
           </button>
         </div>
         <p className="mt-2 text-xs text-slate-400">
-          {picked ? `正在筛选 ${picked} · ${rows.length} 笔` : `全部日期 · ${rows.length} 笔`}
+          {picked ? copy.orders.filtering(picked, rows.length) : copy.orders.allDatesCount(rows.length)}
         </p>
       </section>
 
       <div className="flex flex-wrap items-center gap-2">
-        {([["all", "全部渠道"], ...CHANNELS.map((item) => [item, item])] as [OrderChannel | "all", string][]).map(([id, label]) => (
+        {([["all", copy.orders.allChannels], ...CHANNELS.map((item) => [item, adminChannel(locale, item)])] as [OrderChannel | "all", string][]).map(([id, label]) => (
           <button
             key={id}
             type="button"
@@ -225,23 +237,23 @@ export function AdminOrdersView() {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>订单号</th>
-              <th>渠道</th>
+              <th>{copy.orders.id}</th>
+              <th>{copy.orders.channel}</th>
               <th>
                 <button type="button" className="inline-flex items-center gap-1 font-semibold" onClick={() => toggleSort("time")}>
-                  时间 {sortMark("time")}
+                  {copy.orders.time} {sortMark("time")}
                 </button>
               </th>
-              <th>客户</th>
-              <th>套餐</th>
-              <th>人数</th>
+              <th>{copy.orders.customer}</th>
+              <th>{copy.orders.plan}</th>
+              <th>{copy.orders.riders}</th>
               <th>
                 <button type="button" className="inline-flex items-center gap-1 font-semibold" onClick={() => toggleSort("amount")}>
-                  金额 {sortMark("amount")}
+                  {copy.orders.amount} {sortMark("amount")}
                 </button>
               </th>
-              <th>状态</th>
-              <th>操作</th>
+              <th>{copy.orders.status}</th>
+              <th>{copy.orders.ops}</th>
             </tr>
           </thead>
           <tbody>
@@ -255,10 +267,10 @@ export function AdminOrdersView() {
                 </td>
                 <td>
                   {order.customer}
-                  <span className="block text-xs text-slate-500">{order.nationality}</span>
+                  <span className="block text-xs text-slate-500">{adminNation(locale, order.nationality)}</span>
                 </td>
-                <td>{order.planName}</td>
-                <td>{order.riders}（{order.male}男/{order.female}女）</td>
+                <td>{planLabel(order)}</td>
+                <td>{order.riders}{copy.orders.mf(order.male, order.female)}</td>
                 <td>{formatYenShort(order.totalJpy)}</td>
                 <td>
                   <StatusSelect status={order.status} onChange={(next) => changeStatus(order.id, next)} />
@@ -266,6 +278,7 @@ export function AdminOrdersView() {
                 <td>
                   <OrderOps
                     order={order}
+                    copy={copy}
                     onDetail={() => setDetail(order)}
                     onEdit={() => setEditing(order)}
                     onRefund={() => setRefund(order)}
@@ -276,7 +289,7 @@ export function AdminOrdersView() {
             ))}
           </tbody>
         </table>
-        {rows.length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-400">没有符合条件的订单</p> : null}
+        {rows.length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-400">{copy.orders.empty}</p> : null}
       </div>
 
       <div className="grid gap-3 md:hidden">
@@ -286,7 +299,7 @@ export function AdminOrdersView() {
               <div>
                 <p className="font-mono text-xs text-blue-600">{order.id}</p>
                 <p className="mt-1 font-black">{order.customer}</p>
-                <p className="text-sm text-slate-500">{order.date} {order.time} · {order.planName}</p>
+                <p className="text-sm text-slate-500">{order.date} {order.time} · {planLabel(order)}</p>
               </div>
               <div className="flex flex-col items-end gap-2">
                 <ChannelBadge channel={order.channel} />
@@ -297,6 +310,7 @@ export function AdminOrdersView() {
               <span className="text-sm">{formatYenShort(order.totalJpy)}</span>
               <OrderOps
                 order={order}
+                copy={copy}
                 onDetail={() => setDetail(order)}
                 onEdit={() => setEditing(order)}
                 onRefund={() => setRefund(order)}
@@ -309,92 +323,92 @@ export function AdminOrdersView() {
 
       <Modal
         open={Boolean(editing)}
-        title={editing?.id ? "编辑订单" : "添加订单"}
+        title={editing?.id ? copy.orders.editTitle : copy.orders.addTitle}
         onClose={() => setEditing(null)}
         footer={
           <>
-            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setEditing(null)}>取消</button>
-            <button type="button" className="cta-btn px-5 py-2.5" onClick={() => editing && save(editing)}>保存</button>
+            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setEditing(null)}>{copy.common.cancel}</button>
+            <button type="button" className="cta-btn px-5 py-2.5" onClick={() => editing && save(editing)}>{copy.common.save}</button>
           </>
         }
       >
         {editing ? (
           <>
-            <label className="admin-field">客户名<input className="admin-input" value={editing.customer} onChange={(event) => setEditing({ ...editing, customer: event.target.value })} /></label>
-            <label className="admin-field">邮箱<input className="admin-input" value={editing.email} onChange={(event) => setEditing({ ...editing, email: event.target.value })} /></label>
-            <label className="admin-field">证件号<input className="admin-input" value={editing.passport} onChange={(event) => setEditing({ ...editing, passport: event.target.value })} /></label>
+            <label className="admin-field">{copy.orders.customerName}<input className="admin-input" value={editing.customer} onChange={(event) => setEditing({ ...editing, customer: event.target.value })} /></label>
+            <label className="admin-field">{copy.orders.email}<input className="admin-input" value={editing.email} onChange={(event) => setEditing({ ...editing, email: event.target.value })} /></label>
+            <label className="admin-field">{copy.orders.passport}<input className="admin-input" value={editing.passport} onChange={(event) => setEditing({ ...editing, passport: event.target.value })} /></label>
             <label className="admin-field">
-              套餐
+              {copy.orders.plan}
               <select className="admin-input" value={editing.planSlug} onChange={(event) => {
                 const plan = plans.find((item) => item.slug === event.target.value) ?? plans[0];
                 setEditing({ ...editing, planSlug: plan.slug, planName: plan.name, totalJpy: plan.priceJpy * editing.riders });
               }}>
-                {plans.map((plan) => <option key={plan.id} value={plan.slug}>{plan.name}</option>)}
+                {plans.map((plan) => <option key={plan.id} value={plan.slug}>{adminPlanName(locale, plan, plan.name)}</option>)}
               </select>
             </label>
             <label className="admin-field">
-              渠道
+              {copy.orders.channel}
               <select className="admin-input" value={editing.channel} onChange={(event) => setEditing({ ...editing, channel: event.target.value as OrderChannel })}>
-                {CHANNELS.map((item) => <option key={item}>{item}</option>)}
+                {CHANNELS.map((item) => <option key={item} value={item}>{adminChannel(locale, item)}</option>)}
               </select>
             </label>
-            <label className="admin-field">备注<textarea className="admin-input min-h-24" value={editing.note} onChange={(event) => setEditing({ ...editing, note: event.target.value })} /></label>
+            <label className="admin-field">{copy.orders.note}<textarea className="admin-input min-h-24" value={editing.note} onChange={(event) => setEditing({ ...editing, note: event.target.value })} /></label>
           </>
         ) : null}
       </Modal>
 
       <Modal
         open={Boolean(detail)}
-        title={detail ? `订单 ${detail.id}` : ""}
+        title={detail ? copy.orders.detailTitle(detail.id) : ""}
         onClose={() => setDetail(null)}
         wide
         footer={
-          <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setDetail(null)}>关闭</button>
+          <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setDetail(null)}>{copy.common.close}</button>
         }
       >
         {detail ? (
           <div className="space-y-2 text-sm text-slate-500">
-            <p>客户：{detail.customer} / {detail.nationality}</p>
-            <p>邮箱：{detail.email}</p>
-            <p>电话：{detail.phone}</p>
-            <p>证件：{detail.passport}</p>
-            <p>套餐：{detail.planName}</p>
-            <p>附加项：{detail.addons.join("、") || "无"}</p>
-            <p>日期：{detail.date} {detail.time}</p>
-            <p>人数：{detail.riders}（{detail.male}男 / {detail.female}女）</p>
-            <p>金额：{formatYenShort(detail.totalJpy)} · {detail.paid ? "已支付" : "未支付"}</p>
-            <p>渠道：<ChannelBadge channel={detail.channel} /></p>
-            <p>状态：{ORDER_STATUS_LABEL[detail.status]}</p>
+            <p>{copy.orders.customer}：{detail.customer} / {adminNation(locale, detail.nationality)}</p>
+            <p>{copy.orders.email}：{detail.email}</p>
+            <p>{copy.orders.phone}：{detail.phone}</p>
+            <p>{copy.orders.passport}：{detail.passport}</p>
+            <p>{copy.orders.plan}：{planLabel(detail)}</p>
+            <p>{copy.orders.addons}：{detail.addons.join("、") || copy.common.none}</p>
+            <p>{copy.orders.date}：{detail.date} {detail.time}</p>
+            <p>{copy.orders.riders}：{detail.riders}{copy.orders.mf(detail.male, detail.female)}</p>
+            <p>{copy.orders.amount}：{formatYenShort(detail.totalJpy)} · {detail.paid ? copy.common.paid : copy.common.unpaid}</p>
+            <p>{copy.orders.channel}：<ChannelBadge channel={detail.channel} /></p>
+            <p>{copy.orders.status}：{adminOrderStatus(locale, detail.status)}</p>
           </div>
         ) : null}
       </Modal>
 
       <Modal
         open={Boolean(refund)}
-        title="确认退款 / 取消？"
+        title={copy.orders.refundTitle}
         onClose={() => setRefund(null)}
         footer={
           <>
-            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setRefund(null)}>返回</button>
+            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setRefund(null)}>{copy.common.back}</button>
             <button
               type="button"
               className="rounded-full bg-slate-700 px-5 py-2.5 text-sm text-white"
               onClick={() => {
                 if (!refund) return;
-                patchOrder(refund.id, { status: "cancelled", note: refund.note || "后台退款取消" });
-                void sendStatusMail("cancelled", { ...refund, status: "cancelled" }, templates, settings).then(
+                patchOrder(refund.id, { status: "cancelled", note: refund.note || copy.orders.refundNote });
+                void sendStatusMail("cancelled", { ...refund, status: "cancelled" }, templates, settings, locale).then(
                   notify,
                 );
                 setRefund(null);
               }}
             >
-              确认取消
+              {copy.orders.refundOk}
             </button>
           </>
         }
       >
         <p className="text-sm text-slate-500">
-          {refund ? `将把 ${refund.id}（${refund.customer}）标为已取消。此操作为演示状态流转，不会真正打款。` : ""}
+          {refund ? copy.orders.refundLead(refund.id, refund.customer) : ""}
         </p>
       </Modal>
     </div>
