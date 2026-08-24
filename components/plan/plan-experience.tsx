@@ -11,7 +11,7 @@ import { BOOKING_SLOTS, todayIsoDate } from "@/lib/booking/slots";
 import { formatJpy } from "@/lib/format";
 import { useLiveCatalog, useLiveInventory } from "@/lib/live-catalog";
 import { addonUnitLabel } from "@/lib/mock/addons";
-import { planImage } from "@/lib/media";
+import { coverOf } from "@/lib/media";
 import { PLAN_SLUGS } from "@/lib/plans/seed";
 import { withSlash } from "@/lib/paths";
 import { cn } from "@/lib/utils";
@@ -85,7 +85,7 @@ export function PlanExperience({ plan: seedPlan, plans: seedPlans, addons: seedA
                   on ? "border-neon-pink shadow-[0_0_20px_rgb(255_46_147_/_30%)]" : "border-white/10",
                 )}
               >
-                <img src={planImage(item.slug)} alt="" className="h-28 w-full object-cover" />
+                <img src={coverOf(item)} alt="" className="h-28 w-full object-cover" />
                 <div className="p-4">
                   <p className="font-black text-white">{item.translation.name}</p>
                   <p className="mt-1 text-neon-pink">{formatJpy(item.base_price_jpy, locale)}</p>

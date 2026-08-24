@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatJpy } from "@/lib/format";
 import { useLivePlans } from "@/lib/live-catalog";
-import { planImage } from "@/lib/media";
+import { coverOf } from "@/lib/media";
 import { withSlash } from "@/lib/paths";
 import { PLAN_SLUGS } from "@/lib/plans/seed";
 import type { PlanWithTranslation } from "@/lib/plans/types";
@@ -36,7 +36,7 @@ export function HomePlans({ plans: seedPlans, locale }: Props) {
             >
               <div className="aspect-video overflow-hidden bg-[#12121A]">
                 <img
-                  src={planImage(plan.slug)}
+                  src={coverOf(plan)}
                   alt={plan.translation.name}
                   className="h-full w-full object-cover"
                 />

@@ -2,7 +2,7 @@ import { Clock, MapPinned } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { formatJpy } from "@/lib/format";
-import { planImage } from "@/lib/media";
+import { coverOf } from "@/lib/media";
 import { withSlash } from "@/lib/paths";
 import type { PlanWithTranslation } from "@/lib/plans/types";
 
@@ -19,7 +19,7 @@ export async function PlanCard({ plan, locale }: PlanCardProps) {
     <article className="skin-card flex h-full flex-col overflow-hidden p-0">
       <div className="relative aspect-video overflow-hidden bg-[#12121A]">
         <img
-          src={planImage(plan.slug)}
+          src={coverOf(plan)}
           alt={translation.name}
           className="h-full w-full object-cover"
         />

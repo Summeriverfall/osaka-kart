@@ -17,7 +17,15 @@ export const PLAN_ROUTES: Record<string, string> = {
 };
 
 export function planRoute(slug: string) {
-  return PLAN_ROUTES[slug] ?? PLAN_ROUTES.standard;
+  return PLAN_ROUTES[slug] ?? "";
+}
+
+export function coverOf(plan: { slug: string; cover_image?: string | null }) {
+  return plan.cover_image?.trim() || planImage(plan.slug);
+}
+
+export function routeOf(plan: { slug: string; detail_image?: string | null }) {
+  return plan.detail_image?.trim() || planRoute(plan.slug);
 }
 
 export const ADDON_IMAGES: Record<string, string> = {

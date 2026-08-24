@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { PlanExperience } from "@/components/plan/plan-experience";
 import { PlanSummaryCard } from "@/components/plan/plan-summary";
 import { LivePlanHeading } from "@/components/plan/live-plan-heading";
-import { planImage, planRoute } from "@/lib/media";
+import { LivePlanCover, LivePlanDescription, LivePlanRoute } from "@/components/plan/live-plan-media";
 import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 
 type PlanDetailViewProps = {
@@ -26,9 +26,8 @@ export async function PlanDetailView({ plan, plans, addons, locale }: PlanDetail
   return (
     <article>
       <section className="relative min-h-[42vh] overflow-hidden">
-        <img
-          src={planImage(plan.slug)}
-          alt=""
+        <LivePlanCover
+          plan={plan}
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0F] via-[#0A0A0F]/55 to-[#0A0A0F]/20" />
@@ -46,7 +45,7 @@ export async function PlanDetailView({ plan, plans, addons, locale }: PlanDetail
         <div className="space-y-12 lg:col-span-2">
           <section>
             <p className="text-base leading-relaxed text-[#F1F1F5]/90">
-              {translation.description}
+              <LivePlanDescription plan={plan} />
             </p>
           </section>
 
@@ -60,9 +59,8 @@ export async function PlanDetailView({ plan, plans, addons, locale }: PlanDetail
             {translation.route_summary && (
               <p className="text-[#9CA3AF]">{translation.route_summary}</p>
             )}
-            <img
-              src={planRoute(plan.slug)}
-              alt=""
+            <LivePlanRoute
+              plan={plan}
               className="mt-4 w-full rounded-2xl border border-white/10 object-contain"
             />
             <iframe

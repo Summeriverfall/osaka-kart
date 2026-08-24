@@ -361,7 +361,26 @@ export const useOpsStore = create<OpsState>()(
           ...extra,
           logs: extra.logs ?? current.logs,
           orders: extra.orders ?? current.orders,
-          plans: extra.plans ?? current.plans,
+          plans: (extra.plans ?? current.plans).map((row) => {
+            const seed =
+              MOCK_PLANS.find((item) => item.id === row.id) ??
+              MOCK_PLANS.find((item) => item.slug === row.slug);
+            if (!seed) return row;
+            return {
+              ...seed,
+              ...row,
+              coverImage: row.coverImage,
+              detailImage: row.detailImage,
+              description: row.description,
+              descriptionEn: row.descriptionEn,
+              descriptionJa: row.descriptionJa,
+              descriptionKo: row.descriptionKo,
+              highlights: row.highlights,
+              highlightsEn: row.highlightsEn,
+              highlightsJa: row.highlightsJa,
+              highlightsKo: row.highlightsKo,
+            };
+          }),
           addons: extra.addons ?? current.addons,
           vehicleSlots: extra.vehicleSlots ?? current.vehicleSlots,
           settings: { ...MOCK_SETTINGS, ...extra.settings },

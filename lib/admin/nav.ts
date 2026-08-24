@@ -24,7 +24,7 @@ export const ADMIN_PAGE_META: Record<string, { title: string; lead: string }> = 
   "/admin/calendar": { title: "日历", lead: "月 / 周 / 日看订单分布。点日期下钻到当天列表。" },
   "/admin/inventory": { title: "库存管理", lead: "车辆时间轴。色块看出松紧，点击或拖拽即可改库存。" },
   "/admin/vehicles": { title: "车辆管理", lead: "10 辆车。维修中的会从当日库存扣除。" },
-  "/admin/plans": { title: "套餐管理", lead: "上下架、价格、时长。勾选该套餐可购买的附加项。" },
+  "/admin/plans": { title: "套餐管理", lead: "编辑前台卡片：标题图、说明图、介绍与亮点，以及价格、时长和附加项。" },
   "/admin/reports": { title: "财务报表", lead: "营收趋势、渠道占比、用户画像。" },
   "/admin/staff": { title: "员工管理", lead: "超管可添加、改角色、重置密码和停用。" },
   "/admin/settings": { title: "系统设置", lead: "点标签跳到对应区块。手机上表格改成卡片，避免左右撑破。" },

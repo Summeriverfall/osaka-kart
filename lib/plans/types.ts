@@ -23,6 +23,8 @@ export type PlanRecord = {
 export type PlanWithTranslation = PlanRecord & {
   translation: PlanTranslation;
   source: "supabase" | "seed";
+  cover_image?: string;
+  detail_image?: string;
 };
 
 export type AddonTranslation = {

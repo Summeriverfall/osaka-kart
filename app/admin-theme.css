@@ -266,6 +266,56 @@ html:has(.admin-app) body {
   color: #4b5563;
 }
 
+.admin-app .admin-copy-list {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.9rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.admin-app .admin-copy-row + .admin-copy-row {
+  border-top: 1px solid #e5e7eb;
+}
+
+.admin-app .admin-copy-row.is-open {
+  background: #f8fafc;
+}
+
+.admin-app .admin-copy-head {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 0.9rem;
+  text-align: left;
+}
+
+.admin-app .admin-copy-head:hover {
+  background: #f8fafc;
+}
+
+.admin-app .admin-copy-body {
+  padding: 0 0.9rem 1rem;
+}
+
+.admin-app .admin-copy-n {
+  display: inline-flex;
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .admin-app .admin-table th {
   color: #6b7280;
   background: #f9fafb;

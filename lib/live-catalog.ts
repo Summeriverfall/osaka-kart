@@ -38,8 +38,24 @@ export function useOpsHydrated() {
 function localePlanName(plan: MockPlan, locale: string, fallback: string) {
   if (locale.startsWith("ja") && plan.nameJa) return plan.nameJa;
   if (locale.startsWith("en") && plan.nameEn) return plan.nameEn;
-  if (locale.startsWith("ko") && plan.nameEn) return plan.nameEn;
+  if (locale.startsWith("ko") && plan.nameKo) return plan.nameKo;
   return plan.name || fallback;
+}
+
+function localePlanDescription(plan: MockPlan, locale: string, fallback: string) {
+  if (locale.startsWith("ja") && plan.descriptionJa?.trim()) return plan.descriptionJa;
+  if (locale.startsWith("en") && plan.descriptionEn?.trim()) return plan.descriptionEn;
+  if (locale.startsWith("ko") && plan.descriptionKo?.trim()) return plan.descriptionKo;
+  if (locale.startsWith("zh") && plan.description?.trim()) return plan.description;
+  return fallback;
+}
+
+function localePlanHighlights(plan: MockPlan, locale: string, fallback: string[]) {
+  if (locale.startsWith("ja") && plan.highlightsJa?.some((item) => item.trim())) return plan.highlightsJa;
+  if (locale.startsWith("en") && plan.highlightsEn?.some((item) => item.trim())) return plan.highlightsEn;
+  if (locale.startsWith("ko") && plan.highlightsKo?.some((item) => item.trim())) return plan.highlightsKo;
+  if (locale.startsWith("zh") && plan.highlights?.some((item) => item.trim())) return plan.highlights;
+  return fallback;
 }
 
 function localeAddonName(addon: MockAddon, locale: string, fallback: string) {
@@ -60,11 +76,13 @@ function mockPlanToPublic(plan: MockPlan, locale: string): PlanWithTranslation {
     max_participants: plan.maxRiders,
     is_active: plan.active,
     source: "seed",
+    cover_image: plan.coverImage,
+    detail_image: plan.detailImage,
     translation: {
       locale,
       name,
-      description: plan.includes.join(" · "),
-      highlights: plan.includes.slice(0, 3),
+      description: localePlanDescription(plan, locale, plan.includes.join(" · ")),
+      highlights: localePlanHighlights(plan, locale, plan.includes.slice(0, 3)),
       route_summary: "",
       includes: plan.includes,
       requirements: [],
@@ -86,9 +104,13 @@ export function overlayPlan(
     base_price_jpy: live.priceJpy,
     max_participants: live.maxRiders,
     is_active: live.active,
+    cover_image: live.coverImage?.trim() || seed.cover_image,
+    detail_image: live.detailImage?.trim() || undefined,
     translation: {
       ...seed.translation,
       name: localePlanName(live, locale, seed.translation.name),
+      description: localePlanDescription(live, locale, seed.translation.description),
+      highlights: localePlanHighlights(live, locale, seed.translation.highlights),
       includes: live.includes.length ? live.includes : seed.translation.includes,
     },
   };
