@@ -6,7 +6,7 @@ export const PLAN_IMAGE_LIMIT = {
 } as const;
 
 export function planImageLimitHint() {
-  return `宽和高均不少于 ${PLAN_IMAGE_LIMIT.minEdge}px，最长边不超过 ${PLAN_IMAGE_LIMIT.maxEdge}px，文件不超过 ${PLAN_IMAGE_LIMIT.maxBytes / 1024 / 1024}MB。上传后会转成 WebP 并压缩，存在本机浏览器里，不是服务器。`;
+  return `宽和高均不少于 ${PLAN_IMAGE_LIMIT.minEdge}px，最长边不超过 ${PLAN_IMAGE_LIMIT.maxEdge}px，文件不超过 ${PLAN_IMAGE_LIMIT.maxBytes / 1024 / 1024}MB。上传后转 WebP，图存在本机 IndexedDB，不进页面主缓存。`;
 }
 
 function canvasToDataUrl(canvas: HTMLCanvasElement, quality = 0.82) {

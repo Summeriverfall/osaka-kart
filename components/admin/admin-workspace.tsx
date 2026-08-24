@@ -15,15 +15,18 @@ import { AdminSettingsView } from "@/components/admin/admin-settings";
 import { AdminStaffView } from "@/components/admin/admin-staff";
 import { AdminVehiclesView } from "@/components/admin/admin-vehicles";
 import { ADMIN_PAGE_META, adminTabFromLocation, normalizeAdminTab } from "@/lib/admin/nav";
+import { adminCopy } from "@/lib/admin/copy";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
+import { useLocale } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 
-function metaFor(tab: string) {
+function metaFor(tab: string, locale: string) {
+  const copy = adminCopy(locale);
   if (tab.startsWith("/admin/orders/") && tab !== "/admin/orders") {
     const id = tab.slice("/admin/orders/".length);
-    return { title: "订单详情", lead: `预约号 ${id}` };
+    return { title: copy.orderDetail, lead: copy.orderLead(id) };
   }
-  return ADMIN_PAGE_META[tab] ?? ADMIN_PAGE_META["/admin/dashboard"];
+  return copy.pages[tab] ?? copy.pages["/admin/dashboard"] ?? ADMIN_PAGE_META[tab] ?? ADMIN_PAGE_META["/admin/dashboard"];
 }
 
 function viewFor(tab: string) {
@@ -73,6 +76,7 @@ function viewFor(tab: string) {
 
 export function AdminWorkspace() {
   const pathname = usePathname() ?? "";
+  const locale = useLocale();
   const override = useAdminNavStore((state) => state.tab);
   const syncFromWindow = useAdminNavStore((state) => state.syncFromWindow);
 
@@ -81,7 +85,7 @@ export function AdminWorkspace() {
   }, [pathname, syncFromWindow]);
 
   const tab = normalizeAdminTab(override ?? adminTabFromLocation() ?? (pathname || "/admin/dashboard"));
-  const meta = metaFor(tab);
+  const meta = metaFor(tab, locale);
 
   return (
     <AdminPageFrame key={tab} title={meta.title} lead={meta.lead}>

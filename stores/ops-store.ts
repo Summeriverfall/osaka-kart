@@ -15,7 +15,7 @@ import { MOCK_VEHICLES, type MockVehicle } from "@/lib/mock/vehicles";
 import { MOCK_STAFF, type MockStaff } from "@/lib/mock/staff";
 import { applySlotPatch, syncOrderInventory } from "@/lib/ops-inventory";
 import { DEFAULT_STORE_ID, storeIdOf } from "@/lib/store-id";
-import { OPS_STORAGE_KEY } from "@/lib/ops-storage";
+import { OPS_STORAGE_KEY, opsPersistStorage } from "@/lib/ops-storage";
 
 export type WebsiteBookingInput = {
   ref: string;
@@ -340,7 +340,8 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 1,
+      version: 2,
+      storage: opsPersistStorage,
       partialize: (state) => ({
         orders: state.orders,
         addons: state.addons,
@@ -352,7 +353,7 @@ export const useOpsStore = create<OpsState>()(
         staff: state.staff,
         templates: state.templates,
         stores: state.stores,
-        logs: state.logs,
+        logs: state.logs.slice(0, 200),
       }),
       merge: (persisted, current) => {
         const extra = (persisted ?? {}) as Partial<OpsState>;
