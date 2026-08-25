@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { CalendarDays, ClipboardList, Plus, Wallet, Warehouse } from "lucide-react";
 import { CountUp } from "@/components/admin/count-up";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { setAdminFocusDate } from "@/lib/admin/focus-date";
 import { adminCopy, adminPlanName, adminStoreName, adminStoreStatus } from "@/lib/admin/copy";
 import { addDaysIso } from "@/lib/calendar";
 import { todayIsoDate } from "@/lib/booking/slots";
@@ -36,7 +37,7 @@ export function AdminDashboardView() {
   const { orders, vehicles, stores, storeId, setStoreId, canSwitch, store } = useStoreData();
   const showingAll = canSwitch && isAllStores(storeId);
   const todayIso = todayIsoDate();
-  const yesterdayIso = addDaysIso(todayIso, -1);
+  const [picked, setPicked] = useState(todayIso);
 
   useEffect(() => {
     if (canSwitch) setStoreId(ALL_STORES_ID);
@@ -44,28 +45,34 @@ export function AdminDashboardView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canSwitch]);
 
-  const today = orders.filter((item) => item.date === todayIso).sort((a, b) => a.time.localeCompare(b.time));
-  const yesterday = orders.filter((item) => item.date === yesterdayIso);
-  const pending = orders.filter((item) => item.status === "pending").length;
-  const todayRevenue = today.reduce((sum, item) => sum + item.totalJpy, 0);
-  const yesterdayRevenue = yesterday.reduce((sum, item) => sum + item.totalJpy, 0);
+  const weekDays = useMemo(
+    () => Array.from({ length: 7 }, (_, index) => addDaysIso(todayIso, index - 6)),
+    [todayIso],
+  );
+  const prevIso = addDaysIso(picked, -1);
+  const dayOrders = orders.filter((item) => item.date === picked).sort((a, b) => a.time.localeCompare(b.time));
+  const prevOrders = orders.filter((item) => item.date === prevIso);
+  const pending = dayOrders.filter((item) => item.status === "pending").length;
+  const todayRevenue = dayOrders.reduce((sum, item) => sum + item.totalJpy, 0);
+  const prevRevenue = prevOrders.reduce((sum, item) => sum + item.totalJpy, 0);
   const freeKarts = vehicles.filter((item) => item.status === "available").length;
-  const week = Array.from({ length: 7 }, (_, index) => {
-    const date = addDaysIso(todayIso, index - 6);
-    return { day: date.slice(5), orders: orders.filter((item) => item.date === date).length };
-  });
+  const week = weekDays.map((date) => ({
+    iso: date,
+    day: date.slice(5),
+    orders: orders.filter((item) => item.date === date).length,
+  }));
 
   const branches = stores.map((item) => {
     const storeOrders = ordersAll.filter((order) => storeIdOf(order.storeId) === item.id);
     const storeVehicles = vehiclesAll.filter((vehicle) => storeIdOf(vehicle.storeId) === item.id);
-    const storeToday = storeOrders.filter((order) => order.date === todayIso);
+    const storeToday = storeOrders.filter((order) => order.date === picked);
     return {
       id: item.id,
       name: adminStoreName(locale, item.id, item.name),
       status: adminStoreStatus(locale, item.status),
       todayOrders: storeToday.length,
       todayRevenue: storeToday.reduce((sum, order) => sum + order.totalJpy, 0),
-      pending: storeOrders.filter((order) => order.status === "pending").length,
+      pending: storeToday.filter((order) => order.status === "pending").length,
       karts: storeVehicles.filter((vehicle) => vehicle.status === "available").length,
     };
   });
@@ -73,22 +80,24 @@ export function AdminDashboardView() {
   const cards = [
     {
       label: copy.dashboard.todayOrders,
-      value: today.length,
+      value: dayOrders.length,
       icon: ClipboardList,
-      trend: showingAll ? copy.dashboard.allSum : copy.dashboard.count(today.length),
+      trend: showingAll ? copy.dashboard.allSum : copy.dashboard.count(dayOrders.length),
       warn: false,
+      href: "/admin/orders",
     },
     {
       label: copy.dashboard.todayRevenue,
       value: todayRevenue,
       icon: Wallet,
-      trend: yesterdayRevenue
-        ? `${todayRevenue >= yesterdayRevenue ? "↑" : "↓"} ${copy.dashboard.vsYesterday}`
+      trend: prevRevenue
+        ? `${todayRevenue >= prevRevenue ? "↑" : "↓"} ${picked === todayIso ? copy.dashboard.vsYesterday : copy.dashboard.vsPrev}`
         : showingAll
           ? copy.dashboard.allSum
           : copy.dashboard.storeRevenue,
       yen: true,
       warn: false,
+      href: "/admin/orders",
     },
     {
       label: copy.dashboard.pending,
@@ -96,6 +105,7 @@ export function AdminDashboardView() {
       icon: CalendarDays,
       trend: pending ? copy.dashboard.needHandle : copy.dashboard.noPending,
       warn: pending > 0,
+      href: "/admin/orders",
     },
     {
       label: copy.dashboard.freeKarts,
@@ -103,6 +113,7 @@ export function AdminDashboardView() {
       icon: Warehouse,
       trend: copy.dashboard.kartsOk(freeKarts, vehicles.length),
       warn: false,
+      href: "/admin/inventory",
     },
   ] as const;
 
@@ -112,6 +123,12 @@ export function AdminDashboardView() {
     { id: "reports", label: copy.dashboard.reports, href: role === "admin" ? "/admin/reports" : "/admin/dashboard" },
     { id: "staff", label: copy.dashboard.staff, href: role === "admin" ? "/admin/staff" : "/admin/orders" },
   ];
+
+  function openDay(iso: string, tab: "/admin/orders" | "/admin/calendar" = "/admin/orders") {
+    setPicked(iso);
+    setAdminFocusDate(iso);
+    go(tab);
+  }
 
   return (
     <div className="space-y-6">
@@ -134,9 +151,38 @@ export function AdminDashboardView() {
         </div>
       ) : null}
 
+      <div className="flex flex-wrap gap-2">
+        {weekDays.map((iso) => (
+          <button
+            key={iso}
+            type="button"
+            onClick={() => {
+              setPicked(iso);
+              setAdminFocusDate(iso);
+            }}
+            className={`rounded-full border px-3 py-1.5 text-xs transition ${
+              picked === iso
+                ? "border-blue-600 bg-blue-50 font-semibold text-blue-700"
+                : "border-slate-200 text-slate-600 hover:border-blue-400"
+            }`}
+          >
+            {iso === todayIso ? copy.orders.today : iso.slice(5)}
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-slate-500">{copy.dashboard.pickHint}</p>
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => (
-          <article key={card.label} className="rounded-2xl border border-slate-200 bg-white p-6">
+          <button
+            key={card.label}
+            type="button"
+            onClick={() => {
+              setAdminFocusDate(picked);
+              go(card.href === "/admin/inventory" ? "/admin/inventory" : "/admin/orders");
+            }}
+            className="rounded-2xl border border-slate-200 bg-white p-6 text-left transition hover:border-blue-400"
+          >
             <div className="flex items-center justify-between text-slate-500">
               <span>{card.label}</span>
               <card.icon className="size-4 text-blue-600" />
@@ -145,7 +191,7 @@ export function AdminDashboardView() {
               <CountUp value={card.value} yen={"yen" in card} />
             </p>
             <p className={`mt-2 text-xs ${card.warn ? "text-amber-600" : "text-emerald-600"}`}>{card.trend}</p>
-          </article>
+          </button>
         ))}
       </div>
 
@@ -181,12 +227,17 @@ export function AdminDashboardView() {
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <section className="rounded-2xl border border-slate-200 bg-white p-5">
-          <h2 className="font-black">{copy.dashboard.timeline}</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-black">{copy.dashboard.timeline}</h2>
+            <button type="button" className="text-xs text-blue-600" onClick={() => openDay(picked, "/admin/calendar")}>
+              {copy.nav["/admin/calendar"]}
+            </button>
+          </div>
           <ul className="mt-4 space-y-3">
-            {today.length === 0 ? (
+            {dayOrders.length === 0 ? (
               <li className="text-sm text-slate-400">{showingAll ? copy.dashboard.emptyAll : copy.dashboard.emptyStore}</li>
             ) : null}
-            {today.map((order) => {
+            {dayOrders.map((order) => {
               const seed = plans.find((item) => item.slug === order.planSlug);
               const planName = adminPlanName(locale, seed, order.planName);
               const storeName = adminStoreName(
@@ -195,17 +246,23 @@ export function AdminDashboardView() {
                 stores.find((item) => item.id === storeIdOf(order.storeId))?.name ?? copy.nambaStore,
               );
               return (
-                <li key={order.id} className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-3">
-                  <div>
-                    <p className="font-black">
-                      {order.time} · {planName}
-                    </p>
-                    <p className="text-sm text-slate-500">
-                      {copy.dashboard.orderMeta(order.customer, order.riders, formatYenShort(order.totalJpy))}
-                      {showingAll ? ` · ${storeName}` : ""}
-                    </p>
-                  </div>
-                  <StatusBadge status={order.status} />
+                <li key={order.id}>
+                  <button
+                    type="button"
+                    onClick={() => openDay(order.date, "/admin/calendar")}
+                    className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-3 py-3 text-left hover:border-blue-400"
+                  >
+                    <div>
+                      <p className="font-black">
+                        {order.time} · {planName}
+                      </p>
+                      <p className="text-sm text-slate-500">
+                        {copy.dashboard.orderMeta(order.customer, order.riders, formatYenShort(order.totalJpy))}
+                        {showingAll ? ` · ${storeName}` : ""}
+                      </p>
+                    </div>
+                    <StatusBadge status={order.status} />
+                  </button>
                 </li>
               );
             })}
@@ -227,6 +284,10 @@ export function AdminDashboardView() {
                   }
                   if (item.id === "reports" && role !== "admin") {
                     notify(copy.dashboard.managerReport);
+                    return;
+                  }
+                  if (item.id === "order") {
+                    openDay(picked, "/admin/orders");
                     return;
                   }
                   go(item.href);

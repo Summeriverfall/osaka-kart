@@ -58,7 +58,12 @@ function viewFor(tab: string) {
     case "/admin/content/meetup":
       return <AdminCmsView section="meetup" />;
     case "/admin/bookings/how":
-      return <AdminCmsView section="how" />;
+    case "/admin/settings/booking":
+      return (
+        <AdminRoleGate allow={["admin"]}>
+          <AdminCmsView section="how" />
+        </AdminRoleGate>
+      );
     case "/admin/site":
       return (
         <AdminRoleGate allow={["admin"]}>
@@ -139,6 +144,7 @@ export function AdminWorkspace() {
     if (loc === "/admin/content") go(CONTENT_HOME);
     if (loc === "/admin/reports") go(REPORT_HOME);
     if (loc === "/admin/settings") go(SETTINGS_HOME);
+    if (loc === "/admin/bookings/how") go("/admin/settings/booking");
     if (loc === "/admin/settings/send" || loc === "/admin/settings/mail") go("/admin/settings/email");
   }, [pathname, go]);
 

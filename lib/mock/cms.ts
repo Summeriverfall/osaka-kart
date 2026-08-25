@@ -144,8 +144,8 @@ function video(
 
 export const MOCK_CMS: CmsState = {
   labels: {
-    videosTitle: L("現場畫面", "On the street", "現場映像", "현장 영상"),
-    videosLead: L("真實街道，不是封閉賽道。", "Real streets, not a closed circuit.", "本物の公道。閉鎖コースではありません。", "실제 도로입니다. 폐쇄 코스가 아닙니다."),
+    videosTitle: L("現場畫面", "On the street", "現場の映像", "현장 영상"),
+    videosLead: L("真實街道，不是封閉賽道。", "Public roads, not a closed track.", "クローズドコースではなく、公道です。", "폐쇄 코스가 아닌 실제 도로입니다."),
     experienceTitle: L("體驗影片", "Experience videos", "体験動画", "체험 영상"),
     experienceLead: L("上路之後是什麼感覺，先看一段。", "See the streets before you ride.", "走る前に、公道の雰囲気を見てください。", "타기 전에 거리를 먼저 보세요."),
     reviewsTitle: L("用戶評價", "Guest reviews", "お客さまの声", "이용 후기"),
@@ -155,12 +155,12 @@ export const MOCK_CMS: CmsState = {
     pressTitle: L("新聞報道", "In the news", "ニュース報道", "뉴스 보도"),
   },
   videos: [
-    video("hero-main", "hero", L("首頁主視覺", "Hero loop", "ヒーロー映像", "히어로 영상"), "", 0, {
+    video("hero-main", "hero", L("首頁循環背景", "Hero loop", "ヒーロー映像", "히어로 영상"), "", 0, {
       source: "file",
       file: "/videos/hero-bg.mp4",
       poster: "/images/hero/poster.jpg",
     }),
-    video("gallery-main", "gallery", L("夜間道頓堀", "Dotonbori night", "ナイト道頓堀", "나이트 도톤보리"), "", 1, {
+    video("gallery-main", "gallery", L("夜間道頓堀", "Night Dotonbori", "ナイト道頓堀", "나이트 도톤보리"), "", 1, {
       source: "file",
       file: "/videos/street-run.mp4",
       poster: "/images/hero/poster.jpg",
@@ -171,13 +171,13 @@ export const MOCK_CMS: CmsState = {
       poster: "/images/hero/poster.jpg",
       startAt: 2,
     }),
-    video("xp-2", "experience", L("夜間道頓堀", "Dotonbori night", "ナイト道頓堀", "나이트 도톤보리"), "", 11, {
+    video("xp-2", "experience", L("夜間道頓堀", "Night Dotonbori", "ナイト道頓堀", "나이트 도톤보리"), "", 11, {
       source: "file",
       file: "/videos/hero-bg.mp4",
       poster: "/images/hero/poster.jpg",
       startAt: 18,
     }),
-    video("xp-3", "experience", L("車隊燈光", "Convoy lights", "隊列のライト", "대열의 빛"), "", 12, {
+    video("xp-3", "experience", L("車隊燈光", "Convoy lights", "隊列の光", "대열의 빛"), "", 12, {
       source: "file",
       file: "/videos/street-run.mp4",
       poster: "/images/hero/poster.jpg",
@@ -195,20 +195,20 @@ export const MOCK_CMS: CmsState = {
       poster: "/images/hero/poster.jpg",
       startAt: 13,
     }),
-    video("xp-6", "experience", L("大阪城路段", "Castle run", "大阪城区間", "오사카성 구간"), "", 15, {
+    video("xp-6", "experience", L("大阪城路段", "Osaka Castle stretch", "大阪城区間", "오사카성 구간"), "", 15, {
       source: "file",
       file: "/videos/hero-bg.mp4",
       poster: "/images/hero/poster.jpg",
       startAt: 108,
     }),
-    video("page-1", "page", L("夜間道頓堀", "Dotonbori night", "ナイト道頓堀", "나이트 도톤보리"), "aqz-KE-bpKQ", 20),
+    video("page-1", "page", L("夜間道頓堀", "Night Dotonbori", "ナイト道頓堀", "나이트 도톤보리"), "aqz-KE-bpKQ", 20),
     video("page-2", "page", L("難波出發", "Namba start", "難波スタート", "난바 출발"), "aqz-KE-bpKQ", 21),
-    video("page-3", "page", L("車隊燈光", "Convoy lights", "隊列のライト", "대열의 빛"), "aqz-KE-bpKQ", 22),
+    video("page-3", "page", L("車隊燈光", "Convoy lights", "隊列の光", "대열의 빛"), "aqz-KE-bpKQ", 22),
     video("page-4", "page", L("心齋橋環線", "Shinsaibashi loop", "心斎橋ループ", "신사이바시 루프"), "aqz-KE-bpKQ", 23),
     video("page-5", "page", L("通天閣夜跑", "Tsutenkaku night", "通天閣ナイト", "츠텐카쿠 나이트"), "aqz-KE-bpKQ", 24),
-    video("page-6", "page", L("大阪城路段", "Castle run", "大阪城区間", "오사카성 구간"), "aqz-KE-bpKQ", 25),
+    video("page-6", "page", L("大阪城路段", "Osaka Castle stretch", "大阪城区間", "오사카성 구간"), "aqz-KE-bpKQ", 25),
     video("page-7", "page", L("頭盔視角", "Helmet cam", "ヘルメット視点", "헬멧 캠"), "aqz-KE-bpKQ", 26),
-    video("page-8", "page", L("車隊合影", "Team photo", "チーム写真", "팀 사진"), "aqz-KE-bpKQ", 27),
+    video("page-8", "page", L("車隊合影", "Team photo", "隊列ショット", "팀 사진"), "aqz-KE-bpKQ", 27),
   ],
   reviews: [
     {
@@ -549,6 +549,17 @@ export function blankPress(): CmsPress {
   };
 }
 
+export function isCustomCmsVideo(item: CmsVideo) {
+  const file = item.file?.trim() ?? "";
+  if (file.startsWith("data:") || file.startsWith("blob:")) return true;
+  if (file.startsWith("http://") || file.startsWith("https://")) return true;
+  if (item.source === "youtube") {
+    const id = item.youtubeId?.trim() ?? "";
+    return Boolean(id) && id !== "aqz-KE-bpKQ";
+  }
+  return false;
+}
+
 function isDemoExperience(item: CmsVideo) {
   if (item.slot !== "experience") return false;
   if (item.source === "file" && item.file && (item.startAt ?? 0) > 0) return false;
@@ -562,6 +573,18 @@ function mergeVideos(seed: CmsVideo[], extra?: CmsVideo[]) {
   const xpSeed = seed.filter((item) => item.slot === "experience");
   const useSeedXp = xpExtra.length < 6 || xpExtra.every(isDemoExperience);
   return [...(rest.length ? rest : seed.filter((item) => item.slot !== "experience")), ...(useSeedXp ? xpSeed : xpExtra)];
+}
+
+export function refreshBundledVideos(seed: CmsVideo[], extra?: CmsVideo[]) {
+  const extraById = new Map((extra ?? []).map((item) => [item.id, item]));
+  const seedIds = new Set(seed.map((item) => item.id));
+  const merged = seed.map((seedItem) => {
+    const extraItem = extraById.get(seedItem.id);
+    if (extraItem && isCustomCmsVideo(extraItem)) return { ...seedItem, ...extraItem };
+    return seedItem;
+  });
+  const customExtra = (extra ?? []).filter((item) => !seedIds.has(item.id) && isCustomCmsVideo(item));
+  return [...merged, ...customExtra];
 }
 
 export function mergeCms(seed: CmsState, extra?: Partial<CmsState> | null): CmsState {

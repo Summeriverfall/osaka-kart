@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { MOCK_ADDONS, type MockAddon } from "@/lib/mock/addons";
 import { MOCK_LOGS, type LogType, type MockLog } from "@/lib/mock/logs";
-import { MOCK_ORDERS, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
+import { MOCK_ORDERS, buildWeekDemoOrders, isWebsiteLiveOrder, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import { MOCK_PLANS, type MockPlan } from "@/lib/mock/plans";
 import { MOCK_SPECIAL_DATES, type MockSpecialDate } from "@/lib/mock/inventory";
 import {
@@ -13,7 +13,7 @@ import {
 import { MOCK_SETTINGS, MOCK_EMAIL_TEMPLATES, MOCK_STORES, type MockSettings, type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
 import { MOCK_VEHICLES, type MockVehicle } from "@/lib/mock/vehicles";
 import { MOCK_STAFF, type MockStaff } from "@/lib/mock/staff";
-import { MOCK_CMS, mergeCms, type CmsState } from "@/lib/mock/cms";
+import { MOCK_CMS, mergeCms, refreshBundledVideos, type CmsState } from "@/lib/mock/cms";
 import { applySlotPatch, syncOrderInventory } from "@/lib/ops-inventory";
 import { DEFAULT_STORE_ID, storeIdOf } from "@/lib/store-id";
 import { OPS_STORAGE_KEY, opsPersistStorage } from "@/lib/ops-storage";
@@ -59,6 +59,7 @@ type OpsState = {
   patchPlan: (id: string, patch: Partial<MockPlan>) => void;
   patchVehicleSlot: (vehicleId: string, date: string, time: string, patch: Partial<VehicleSlotCell>) => void;
   batchPatchVehicleSlots: (date: string, targets: { vehicleId: string; time: string }[], patch: Partial<VehicleSlotCell>) => void;
+  batchPatchVehicleRange: (dates: string[], vehicleIds: string[], patch: Partial<VehicleSlotCell>) => void;
   clearDayInventory: (date: string, vehicleIds?: string[]) => void;
   resetDayInventory: (date: string, vehicleIds?: string[]) => void;
   patchSettings: (patch: Partial<MockSettings>) => void;
@@ -256,6 +257,25 @@ export const useOpsStore = create<OpsState>()(
             logs: [makeLog("库存调整", `${date} 批量改了 ${targets.length} 个时段`), ...state.logs],
           };
         }),
+      batchPatchVehicleRange: (dates, vehicleIds, patch) =>
+        set((state) => {
+          const dateSet = new Set(dates);
+          const idSet = new Set(vehicleIds);
+          let slots = state.vehicleSlots;
+          const vehicles = state.vehicles.filter((item) => idSet.has(item.id));
+          for (const date of dates) {
+            const missing = vehicles.filter((vehicle) => !slots.some((cell) => cell.date === date && cell.vehicleId === vehicle.id));
+            if (missing.length) {
+              slots = [...slots, ...buildVehicleTimelineForDate(date, missing, state.orders)];
+            }
+          }
+          return {
+            vehicleSlots: slots.map((item) =>
+              dateSet.has(item.date) && idSet.has(item.vehicleId) ? applySlotPatch(item, patch) : item,
+            ),
+            logs: [makeLog("库存调整", `批量改了 ${dates.length} 天 · ${vehicleIds.length} 辆车`), ...state.logs],
+          };
+        }),
       clearDayInventory: (date, vehicleIds) =>
         set((state) => ({
           vehicleSlots: state.vehicleSlots.map((item) =>
@@ -350,8 +370,33 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 3,
+      version: 5,
       storage: opsPersistStorage,
+      migrate: (persisted, version) => {
+        const state = { ...((persisted ?? {}) as Partial<OpsState>) };
+        if (version < 4) {
+          const live = (state.orders ?? []).filter(isWebsiteLiveOrder);
+          const demo = buildWeekDemoOrders();
+          const kept = new Set(live.map((item) => item.id));
+          state.orders = [...live, ...demo.filter((item) => !kept.has(item.id))];
+          state.vehicleSlots = buildVehicleTimeline(state.vehicles, state.orders);
+        }
+        if (version < 5) {
+          const cms = mergeCms(MOCK_CMS, state.cms);
+          state.cms = {
+            ...cms,
+            videos: refreshBundledVideos(MOCK_CMS.videos, state.cms?.videos),
+            labels: {
+              ...cms.labels,
+              videosTitle: MOCK_CMS.labels.videosTitle,
+              videosLead: MOCK_CMS.labels.videosLead,
+              experienceTitle: MOCK_CMS.labels.experienceTitle,
+              experienceLead: MOCK_CMS.labels.experienceLead,
+            },
+          };
+        }
+        return state as OpsState;
+      },
       partialize: (state) => ({
         orders: state.orders,
         addons: state.addons,

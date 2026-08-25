@@ -78,10 +78,10 @@ export function LandingCommerce({ plans, addons, locale, theme, copy }: Commerce
   return (
     <>
       <LandingBook plans={plans} addons={addons} locale={locale} />
+      <LandingExperience theme={theme} />
+      <LandingFaq copy={copy} theme={theme} />
       <LandingFlow copy={copy} theme={theme} />
       <LandingReviews copy={copy} theme={theme} />
-      <LandingFaq copy={copy} theme={theme} />
-      <LandingExperience theme={theme} />
       <LandingNotes theme={theme} />
       <LandingFeatures copy={copy} theme={theme} />
       <LandingVisit copy={copy} theme={theme} />

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import { adminCopy, adminDaypart, adminVehicleStatus } from "@/lib/admin/copy";
-import { BOOKING_DAYPARTS, BOOKING_SLOTS } from "@/lib/booking/slots";
+import { BOOKING_DAYPARTS, BOOKING_SLOTS, todayIsoDate } from "@/lib/booking/slots";
 import { type MockVehicle, type VehicleStatus } from "@/lib/mock/vehicles";
 import {
   addIsoDays,
@@ -14,13 +14,23 @@ import {
   type OccupancyTone,
   type VehicleSlotCell,
 } from "@/lib/mock/vehicle-timeline";
+import {
+  addMonthsIso,
+  eachIso,
+  monthEndIso,
+  monthStartIso,
+  parseIsoDate,
+  weekEndSunday,
+  weekStartMonday,
+  weekdayLabel,
+} from "@/lib/calendar";
 import { cn } from "@/lib/utils";
 import { useOpsStore } from "@/stores/ops-store";
 import { useStoreData } from "@/lib/use-store-data";
 import { useToastStore } from "@/stores/toast-store";
 
 const TICKS = timelineTicks();
-const TODAY = "2026-08-20";
+const MAX_BATCH_DAYS = 92;
 
 type EditTarget = {
   vehicleId: string;
@@ -42,6 +52,29 @@ function toneLabel(tone: OccupancyTone, copy: ReturnType<typeof adminCopy>) {
   return copy.inventory.idle;
 }
 
+function summarize(cells: VehicleSlotCell[]) {
+  if (!cells.length) return { tone: "free" as OccupancyTone, left: 0, cap: 0 };
+  if (cells.every((cell) => cell.closed)) return { tone: "idle" as OccupancyTone, left: 0, cap: 0 };
+  const open = cells.filter((cell) => !cell.closed);
+  const cap = open.reduce((sum, cell) => sum + cell.capacity, 0);
+  const left = open.reduce((sum, cell) => sum + cell.remaining, 0);
+  const booked = Math.max(0, cap - left);
+  return {
+    tone: occupancyTone({
+      vehicleId: "",
+      date: "",
+      time: "",
+      capacity: Math.max(cap, 1),
+      booked,
+      remaining: left,
+      closed: false,
+      customers: [],
+    }),
+    left,
+    cap,
+  };
+}
+
 export function InventoryTimeline() {
   const locale = useLocale();
   const copy = adminCopy(locale);
@@ -49,21 +82,29 @@ export function InventoryTimeline() {
     addSpecialDate,
     patchVehicleSlot,
     batchPatchVehicleSlots,
+    batchPatchVehicleRange,
     clearDayInventory,
     resetDayInventory,
   } = useOpsStore();
   const { vehicles, vehicleSlots, specialDates, storeId } = useStoreData();
   const notify = useToastStore((state) => state.notify);
-  const [picked, setPicked] = useState(TODAY);
+  const today = todayIsoDate();
+  const [picked, setPicked] = useState(today);
+  const [view, setView] = useState<"day" | "week" | "month">("day");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<VehicleStatus | "all">("all");
   const [filterOpen, setFilterOpen] = useState(false);
   const [specialOpen, setSpecialOpen] = useState(false);
-  const [specialForm, setSpecialForm] = useState({ date: "2026-08-26", label: "", closed: true });
+  const [specialForm, setSpecialForm] = useState({ date: today, label: "", closed: true });
   const [openIds, setOpenIds] = useState<string[]>([]);
   const [edit, setEdit] = useState<EditTarget | null>(null);
   const [batch, setBatch] = useState<{ keys: string[] } | null>(null);
   const [confirm, setConfirm] = useState<"clear" | "reset" | null>(null);
+  const [rangeOpen, setRangeOpen] = useState(false);
+  const [rangeFrom, setRangeFrom] = useState(today);
+  const [rangeTo, setRangeTo] = useState(today);
+  const [rangeSeats, setRangeSeats] = useState(4);
+  const [rangeAction, setRangeAction] = useState<"open" | "close" | "seats">("open");
   const [tip, setTip] = useState<{ x: number; y: number; cell: VehicleSlotCell; vehicle: MockVehicle; range: string } | null>(null);
   const [drag, setDrag] = useState<{
     startV: number;
@@ -204,13 +245,27 @@ export function InventoryTimeline() {
   }
 
   const filterActive = Boolean(query.trim()) || status !== "all";
+  const weekDays = eachIso(weekStartMonday(picked), weekEndSunday(picked));
+  const monthDays = eachIso(monthStartIso(picked), monthEndIso(picked));
+  const monthLead = parseIsoDate(monthStartIso(picked)).getDay();
+  const rangeDates = eachIso(rangeFrom, rangeTo);
+  const rangeError =
+    !rangeFrom || !rangeTo || rangeFrom > rangeTo
+      ? copy.inventory.rangeInvalid
+      : rangeDates.length > MAX_BATCH_DAYS
+        ? copy.inventory.rangeTooLong
+        : "";
+  const rangeBlocked = Boolean(rangeError) || rows.length === 0;
 
   return (
     <section className="inventory-board" onMouseUp={finishDrag} onMouseLeave={() => drag && finishDrag()}>
       <div className="inventory-toolbar">
-        <button type="button" className={cn("ib-btn", picked === addIsoDays(TODAY, -1) && "is-on")} onClick={() => setPicked(addIsoDays(TODAY, -1))}>{copy.inventory.yest}</button>
-        <button type="button" className={cn("ib-btn", picked === TODAY && "is-on")} onClick={() => setPicked(TODAY)}>{copy.inventory.today}</button>
-        <button type="button" className={cn("ib-btn", picked === addIsoDays(TODAY, 1) && "is-on")} onClick={() => setPicked(addIsoDays(TODAY, 1))}>{copy.inventory.tom}</button>
+        <button type="button" className={cn("ib-btn", view === "day" && "is-on")} onClick={() => setView("day")}>{copy.inventory.dayView}</button>
+        <button type="button" className={cn("ib-btn", view === "week" && "is-on")} onClick={() => setView("week")}>{copy.inventory.weekView}</button>
+        <button type="button" className={cn("ib-btn", view === "month" && "is-on")} onClick={() => setView("month")}>{copy.inventory.monthView}</button>
+        <button type="button" className={cn("ib-btn", picked === addIsoDays(today, -1) && "is-on")} onClick={() => { setPicked(addIsoDays(today, -1)); setView("day"); }}>{copy.inventory.yest}</button>
+        <button type="button" className={cn("ib-btn", picked === today && "is-on")} onClick={() => { setPicked(today); setView("day"); }}>{copy.inventory.today}</button>
+        <button type="button" className={cn("ib-btn", picked === addIsoDays(today, 1) && "is-on")} onClick={() => { setPicked(addIsoDays(today, 1)); setView("day"); }}>{copy.inventory.tom}</button>
         <input className="ib-input" type="date" value={picked} onChange={(event) => setPicked(event.target.value)} />
         <div className="ib-filter">
           <button
@@ -241,11 +296,85 @@ export function InventoryTimeline() {
           ) : null}
         </div>
         <span className="ib-toolbar-spacer" />
+        <button
+          type="button"
+          className="ib-btn"
+          onClick={() => {
+            if (view === "week") {
+              setRangeFrom(weekStartMonday(picked));
+              setRangeTo(weekEndSunday(picked));
+            } else if (view === "month") {
+              setRangeFrom(monthStartIso(picked));
+              setRangeTo(monthEndIso(picked));
+            } else {
+              setRangeFrom(picked);
+              setRangeTo(picked);
+            }
+            setRangeOpen(true);
+          }}
+        >
+          {copy.inventory.batchRange}
+        </button>
         <button type="button" className="ib-btn" onClick={() => setSpecialOpen(true)}>{copy.inventory.special}</button>
         <button type="button" className="ib-btn ib-btn-ghost" onClick={() => setConfirm("clear")}>{copy.inventory.clearToday}</button>
         <button type="button" className="ib-btn" onClick={() => setConfirm("reset")}>{copy.inventory.reset}</button>
       </div>
 
+      {view === "week" ? (
+        <div className="ib-range-scroller">
+          <div className="ib-week">
+            <div className="ib-week-head">
+              <span>{copy.inventory.vehicle}</span>
+              {weekDays.map((iso) => (
+                <button key={iso} type="button" className={cn(iso === picked && "is-on")} onClick={() => { setPicked(iso); setView("day"); }}>
+                  {weekdayLabel(iso, locale)} {iso.slice(5)}
+                </button>
+              ))}
+            </div>
+            {rows.map((vehicle) => (
+              <div key={vehicle.id} className="ib-week-row">
+                <span className="ib-code">{vehicle.code}</span>
+                {weekDays.map((iso) => {
+                  const sum = summarize(vehicleSlots.filter((cell) => cell.date === iso && cell.vehicleId === vehicle.id));
+                  return (
+                    <button key={iso} type="button" className={cn("ib-range-cell", sum.tone)} onClick={() => { setPicked(iso); setView("day"); }}>
+                      {sum.tone === "idle" ? copy.inventory.idle : copy.inventory.remain(sum.left, sum.cap || 1)}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {view === "month" ? (
+        <div className="ib-range-scroller">
+          <div className="ib-month-nav">
+            <button type="button" className="ib-btn" onClick={() => setPicked(addMonthsIso(picked, -1))}>{copy.calendar.prev}</button>
+            <strong>{picked.slice(0, 7)}</strong>
+            <button type="button" className="ib-btn" onClick={() => setPicked(addMonthsIso(picked, 1))}>{copy.calendar.next}</button>
+          </div>
+          <div className="ib-month">
+            {["日", "一", "二", "三", "四", "五", "六"].map((label) => (
+              <span key={label} className="ib-month-dow">{label}</span>
+            ))}
+            {Array.from({ length: monthLead }, (_, index) => <span key={`pad-${index}`} />)}
+            {monthDays.map((iso) => {
+              const sum = summarize(vehicleSlots.filter((cell) => cell.date === iso && rows.some((vehicle) => vehicle.id === cell.vehicleId)));
+              return (
+                <button key={iso} type="button" className={cn("ib-range-cell", sum.tone, iso === picked && "is-on")} onClick={() => { setPicked(iso); setView("day"); }}>
+                  <b>{iso.slice(8)}</b>
+                  <small>{sum.tone === "idle" ? copy.inventory.idle : copy.inventory.remain(sum.left, sum.cap || 1)}</small>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      {view === "day" ? (
+      <>
       <div className="inventory-scroller hidden md:block">
           <div className="inventory-grid">
             <div className="inventory-axis">
@@ -342,6 +471,8 @@ export function InventoryTimeline() {
           );
         })}
       </div>
+      </>
+      ) : null}
 
       <div className="inventory-legend">
         <span><i className="free" />{copy.inventory.free}</span>
@@ -460,6 +591,100 @@ export function InventoryTimeline() {
       </Modal>
 
       <Modal
+        open={rangeOpen}
+        title={copy.inventory.batchRangeTitle}
+        onClose={() => setRangeOpen(false)}
+        footer={
+          <div className="ib-form-actions">
+            <button type="button" className="ib-office-btn" onClick={() => setRangeOpen(false)}>{copy.common.cancel}</button>
+            <button
+              type="button"
+              className="ib-office-btn primary"
+              disabled={rangeBlocked}
+              onClick={() => {
+                if (rangeBlocked) return;
+                const ids = rows.map((item) => item.id);
+                const patch =
+                  rangeAction === "close"
+                    ? { closed: true, booked: 0 }
+                    : rangeAction === "seats"
+                      ? { closed: false, capacity: Math.max(1, rangeSeats) }
+                      : { closed: false, booked: 0 };
+                batchPatchVehicleRange(rangeDates, ids, patch);
+                setRangeOpen(false);
+                notify(copy.inventory.saved);
+              }}
+            >
+              {copy.inventory.applyRange}
+            </button>
+          </div>
+        }
+      >
+        <p className="text-sm text-slate-500">{copy.inventory.batchRangeLead}</p>
+        <div className="ib-date-pair">
+          <label className="admin-field">
+            {copy.inventory.rangeFrom}
+            <input className="admin-input" type="date" value={rangeFrom} onChange={(event) => setRangeFrom(event.target.value)} />
+          </label>
+          <label className="admin-field">
+            {copy.inventory.rangeTo}
+            <input className="admin-input" type="date" value={rangeTo} onChange={(event) => setRangeTo(event.target.value)} />
+          </label>
+        </div>
+        <div className="ib-range-presets">
+          <button
+            type="button"
+            className="ib-office-btn"
+            onClick={() => {
+              setRangeFrom(today);
+              setRangeTo(today);
+            }}
+          >
+            {copy.inventory.rangeToday}
+          </button>
+          <button
+            type="button"
+            className="ib-office-btn"
+            onClick={() => {
+              setRangeFrom(weekStartMonday(picked));
+              setRangeTo(weekEndSunday(picked));
+            }}
+          >
+            {copy.inventory.batchWeek}
+          </button>
+          <button
+            type="button"
+            className="ib-office-btn"
+            onClick={() => {
+              setRangeFrom(monthStartIso(picked));
+              setRangeTo(monthEndIso(picked));
+            }}
+          >
+            {copy.inventory.batchMonth}
+          </button>
+        </div>
+        {rangeError ? (
+          <p className="ib-range-error">{rangeError}</p>
+        ) : (
+          <p className="ib-range-preview">{copy.inventory.rangePreview(rangeDates.length, rows.length)}</p>
+        )}
+        <label className="admin-field mt-3">
+          {copy.inventory.status}
+          <select className="admin-input" value={rangeAction} onChange={(event) => setRangeAction(event.target.value as "open" | "close" | "seats")}>
+            <option value="open">{copy.inventory.rangeOpen}</option>
+            <option value="close">{copy.inventory.rangeClose}</option>
+            <option value="seats">{copy.inventory.rangeSeats}</option>
+          </select>
+        </label>
+        {rangeAction === "seats" ? (
+          <label className="admin-field mt-3">
+            {copy.inventory.seats}
+            <input className="admin-input" type="number" min={1} value={rangeSeats} onChange={(event) => setRangeSeats(Number(event.target.value) || 1)} />
+          </label>
+        ) : null}
+      </Modal>
+
+      <Modal
         open={Boolean(confirm)}
         title={confirm === "clear" ? copy.inventory.clearAsk : copy.inventory.resetAsk}
         onClose={() => setConfirm(null)}
@@ -501,7 +726,7 @@ export function InventoryTimeline() {
                   event.preventDefault();
                   if (!specialForm.label.trim()) return;
                   addSpecialDate({ ...specialForm, storeId });
-                  setSpecialForm({ date: "2026-08-26", label: "", closed: true });
+                  setSpecialForm({ date: today, label: "", closed: true });
                   notify(copy.inventory.specialAdded);
                 }}
               >

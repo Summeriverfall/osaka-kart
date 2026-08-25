@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useLocale } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import { adminCopy } from "@/lib/admin/copy";
+import { LocaleField } from "@/components/admin/locale-field";
 import { parseYoutubeId, readLocalVideo, type LocaleText } from "@/lib/cms-text";
 import { CMS_IMAGE_LIMIT, readCmsImage, readLocalLogo } from "@/lib/read-local-image";
 import {
@@ -13,6 +14,7 @@ import {
   blankPress,
   blankReview,
   blankVideo,
+  cmsBySlot,
   type CmsFaq,
   type CmsHowToBook,
   type CmsMeetup,
@@ -20,7 +22,6 @@ import {
   type CmsReview,
   type CmsSite,
   type CmsVideo,
-  type CmsVideoSlot,
 } from "@/lib/mock/cms";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
@@ -36,50 +37,140 @@ function replaceById<T extends { id: string }>(list: T[], item: T) {
   return next;
 }
 
-function LocaleField({
-  label,
-  value,
-  onChange,
-  rows,
-  copy,
-}: {
-  label: string;
-  value: LocaleText;
-  onChange: (next: LocaleText) => void;
-  rows?: number;
-  copy: ReturnType<typeof adminCopy>;
-}) {
-  const langs = [
-    { key: "zh" as const, label: copy.plans.zh },
-    { key: "en" as const, label: copy.plans.en },
-    { key: "ja" as const, label: copy.plans.ja },
-    { key: "ko" as const, label: copy.plans.ko },
-  ];
+function localeTextSafe(value: LocaleText) {
+  return value.zh || value.en || value.ja || value.ko || "";
+}
+
+function mediaSrc(value?: string) {
+  if (!value) return "";
+  if (value.startsWith("data:") || value.startsWith("blob:") || value.startsWith("http")) return value;
+  return asset(value);
+}
+
+function PreviewVideo({ src, poster, startAt }: { src: string; poster?: string; startAt?: number }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    const seek = () => {
+      if ((startAt ?? 0) > 0 && Number.isFinite(startAt)) video.currentTime = startAt ?? 0;
+    };
+    video.addEventListener("loadedmetadata", seek);
+    if (video.readyState >= 1) seek();
+    return () => video.removeEventListener("loadedmetadata", seek);
+  }, [src, startAt]);
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-      <p className="text-sm text-slate-600">{label}</p>
-      <div className="mt-2 grid gap-2">
-        {langs.map((lang) => (
-          <label key={lang.key} className="admin-field">
-            {lang.label}
-            {rows ? (
-              <textarea
-                className="admin-input min-h-[4.5rem]"
-                rows={rows}
-                value={value[lang.key]}
-                onChange={(event) => onChange({ ...value, [lang.key]: event.target.value })}
-              />
-            ) : (
-              <input
-                className="admin-input"
-                value={value[lang.key]}
-                onChange={(event) => onChange({ ...value, [lang.key]: event.target.value })}
-              />
-            )}
-          </label>
-        ))}
+    <video
+      ref={ref}
+      src={src}
+      poster={poster}
+      className="mt-3 h-36 w-full rounded-xl object-cover"
+      muted
+      playsInline
+      autoPlay
+      loop
+      preload="metadata"
+    />
+  );
+}
+
+function langLabels(copy: ReturnType<typeof adminCopy>) {
+  return { zh: copy.plans.zh, en: copy.plans.en, ja: copy.plans.ja, ko: copy.plans.ko };
+}
+
+function VideoPositionCard({
+  copy,
+  locale,
+  heading,
+  hint,
+  video,
+  onChange,
+  onSave,
+  onError,
+}: {
+  copy: ReturnType<typeof adminCopy>;
+  locale: string;
+  heading: string;
+  hint: string;
+  video: CmsVideo;
+  onChange: (next: CmsVideo) => void;
+  onSave: (video: CmsVideo) => void;
+  onError: (message: string) => void;
+}) {
+  const youtube = parseYoutubeId(video.youtubeId);
+  const fileSrc = video.file ? mediaSrc(video.file) : "";
+  const posterSrc = video.poster ? mediaSrc(video.poster) : "";
+  return (
+    <article className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4">
+      <p className="text-sm font-semibold text-slate-800">{heading}</p>
+      <p className="mt-1 text-xs leading-relaxed text-slate-500">{hint}</p>
+      {video.source === "youtube" && youtube ? (
+        <img src={`https://img.youtube.com/vi/${youtube}/hqdefault.jpg`} alt="" className="mt-3 h-36 w-full rounded-xl object-cover" />
+      ) : fileSrc ? (
+        <PreviewVideo src={fileSrc} poster={posterSrc || undefined} startAt={video.startAt} />
+      ) : posterSrc ? (
+        <img src={posterSrc} alt="" className="mt-3 h-36 w-full rounded-xl object-cover" />
+      ) : null}
+      <div className="mt-3">
+        <LocaleField
+          locale={locale}
+          labels={langLabels(copy)}
+          emptyLabel={copy.plans.unfilled}
+          label={copy.cms.caption}
+          value={video.title}
+          onChange={(title) => onChange({ ...video, title })}
+        />
       </div>
-    </div>
+      <label className="admin-field mt-3">
+        {copy.cms.source}
+        <select
+          className="admin-input"
+          value={video.source}
+          onChange={(event) => onChange({ ...video, source: event.target.value as CmsVideo["source"] })}
+        >
+          <option value="file">{copy.cms.file}</option>
+          <option value="youtube">{copy.cms.youtube}</option>
+        </select>
+      </label>
+      {video.source === "youtube" ? (
+        <label className="admin-field mt-3">
+          {copy.cms.youtubeUrl}
+          <input className="admin-input" value={video.youtubeId} onChange={(event) => onChange({ ...video, youtubeId: event.target.value })} />
+        </label>
+      ) : (
+        <div className="mt-3">
+          <p className="text-sm text-slate-600">{copy.cms.uploadVideo}</p>
+          <p className="mt-1 text-xs text-slate-500">{copy.cms.videoHint}</p>
+          <input
+            type="file"
+            accept="video/mp4,video/webm,video/*"
+            className="mt-2 block w-full text-xs"
+            onChange={async (event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+              if (!file) return;
+              try {
+                onChange({ ...video, file: await readLocalVideo(file), source: "file" });
+              } catch (error) {
+                const code = error instanceof Error ? error.message : "fail";
+                onError(code === "size" ? copy.cms.errVideoSize : copy.cms.errVideoType);
+              }
+            }}
+          />
+        </div>
+      )}
+      <label className="admin-field mt-3">
+        {copy.cms.startAt}
+        <input
+          className="admin-input"
+          type="number"
+          min={0}
+          value={video.startAt ?? 0}
+          onChange={(event) => onChange({ ...video, startAt: Math.max(0, Number(event.target.value) || 0) })}
+        />
+      </label>
+      <button type="button" className="cta-btn mt-4 px-4 py-2 text-sm" onClick={() => onSave(video)}>{copy.common.save}</button>
+    </article>
   );
 }
 
@@ -133,7 +224,6 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
   const cms = useOpsStore((state) => state.cms);
   const patchCms = useOpsStore((state) => state.patchCms);
   const notify = useToastStore((state) => state.notify);
-  const [video, setVideo] = useState<CmsVideo | null>(null);
   const [review, setReview] = useState<CmsReview | null>(null);
   const [faq, setFaq] = useState<CmsFaq | null>(null);
   const [press, setPress] = useState<CmsPress | null>(null);
@@ -142,20 +232,16 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
   const [site, setSite] = useState<CmsSite>(cms.site);
   const [labels, setLabels] = useState(cms.labels);
   const [removeId, setRemoveId] = useState<string | null>(null);
+  const [videoTab, setVideoTab] = useState<"home" | "group">("home");
+  const [editingVideos, setEditingVideos] = useState(cms.videos);
 
   useEffect(() => {
     setMeetup(cms.meetup);
     setHow({ ...MOCK_CMS.howToBook, ...cms.howToBook });
     setSite(cms.site);
     setLabels(cms.labels);
-  }, [cms.meetup, cms.howToBook, cms.site, cms.labels]);
-
-  const slotLabel: Record<CmsVideoSlot, string> = {
-    hero: copy.cms.slotHero,
-    gallery: copy.cms.slotGallery,
-    experience: copy.cms.slotExperience,
-    page: copy.cms.slotPage,
-  };
+    setEditingVideos(cms.videos);
+  }, [cms.meetup, cms.howToBook, cms.site, cms.labels, cms.videos]);
 
   function imageError(code: string) {
     if (code === "size") return copy.plans.errSize;
@@ -173,11 +259,11 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
   if (section === "meetup") {
     return (
       <div className="space-y-4">
-        <LocaleField copy={copy} label={copy.cms.sectionTitle} value={meetup.title} onChange={(title) => setMeetup({ ...meetup, title })} />
-        <LocaleField copy={copy} label={copy.cms.visitLead} value={meetup.lead} onChange={(lead) => setMeetup({ ...meetup, lead })} rows={3} />
-        <LocaleField copy={copy} label={copy.cms.walk} value={meetup.walk} onChange={(walk) => setMeetup({ ...meetup, walk })} />
-        <LocaleField copy={copy} label={copy.cms.address} value={meetup.address} onChange={(address) => setMeetup({ ...meetup, address })} />
-        <LocaleField copy={copy} label={copy.cms.station} value={meetup.station} onChange={(station) => setMeetup({ ...meetup, station })} />
+        <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.sectionTitle} value={meetup.title} onChange={(title) => setMeetup({ ...meetup, title })} />
+        <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.visitLead} value={meetup.lead} onChange={(lead) => setMeetup({ ...meetup, lead })} rows={3} />
+        <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.walk} value={meetup.walk} onChange={(walk) => setMeetup({ ...meetup, walk })} />
+        <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.address} value={meetup.address} onChange={(address) => setMeetup({ ...meetup, address })} />
+        <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.station} value={meetup.station} onChange={(station) => setMeetup({ ...meetup, station })} />
         <label className="admin-field">
           {copy.cms.maps}
           <input className="admin-input" value={meetup.mapsUrl} onChange={(event) => setMeetup({ ...meetup, mapsUrl: event.target.value })} />
@@ -195,59 +281,63 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
     return (
       <div className="space-y-4">
         <p className="text-sm leading-relaxed text-slate-500">{copy.cms.channelLead}</p>
-        <LocaleField copy={copy} label={copy.cms.howTitle} value={how.title} onChange={(title) => setHow({ ...how, title })} />
-        <article className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-slate-800">{copy.cms.showOnline}</p>
-            <NeonToggle checked={how.showOnline !== false} onChange={(on) => setHow({ ...how, showOnline: on })} />
-          </div>
-          <div className="mt-3">
-            <LocaleField copy={copy} label={copy.cms.onlineLabel} value={how.onlineLabel} onChange={(onlineLabel) => setHow({ ...how, onlineLabel })} />
-          </div>
-        </article>
-        <article className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-slate-800">{copy.cms.showWhatsapp}</p>
-            <NeonToggle checked={how.showWhatsapp} onChange={(on) => setHow({ ...how, showWhatsapp: on })} />
-          </div>
-          <label className="admin-field mt-3">
-            {copy.cms.whatsapp}
-            <input className="admin-input" value={how.whatsapp ?? ""} onChange={(event) => setHow({ ...how, whatsapp: event.target.value })} placeholder="https://wa.me/..." />
-          </label>
-          <div className="mt-3">
-            <LocaleField copy={copy} label={copy.cms.whatsappHint} value={how.whatsappHint} onChange={(whatsappHint) => setHow({ ...how, whatsappHint })} />
-          </div>
-        </article>
-        <article className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-slate-800">{copy.cms.showPhone}</p>
-            <NeonToggle checked={how.showPhone} onChange={(on) => setHow({ ...how, showPhone: on })} />
-          </div>
-          <label className="admin-field mt-3">
-            {copy.cms.phone}
-            <input className="admin-input" value={how.phone ?? ""} onChange={(event) => setHow({ ...how, phone: event.target.value })} placeholder="+81 ..." />
-          </label>
-        </article>
-        <article className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-slate-800">{copy.cms.showEmail}</p>
-            <NeonToggle checked={how.showEmail} onChange={(on) => setHow({ ...how, showEmail: on })} />
-          </div>
-          <label className="admin-field mt-3">
-            {copy.cms.email}
-            <input className="admin-input" value={how.email ?? ""} onChange={(event) => setHow({ ...how, email: event.target.value })} placeholder="book@..." />
-          </label>
-        </article>
-        <article className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-slate-800">{copy.cms.showLine}</p>
-            <NeonToggle checked={Boolean(how.showLine)} onChange={(on) => setHow({ ...how, showLine: on })} />
-          </div>
-          <label className="admin-field mt-3">
-            {copy.cms.line}
-            <input className="admin-input" value={how.line ?? ""} onChange={(event) => setHow({ ...how, line: event.target.value })} placeholder="https://line.me/..." />
-          </label>
-        </article>
+        <div className="grid gap-3 md:grid-cols-3">
+          <article className="rounded-2xl border border-slate-200 bg-white p-4">
+            <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.howTitle} value={how.title} onChange={(title) => setHow({ ...how, title })} />
+          </article>
+          <article className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-slate-800">{copy.cms.showOnline}</p>
+              <NeonToggle checked={how.showOnline !== false} onChange={(on) => setHow({ ...how, showOnline: on })} />
+            </div>
+            <div className="mt-3">
+              <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.onlineLabel} value={how.onlineLabel} onChange={(onlineLabel) => setHow({ ...how, onlineLabel })} />
+            </div>
+          </article>
+          <article className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-slate-800">{copy.cms.showWhatsapp}</p>
+              <NeonToggle checked={how.showWhatsapp} onChange={(on) => setHow({ ...how, showWhatsapp: on })} />
+            </div>
+            <label className="admin-field mt-3">
+              {copy.cms.whatsapp}
+              <input className="admin-input" value={how.whatsapp ?? ""} onChange={(event) => setHow({ ...how, whatsapp: event.target.value })} placeholder="https://wa.me/..." />
+            </label>
+            <div className="mt-3">
+              <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.whatsappHint} value={how.whatsappHint} onChange={(whatsappHint) => setHow({ ...how, whatsappHint })} />
+            </div>
+          </article>
+          <article className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-slate-800">{copy.cms.showPhone}</p>
+              <NeonToggle checked={how.showPhone} onChange={(on) => setHow({ ...how, showPhone: on })} />
+            </div>
+            <label className="admin-field mt-3">
+              {copy.cms.phone}
+              <input className="admin-input" value={how.phone ?? ""} onChange={(event) => setHow({ ...how, phone: event.target.value })} placeholder="+81 ..." />
+            </label>
+          </article>
+          <article className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-slate-800">{copy.cms.showEmail}</p>
+              <NeonToggle checked={how.showEmail} onChange={(on) => setHow({ ...how, showEmail: on })} />
+            </div>
+            <label className="admin-field mt-3">
+              {copy.cms.email}
+              <input className="admin-input" value={how.email ?? ""} onChange={(event) => setHow({ ...how, email: event.target.value })} placeholder="book@..." />
+            </label>
+          </article>
+          <article className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-slate-800">{copy.cms.showLine}</p>
+              <NeonToggle checked={Boolean(how.showLine)} onChange={(on) => setHow({ ...how, showLine: on })} />
+            </div>
+            <label className="admin-field mt-3">
+              {copy.cms.line}
+              <input className="admin-input" value={how.line ?? ""} onChange={(event) => setHow({ ...how, line: event.target.value })} placeholder="https://line.me/..." />
+            </label>
+          </article>
+        </div>
         <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { patchCms({ howToBook: how }); notify(copy.cms.saved); }}>{copy.common.save}</button>
       </div>
     );
@@ -290,7 +380,7 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
             ))}
           </div>
         </div>
-        <LocaleField copy={copy} label={copy.cms.footerCompany} value={site.footerCompany} onChange={(footerCompany) => setSite({ ...site, footerCompany })} />
+        <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.footerCompany} value={site.footerCompany} onChange={(footerCompany) => setSite({ ...site, footerCompany })} />
         <div className="flex flex-wrap gap-2">
           <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { patchCms({ site }); notify(copy.cms.saved); }}>{copy.common.save}</button>
           <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => { setSite(MOCK_CMS.site); patchCms({ site: MOCK_CMS.site }); notify(copy.cms.saved); }}>{copy.cms.restore}</button>
@@ -300,140 +390,99 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
   }
 
   if (section === "videos") {
-    const rows = [...cms.videos].sort((a, b) => a.sort - b.sort);
+    const list = editingVideos;
+    const hero = list.find((item) => item.slot === "hero") ?? MOCK_CMS.videos.find((item) => item.slot === "hero") ?? { ...blankVideo(), id: "hero-main", slot: "hero" as const, sort: 0 };
+    const gallery = list.find((item) => item.slot === "gallery") ?? MOCK_CMS.videos.find((item) => item.slot === "gallery") ?? { ...blankVideo(), id: "gallery-main", slot: "gallery" as const, sort: 1 };
+    const listedXp = cmsBySlot(list, "experience");
+    const experience = ["xp-1", "xp-2", "xp-3", "xp-4", "xp-5", "xp-6"].map((id, index) => {
+      const found = list.find((item) => item.id === id) ?? listedXp[index] ?? MOCK_CMS.videos.find((item) => item.id === id);
+      return found
+        ? { ...found, id, slot: "experience" as const, sort: 10 + index }
+        : { ...blankVideo(), id, slot: "experience" as const, sort: 10 + index };
+    });
+
+    function writeVideo(next: CmsVideo) {
+      if (next.source === "youtube") {
+        const id = parseYoutubeId(next.youtubeId);
+        if (!id) {
+          notify(copy.cms.invalidYoutube);
+          return;
+        }
+        next = { ...next, youtubeId: id };
+      }
+      setEditingVideos((current) => {
+        const merged = replaceById(current, next);
+        saveList("videos", merged);
+        return merged;
+      });
+    }
+
     return (
       <div className="space-y-4">
-        <div className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:grid-cols-2">
-          <LocaleField copy={copy} label={`${copy.cms.slotGallery} · ${copy.cms.sectionTitle}`} value={labels.videosTitle} onChange={(videosTitle) => setLabels({ ...labels, videosTitle })} />
-          <LocaleField copy={copy} label={`${copy.cms.slotGallery} · ${copy.cms.sectionLead}`} value={labels.videosLead} onChange={(videosLead) => setLabels({ ...labels, videosLead })} rows={2} />
-          <LocaleField copy={copy} label={`${copy.cms.slotExperience} · ${copy.cms.sectionTitle}`} value={labels.experienceTitle} onChange={(experienceTitle) => setLabels({ ...labels, experienceTitle })} />
-          <LocaleField copy={copy} label={`${copy.cms.slotExperience} · ${copy.cms.sectionLead}`} value={labels.experienceLead} onChange={(experienceLead) => setLabels({ ...labels, experienceLead })} rows={2} />
-          <div className="md:col-span-2">
-            <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { patchCms({ labels }); notify(copy.cms.saved); }}>{copy.common.save}</button>
-          </div>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className={`rounded-full border px-4 py-1.5 text-sm ${videoTab === "home" ? "border-blue-600 bg-blue-50 font-semibold text-blue-700" : "border-slate-200 text-slate-600"}`} onClick={() => setVideoTab("home")}>{copy.cms.tabHome}</button>
+          <button type="button" className={`rounded-full border px-4 py-1.5 text-sm ${videoTab === "group" ? "border-blue-600 bg-blue-50 font-semibold text-blue-700" : "border-slate-200 text-slate-600"}`} onClick={() => setVideoTab("group")}>{copy.cms.tabGroup}</button>
         </div>
-        <div className="flex justify-end">
-          <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setVideo(blankVideo())}>{copy.cms.addVideo}</button>
-        </div>
-        <CmsTable
-          empty={copy.cms.empty}
-          rows={rows.map((item) => ({
-            id: item.id,
-            dim: !item.active,
-            cells: [item.title.zh || item.title.en || item.id, slotLabel[item.slot], item.source === "youtube" ? "YouTube" : copy.cms.file, item.active ? copy.cms.on : copy.cms.off],
-            onEdit: () => setVideo(item),
-            onRemove: () => setRemoveId(item.id),
-          }))}
-          heads={[copy.cms.pressTitle, copy.cms.slot, copy.cms.source, copy.cms.listed, copy.common.actions]}
-          edit={copy.common.edit}
-          remove={copy.cms.remove}
-        />
-        <Modal
-          wide
-          top
-          open={Boolean(video)}
-          title={copy.cms.addVideo}
-          onClose={() => setVideo(null)}
-          footer={
-            <button
-              type="button"
-              className="cta-btn px-5 py-2.5"
-              onClick={() => {
-                if (!video) return;
-                const next = { ...video };
-                if (next.source === "youtube") {
-                  const id = parseYoutubeId(next.youtubeId);
-                  if (!id) {
-                    notify(copy.cms.invalidYoutube);
-                    return;
-                  }
-                  next.youtubeId = id;
-                }
-                saveList("videos", replaceById(cms.videos, next));
-                setVideo(null);
-              }}
-            >
-              {copy.common.save}
-            </button>
-          }
-        >
-          {video ? (
-            <>
-              <LocaleField copy={copy} label={copy.cms.pressTitle} value={video.title} onChange={(title) => setVideo({ ...video, title })} />
-              <label className="admin-field">
-                {copy.cms.slot}
-                <select className="admin-input" value={video.slot} onChange={(event) => setVideo({ ...video, slot: event.target.value as CmsVideoSlot })}>
-                  {(Object.keys(slotLabel) as CmsVideoSlot[]).map((key) => (
-                    <option key={key} value={key}>{slotLabel[key]}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="admin-field">
-                {copy.cms.source}
-                <select
-                  className="admin-input"
-                  value={video.source}
-                  onChange={(event) => setVideo({ ...video, source: event.target.value as CmsVideo["source"] })}
-                >
-                  <option value="youtube">{copy.cms.youtube}</option>
-                  <option value="file">{copy.cms.file}</option>
-                </select>
-              </label>
-              {video.source === "youtube" ? (
-                <label className="admin-field">
-                  {copy.cms.youtubeUrl}
-                  <input className="admin-input" value={video.youtubeId} onChange={(event) => setVideo({ ...video, youtubeId: event.target.value })} />
-                  <span className="text-xs text-slate-500">{copy.cms.youtubeHint}</span>
-                </label>
-              ) : (
-                <div>
-                  <p className="text-sm text-slate-600">{copy.cms.uploadVideo}</p>
-                  <p className="mt-1 text-xs text-slate-500">{copy.cms.videoHint}</p>
-                  {video.file ? <p className="mt-2 truncate text-xs text-slate-500">{video.file.startsWith("data:") ? copy.cms.file : video.file}</p> : null}
-                  <input
-                    type="file"
-                    accept="video/mp4,video/webm,video/*"
-                    className="mt-2 block w-full text-xs"
-                    onChange={async (event) => {
-                      const file = event.target.files?.[0];
-                      event.target.value = "";
-                      if (!file) return;
-                      try {
-                        const data = await readLocalVideo(file);
-                        setVideo((prev) => (prev ? { ...prev, file: data, source: "file" } : prev));
-                      } catch (error) {
-                        const code = error instanceof Error ? error.message : "fail";
-                        notify(code === "size" ? copy.cms.errVideoSize : copy.cms.errVideoType);
-                      }
-                    }}
-                  />
-                </div>
-              )}
-              <label className="admin-field">
-                {copy.cms.startAt}
-                <input
-                  className="admin-input"
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={video.startAt ?? 0}
-                  onChange={(event) => setVideo({ ...video, startAt: Math.max(0, Number(event.target.value) || 0) })}
-                />
-                <span className="text-xs text-slate-500">{copy.cms.startAtHint}</span>
-              </label>
-              <label className="admin-field">{copy.cms.sort}<input className="admin-input" type="number" value={video.sort} onChange={(event) => setVideo({ ...video, sort: Number(event.target.value) || 0 })} /></label>
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <span>{copy.cms.on}</span>
-                <NeonToggle checked={video.active} onChange={(on) => setVideo({ ...video, active: on })} />
+
+        {videoTab === "home" ? (
+          <>
+            <div className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:grid-cols-2">
+              <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={`${copy.cms.galleryClip} · ${copy.cms.sectionTitle}`} value={labels.videosTitle} onChange={(videosTitle) => setLabels({ ...labels, videosTitle })} />
+              <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={`${copy.cms.galleryClip} · ${copy.cms.sectionLead}`} value={labels.videosLead} onChange={(videosLead) => setLabels({ ...labels, videosLead })} rows={2} />
+              <div className="md:col-span-2">
+                <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { patchCms({ labels }); notify(copy.cms.saved); }}>{copy.common.save}</button>
               </div>
-            </>
-          ) : null}
-        </Modal>
-        <RemoveModal copy={copy} open={Boolean(removeId)} onClose={() => setRemoveId(null)} onConfirm={() => {
-          if (!removeId) return;
-          saveList("videos", cms.videos.filter((item) => item.id !== removeId));
-          setRemoveId(null);
-        }} />
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+            <VideoPositionCard
+              copy={copy}
+              locale={locale}
+              heading={copy.cms.heroLoop}
+              hint={copy.cms.heroHint}
+              video={hero}
+              onChange={(next) => setEditingVideos((current) => replaceById(current, { ...next, slot: "hero" }))}
+              onSave={(next) => writeVideo({ ...next, slot: "hero" })}
+              onError={notify}
+            />
+            <VideoPositionCard
+              copy={copy}
+              locale={locale}
+              heading={copy.cms.galleryClip}
+              hint={copy.cms.galleryHint}
+              video={gallery}
+              onChange={(next) => setEditingVideos((current) => replaceById(current, { ...next, slot: "gallery" }))}
+              onSave={(next) => writeVideo({ ...next, slot: "gallery" })}
+              onError={notify}
+            />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:grid-cols-2">
+              <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.sectionTitle} value={labels.experienceTitle} onChange={(experienceTitle) => setLabels({ ...labels, experienceTitle })} />
+              <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.sectionLead} value={labels.experienceLead} onChange={(experienceLead) => setLabels({ ...labels, experienceLead })} rows={2} />
+              <div className="md:col-span-2">
+                <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { patchCms({ labels }); notify(copy.cms.saved); }}>{copy.common.save}</button>
+              </div>
+            </div>
+            <p className="text-sm text-slate-500">{copy.cms.groupHint}</p>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {experience.map((item, index) => (
+                <VideoPositionCard
+                  key={item.id}
+                  copy={copy}
+                  locale={locale}
+                  heading={`${copy.cms.tabGroup} ${index + 1}`}
+                  hint={localeTextSafe(item.title)}
+                  video={item}
+                  onChange={(next) => setEditingVideos((current) => replaceById(current, { ...next, slot: "experience" }))}
+                  onSave={(next) => writeVideo({ ...next, slot: "experience" })}
+                  onError={notify}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     );
   }
@@ -443,8 +492,8 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
     return (
       <div className="space-y-4">
         <div className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:grid-cols-2">
-          <LocaleField copy={copy} label={copy.cms.sectionTitle} value={labels.reviewsTitle} onChange={(reviewsTitle) => setLabels({ ...labels, reviewsTitle })} />
-          <LocaleField copy={copy} label={copy.cms.sectionLead} value={labels.reviewsLead} onChange={(reviewsLead) => setLabels({ ...labels, reviewsLead })} rows={2} />
+          <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.sectionTitle} value={labels.reviewsTitle} onChange={(reviewsTitle) => setLabels({ ...labels, reviewsTitle })} />
+          <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.sectionLead} value={labels.reviewsLead} onChange={(reviewsLead) => setLabels({ ...labels, reviewsLead })} rows={2} />
           <div className="md:col-span-2">
             <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { patchCms({ labels }); notify(copy.cms.saved); }}>{copy.common.save}</button>
           </div>
@@ -479,7 +528,7 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
                 <label className="admin-field">{copy.cms.name}<input className="admin-input" value={review.name} onChange={(event) => setReview({ ...review, name: event.target.value })} /></label>
                 <label className="admin-field">{copy.cms.country}<input className="admin-input" value={review.country} onChange={(event) => setReview({ ...review, country: event.target.value })} /></label>
               </div>
-              <LocaleField copy={copy} label={copy.cms.quote} value={review.quote} onChange={(quote) => setReview({ ...review, quote })} rows={3} />
+              <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.quote} value={review.quote} onChange={(quote) => setReview({ ...review, quote })} rows={3} />
               <ImageField
                 label={copy.cms.photo}
                 hint={`${CMS_IMAGE_LIMIT.minEdge}px+`}
@@ -509,8 +558,8 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
     return (
       <div className="space-y-4">
         <div className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:grid-cols-2">
-          <LocaleField copy={copy} label={copy.cms.sectionTitle} value={labels.faqTitle} onChange={(faqTitle) => setLabels({ ...labels, faqTitle })} />
-          <LocaleField copy={copy} label={copy.cms.sectionLead} value={labels.faqLead} onChange={(faqLead) => setLabels({ ...labels, faqLead })} rows={2} />
+          <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.sectionTitle} value={labels.faqTitle} onChange={(faqTitle) => setLabels({ ...labels, faqTitle })} />
+          <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.sectionLead} value={labels.faqLead} onChange={(faqLead) => setLabels({ ...labels, faqLead })} rows={2} />
           <div className="md:col-span-2">
             <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { patchCms({ labels }); notify(copy.cms.saved); }}>{copy.common.save}</button>
           </div>
@@ -541,8 +590,8 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
         >
           {faq ? (
             <>
-              <LocaleField copy={copy} label={copy.cms.question} value={faq.q} onChange={(q) => setFaq({ ...faq, q })} />
-              <LocaleField copy={copy} label={copy.cms.answer} value={faq.a} onChange={(a) => setFaq({ ...faq, a })} rows={4} />
+              <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.question} value={faq.q} onChange={(q) => setFaq({ ...faq, q })} />
+              <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.answer} value={faq.a} onChange={(a) => setFaq({ ...faq, a })} rows={4} />
               <label className="admin-field">{copy.cms.sort}<input className="admin-input" type="number" value={faq.sort} onChange={(event) => setFaq({ ...faq, sort: Number(event.target.value) || 0 })} /></label>
               <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                 <div>
@@ -570,7 +619,7 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
   const rows = [...cms.press].sort((a, b) => a.sort - b.sort);
   return (
     <div className="space-y-4">
-      <LocaleField copy={copy} label={copy.cms.sectionTitle} value={labels.pressTitle} onChange={(pressTitle) => setLabels({ ...labels, pressTitle })} />
+          <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.sectionTitle} value={labels.pressTitle} onChange={(pressTitle) => setLabels({ ...labels, pressTitle })} />
       <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { patchCms({ labels }); notify(copy.cms.saved); }}>{copy.common.save}</button>
       <div className="flex justify-end">
         <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setPress(blankPress())}>{copy.cms.addPress}</button>
@@ -598,8 +647,8 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
       >
         {press ? (
           <>
-            <LocaleField copy={copy} label={copy.cms.sourceName} value={press.source} onChange={(source) => setPress({ ...press, source })} />
-            <LocaleField copy={copy} label={copy.cms.pressTitle} value={press.title} onChange={(title) => setPress({ ...press, title })} rows={3} />
+            <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.sourceName} value={press.source} onChange={(source) => setPress({ ...press, source })} />
+            <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.pressTitle} value={press.title} onChange={(title) => setPress({ ...press, title })} rows={3} />
             <ImageField
               label={copy.cms.image}
               hint={copy.plans.coverHint}

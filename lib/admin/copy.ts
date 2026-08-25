@@ -115,6 +115,14 @@ export type AdminCopy = {
     showPhone: string;
     showEmail: string;
     showLine: string;
+    tabHome: string;
+    tabGroup: string;
+    heroLoop: string;
+    galleryClip: string;
+    heroHint: string;
+    galleryHint: string;
+    groupHint: string;
+    caption: string;
     channelLead: string;
     brandName: string;
     brandShort: string;
@@ -289,6 +297,8 @@ export type AdminCopy = {
     chartOrders: string;
     managerStaff: string;
     managerReport: string;
+    pickHint: string;
+    vsPrev: string;
   };
   orders: {
     date: string;
@@ -412,6 +422,25 @@ export type AdminCopy = {
     type: string;
     closeDay: string;
     extra: string;
+    dayView: string;
+    weekView: string;
+    monthView: string;
+    batchWeek: string;
+    batchMonth: string;
+    batchRange: string;
+    batchRangeTitle: string;
+    rangeFrom: string;
+    rangeTo: string;
+    rangeToday: string;
+    rangeInvalid: string;
+    rangeTooLong: string;
+    rangePreview: (days: number, vehicles: number) => string;
+    batchRangeLead: string;
+    applyRange: string;
+    allKart: string;
+    rangeOpen: string;
+    rangeClose: string;
+    rangeSeats: string;
   };
   vehicles: {
     repairNote: (n: number) => string;
@@ -591,7 +620,8 @@ const zh: AdminCopy = {
     "/admin/content/faq": "FAQ",
     "/admin/content/press": "新闻报道",
     "/admin/content/meetup": "集合地点",
-    "/admin/bookings/how": "怎么预约",
+    "/admin/bookings/how": "预约开关设置",
+    "/admin/settings/booking": "预约开关设置",
     "/admin/reports": "财务报表",
     "/admin/reports/overview": "营收报表",
     "/admin/reports/analytics": "数据分析",
@@ -607,20 +637,21 @@ const zh: AdminCopy = {
     "/admin/site": "全站配置",
   },
   pages: {
-    "/admin/dashboard": { title: "仪表盘", lead: "超管默认看全店合计，点分店可下钻。店长只看自己的店。" },
+    "/admin/dashboard": { title: "仪表盘", lead: "点近 7 日任意一天，看当天单量、营收和待处理。点分店可下钻。" },
     "/admin/bookings": { title: "订单列表", lead: "列表处理订单。点状态可直接改，不必进详情。" },
     "/admin/orders": { title: "订单列表", lead: "列表处理订单。点状态可直接改，不必进详情。" },
     "/admin/calendar": { title: "日历", lead: "月 / 周 / 日看订单分布。点日期更新下方列表，点色块打开订单详情。" },
-    "/admin/inventory": { title: "库存管理", lead: "车辆时间轴。色块看出松紧，点击或拖拽即可改库存。" },
+    "/admin/inventory": { title: "库存管理", lead: "日 / 周 / 月看车辆库存。可指定起止日期批量设置。" },
     "/admin/vehicles": { title: "车辆管理", lead: "10 辆车。维修中的会从当日库存扣除。" },
     "/admin/plans": { title: "套餐管理", lead: "编辑前台卡片：标题图、说明图、介绍与亮点，以及价格、时长和附加项。" },
-    "/admin/content": { title: "视频管理", lead: "管理前台各处视频。可上传本地文件，或贴 YouTube 链接。" },
-    "/admin/content/videos": { title: "视频管理", lead: "管理前台各处视频。可上传本地文件，或贴 YouTube 链接。" },
+    "/admin/content": { title: "视频管理", lead: "首页视频和展示组视频分开管理。每个卡片对应一个位置。" },
+    "/admin/content/videos": { title: "视频管理", lead: "首页视频和展示组视频分开管理。每个卡片对应一个位置。" },
     "/admin/content/reviews": { title: "用户评价", lead: "对应前台「用户评价」。可改文案、姓名与照片。" },
     "/admin/content/faq": { title: "FAQ 管理", lead: "首页只显示勾了「首页」的条目，FAQ 页显示全部上架问题。" },
     "/admin/content/press": { title: "新闻报道", lead: "首页新闻区块最多显示 3 条上架内容。" },
     "/admin/content/meetup": { title: "集合地点", lead: "前台 Access 区块的集合文案。完整门牌只在预订后发送。" },
-    "/admin/bookings/how": { title: "怎么预约", lead: "开关预约入口，并填写 WhatsApp、电话、邮件、LINE 链接。关掉的渠道不会出现在官网。" },
+    "/admin/bookings/how": { title: "预约开关设置", lead: "开关预约入口。关掉的渠道不会出现在官网。" },
+    "/admin/settings/booking": { title: "预约开关设置", lead: "开关预约入口。关掉的渠道不会出现在官网。" },
     "/admin/site": { title: "全站配置", lead: "公司名称、Logo、电话邮箱和页脚社交媒体。" },
     "/admin/reports": { title: "营收报表", lead: "营收趋势、渠道占比、用户画像。" },
     "/admin/reports/overview": { title: "营收报表", lead: "营收趋势、渠道占比、用户画像。" },
@@ -640,7 +671,7 @@ const zh: AdminCopy = {
     edit: "编辑套餐",
     save: "保存",
     saved: "套餐已保存。图片存在本机，换电脑或清缓存需重新上传。",
-    copyHint: "收起时只显示名称、介绍、亮点。点开某一项，在里面一次填中文、英文、日文、韩文。",
+    copyHint: "收起时只显示名称、介绍、亮点。点开后用下拉切换语言，一次填一种。",
     copy: "文案",
     name: "名称",
     intro: "介绍",
@@ -727,6 +758,14 @@ const zh: AdminCopy = {
     showPhone: "电话",
     showEmail: "邮件",
     showLine: "LINE",
+    tabHome: "首页视频",
+    tabGroup: "展示组视频",
+    heroLoop: "顶部循环背景",
+    galleryClip: "現場畫面",
+    heroHint: "落地页最上方的循环背景片。",
+    galleryHint: "套餐前面那条大片。一个标题对应一个文件或链接。",
+    groupHint: "前台「體驗影片」六宫格。每个卡片对应一个格子。",
+    caption: "标题",
     channelLead: "每个渠道可单独开关。关掉则官网预约区不显示。链接只作用于该入口。",
     brandName: "公司全称",
     brandShort: "简称（导航）",
@@ -959,6 +998,8 @@ const zh: AdminCopy = {
     chartOrders: "订单",
     managerStaff: "店长账号请从订单页确认预约",
     managerReport: "报表仅超管可见，已留在仪表盘",
+    pickHint: "点近 7 日任意一天，看当天数字。点订单可进日历。",
+    vsPrev: "较前一日",
   },
   orders: {
     date: "日期",
@@ -1082,6 +1123,25 @@ const zh: AdminCopy = {
     type: "类型",
     closeDay: "全天休业",
     extra: "加开",
+    dayView: "日",
+    weekView: "周",
+    monthView: "月",
+    batchWeek: "本周",
+    batchMonth: "本月",
+    batchRange: "批量设置",
+    batchRangeTitle: "批量设置库存",
+    rangeFrom: "开始日期",
+    rangeTo: "结束日期",
+    rangeToday: "今天",
+    rangeInvalid: "结束日期不能早于开始日期。",
+    rangeTooLong: "一次最多 92 天，请缩短范围。",
+    rangePreview: (days, vehicles) => `将应用到 ${days} 天 · ${vehicles} 辆车（当前列表筛选）。`,
+    batchRangeLead: "自己选起止日期。也可先点本周 / 本月填入，再改某一头。套到这段里所有时段。",
+    applyRange: "应用到所选日期",
+    allKart: "全部车辆",
+    rangeOpen: "全部营业",
+    rangeClose: "全部休息",
+    rangeSeats: "统一座位数",
   },
   vehicles: {
     repairNote: (n) => `维修中 ${n} 辆，已从当日可售库存扣除。`,
@@ -1268,7 +1328,8 @@ const en: AdminCopy = {
     "/admin/content/faq": "FAQ",
     "/admin/content/press": "Press",
     "/admin/content/meetup": "Meetup",
-    "/admin/bookings/how": "How to book",
+    "/admin/bookings/how": "Booking switches",
+    "/admin/settings/booking": "Booking switches",
     "/admin/reports": "Reports",
     "/admin/reports/overview": "Revenue",
     "/admin/reports/analytics": "Analytics",
@@ -1284,20 +1345,21 @@ const en: AdminCopy = {
     "/admin/site": "Site",
   },
   pages: {
-    "/admin/dashboard": { title: "Dashboard", lead: "Admins see all-store totals first. Click a shop to drill in. Managers only see their shop." },
+    "/admin/dashboard": { title: "Dashboard", lead: "Click any of the last 7 days to see that day’s orders and revenue." },
     "/admin/bookings": { title: "Orders", lead: "Handle bookings in the list. Change status here — no need to open the detail." },
     "/admin/orders": { title: "Orders", lead: "Handle bookings in the list. Change status here — no need to open the detail." },
     "/admin/calendar": { title: "Calendar", lead: "Month / week / day. Click a date to refresh the list below, or a block to open the order." },
-    "/admin/inventory": { title: "Inventory", lead: "Vehicle timeline. Color shows how tight the day is. Click or drag to change stock." },
+    "/admin/inventory": { title: "Inventory", lead: "Day / week / month. Batch-set stock for any date range." },
     "/admin/vehicles": { title: "Vehicles", lead: "10 karts. Units in repair are pulled from that day’s sellable stock." },
     "/admin/plans": { title: "Plans", lead: "Edit the public cards: cover, route art, copy and highlights, plus price, duration and add-ons." },
-    "/admin/content": { title: "Videos", lead: "Manage videos across the site. Upload a file or paste a YouTube link." },
-    "/admin/content/videos": { title: "Videos", lead: "Manage videos across the site. Upload a file or paste a YouTube link." },
+    "/admin/content": { title: "Videos", lead: "Home videos and the experience set, each card is one slot." },
+    "/admin/content/videos": { title: "Videos", lead: "Home videos and the experience set, each card is one slot." },
     "/admin/content/reviews": { title: "Reviews", lead: "Matches the public “Guest reviews” block. Edit quote, name and photo." },
     "/admin/content/faq": { title: "FAQ", lead: "Home only shows items marked for home. The FAQ page shows every listed question." },
     "/admin/content/press": { title: "Press", lead: "The home press block shows up to 3 listed items." },
     "/admin/content/meetup": { title: "Meetup", lead: "Access copy guests see. Full street number is sent after booking." },
-    "/admin/bookings/how": { title: "How to book", lead: "Toggle booking channels and fill WhatsApp, phone, email and LINE links. Hidden channels stay off the site." },
+    "/admin/bookings/how": { title: "Booking switches", lead: "Toggle booking entries. Hidden channels stay off the site." },
+    "/admin/settings/booking": { title: "Booking switches", lead: "Toggle booking entries. Hidden channels stay off the site." },
     "/admin/site": { title: "Site", lead: "Company name, logo, phone, email and footer socials." },
     "/admin/reports": { title: "Revenue", lead: "Revenue trend, channel mix and guest profile." },
     "/admin/reports/overview": { title: "Revenue", lead: "Revenue trend, channel mix and guest profile." },
@@ -1317,7 +1379,7 @@ const en: AdminCopy = {
     edit: "Edit plan",
     save: "Save",
     saved: "Plan saved. Images stay on this device — re-upload after a cache clear or a new computer.",
-    copyHint: "Collapsed rows show name, intro and highlights. Open a row to fill Chinese, English, Japanese and Korean together.",
+    copyHint: "Collapsed rows show name, intro and highlights. Open a row and switch language in the dropdown.",
     copy: "Copy",
     name: "Name",
     intro: "Intro",
@@ -1404,6 +1466,14 @@ const en: AdminCopy = {
     showPhone: "Phone",
     showEmail: "Email",
     showLine: "LINE",
+    tabHome: "Home videos",
+    tabGroup: "Gallery set",
+    heroLoop: "Hero loop",
+    galleryClip: "On the street",
+    heroHint: "The looping clip behind the landing hero.",
+    galleryHint: "The large clip before the plans. One title, one file or link.",
+    groupHint: "The six experience tiles. Each card is one tile.",
+    caption: "Title",
     channelLead: "Each channel has its own switch. Off means it will not show in the public booking block.",
     brandName: "Legal name",
     brandShort: "Short name (nav)",
@@ -1636,6 +1706,8 @@ const en: AdminCopy = {
     chartOrders: "Orders",
     managerStaff: "Managers confirm bookings from the orders list",
     managerReport: "Reports are admin-only, so they stay on the dashboard",
+    pickHint: "Click any day in the last 7 to see that day’s numbers. Open an order to jump to the calendar.",
+    vsPrev: "vs previous day",
   },
   orders: {
     date: "Date",
@@ -1759,6 +1831,25 @@ const en: AdminCopy = {
     type: "Type",
     closeDay: "Closed all day",
     extra: "Extra session",
+    dayView: "Day",
+    weekView: "Week",
+    monthView: "Month",
+    batchWeek: "This week",
+    batchMonth: "This month",
+    batchRange: "Batch set",
+    batchRangeTitle: "Batch set inventory",
+    rangeFrom: "Start date",
+    rangeTo: "End date",
+    rangeToday: "Today",
+    rangeInvalid: "End date can’t be before start date.",
+    rangeTooLong: "Max 92 days at a time. Shorten the range.",
+    rangePreview: (days, vehicles) => `Applies to ${days} days · ${vehicles} karts (current list filter).`,
+    batchRangeLead: "Pick start and end dates. This week / this month only fill the fields — you can still edit them.",
+    applyRange: "Apply to these dates",
+    allKart: "All karts",
+    rangeOpen: "Open all",
+    rangeClose: "Close all",
+    rangeSeats: "Set seats",
   },
   vehicles: {
     repairNote: (n) => `${n} in repair, pulled from today’s sellable stock.`,
@@ -1945,7 +2036,8 @@ const ja: AdminCopy = {
     "/admin/content/faq": "FAQ",
     "/admin/content/press": "ニュース",
     "/admin/content/meetup": "集合場所",
-    "/admin/bookings/how": "予約方法",
+    "/admin/bookings/how": "予約スイッチ設定",
+    "/admin/settings/booking": "予約スイッチ設定",
     "/admin/reports": "売上レポート",
     "/admin/reports/overview": "売上概況",
     "/admin/reports/analytics": "データ分析",
@@ -1961,20 +2053,21 @@ const ja: AdminCopy = {
     "/admin/site": "サイト設定",
   },
   pages: {
-    "/admin/dashboard": { title: "ダッシュボード", lead: "管理者は全店舗合計。店舗をクリックすると絞り込めます。店長は自店のみ。" },
+    "/admin/dashboard": { title: "ダッシュボード", lead: "直近7日のどれかを押すと、その日の件数と売上が出ます。" },
     "/admin/bookings": { title: "予約一覧", lead: "一覧でステータスを変更できます。詳細を開く必要はありません。" },
     "/admin/orders": { title: "予約一覧", lead: "一覧でステータスを変更できます。詳細を開く必要はありません。" },
     "/admin/calendar": { title: "カレンダー", lead: "月／週／日で予約を確認。日付で下の一覧を切り替え、色ブロックで詳細を開きます。" },
-    "/admin/inventory": { title: "在庫管理", lead: "車両タイムライン。色で空きを見て、クリックやドラッグで在庫を変更。" },
+    "/admin/inventory": { title: "在庫管理", lead: "日／週／月。任意の期間で車両在庫をまとめて設定できます。" },
     "/admin/vehicles": { title: "車両管理", lead: "10台。整備中は当日在庫から外れます。" },
     "/admin/plans": { title: "コース管理", lead: "カードの見出し画像・ルート図・紹介文、価格と所要時間、オプションを編集。" },
-    "/admin/content": { title: "動画管理", lead: "サイト各所の動画。ファイルアップロードか YouTube リンク。" },
-    "/admin/content/videos": { title: "動画管理", lead: "サイト各所の動画。ファイルアップロードか YouTube リンク。" },
+    "/admin/content": { title: "動画管理", lead: "トップ動画と展示セット。カード1枚が1枠です。" },
+    "/admin/content/videos": { title: "動画管理", lead: "トップ動画と展示セット。カード1枚が1枠です。" },
     "/admin/content/reviews": { title: "お客さまの声", lead: "トップの「お客さまの声」を編集します。" },
     "/admin/content/faq": { title: "FAQ", lead: "「トップに出す」を付けた項目だけトップに出ます。FAQページは掲載中のすべて。" },
     "/admin/content/press": { title: "ニュース", lead: "トップの報道枠は掲載中の先頭3件です。" },
     "/admin/content/meetup": { title: "集合場所", lead: "Access の集合案内。番地の詳細は予約後に送ります。" },
-    "/admin/bookings/how": { title: "予約方法", lead: "予約入口のオン／オフと、WhatsApp・電話・メール・LINEのリンク。オフにするとサイトに出ません。" },
+    "/admin/bookings/how": { title: "予約スイッチ設定", lead: "予約入口のオン／オフ。オフにするとサイトに出ません。" },
+    "/admin/settings/booking": { title: "予約スイッチ設定", lead: "予約入口のオン／オフ。オフにするとサイトに出ません。" },
     "/admin/site": { title: "サイト設定", lead: "社名、ロゴ、電話・メール、フッターのSNS。" },
     "/admin/reports": { title: "売上概況", lead: "売上推移、流入元、お客さまの傾向。" },
     "/admin/reports/overview": { title: "売上概況", lead: "売上推移、流入元、お客さまの傾向。" },
@@ -1994,7 +2087,7 @@ const ja: AdminCopy = {
     edit: "コースを編集",
     save: "保存",
     saved: "保存しました。画像はこのブラウザにあります。別の端末では再アップロードが必要です。",
-    copyHint: "閉じると「名称・紹介・ハイライト」だけ見えます。開くと中・英・日・韓をまとめて入力できます。",
+    copyHint: "閉じると「名称・紹介・ハイライト」だけ見えます。開いて言語を切り替え、1言語ずつ入力します。",
     copy: "文言",
     name: "名称",
     intro: "紹介",
@@ -2081,6 +2174,14 @@ const ja: AdminCopy = {
     showPhone: "電話",
     showEmail: "メール",
     showLine: "LINE",
+    tabHome: "トップ動画",
+    tabGroup: "展示セット",
+    heroLoop: "背景ループ",
+    galleryClip: "現場映像",
+    heroHint: "ランディング最上部のループ映像。",
+    galleryHint: "コースの前にある大きい映像。見出し1つにファイルまたはリンク1つ。",
+    groupHint: "体験動画の6枠。カード1枚が1枠です。",
+    caption: "見出し",
     channelLead: "入口は個別にオン／オフできます。オフにするとサイトの予約欄に出ません。リンクはその入口だけに使います。",
     brandName: "正式名称",
     brandShort: "短い名前（ナビ）",
@@ -2313,6 +2414,8 @@ const ja: AdminCopy = {
     chartOrders: "予約",
     managerStaff: "店長は予約一覧から確定してください",
     managerReport: "レポートは管理者のみです",
+    pickHint: "直近7日のどれかを押すと、その日の数字が出ます。予約を押すとカレンダーへ。",
+    vsPrev: "前日比",
   },
   orders: {
     date: "日付",
@@ -2436,6 +2539,25 @@ const ja: AdminCopy = {
     type: "種類",
     closeDay: "終日休業",
     extra: "増便",
+    dayView: "日",
+    weekView: "週",
+    monthView: "月",
+    batchWeek: "今週",
+    batchMonth: "今月",
+    batchRange: "一括設定",
+    batchRangeTitle: "在庫を一括設定",
+    rangeFrom: "開始日",
+    rangeTo: "終了日",
+    rangeToday: "今日",
+    rangeInvalid: "終了日は開始日より前にできません。",
+    rangeTooLong: "一度に最大92日です。期間を短くしてください。",
+    rangePreview: (days, vehicles) => `${days}日・${vehicles}台に適用します（現在の絞り込み）。`,
+    batchRangeLead: "開始日と終了日を指定します。今週／今月は入力補助で、あとから直せます。",
+    applyRange: "この日付に適用",
+    allKart: "全車両",
+    rangeOpen: "すべて営業",
+    rangeClose: "すべて休業",
+    rangeSeats: "座席数を揃える",
   },
   vehicles: {
     repairNote: (n) => `整備中${n}台。当日の販売在庫から外れています。`,

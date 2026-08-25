@@ -7,6 +7,7 @@ import { ChannelBadge } from "@/components/admin/channel-badge";
 import { StatusSelect } from "@/components/admin/status-select";
 import { Modal } from "@/components/ui/modal";
 import { adminChannel, adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
+import { readAdminFocusDate } from "@/lib/admin/focus-date";
 import { todayIsoDate } from "@/lib/booking/slots";
 import { formatYenShort } from "@/lib/format";
 import { OrderDocs } from "@/components/admin/order-docs";
@@ -105,7 +106,7 @@ export function AdminOrdersView() {
   const { upsertOrder, patchOrder, setOrderStatus, templates, settings } = useOpsStore();
   const { orders: storeOrders, storeId, plans } = useStoreData();
   const notify = useToastStore((state) => state.notify);
-  const [picked, setPicked] = useState("");
+  const [picked, setPicked] = useState(() => readAdminFocusDate());
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<OrderStatus | "all">("all");
   const [channel, setChannel] = useState<OrderChannel | "all">("all");

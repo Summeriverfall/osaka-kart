@@ -31,14 +31,14 @@ export function SiteNav({ theme, experience, plans, faq, calendar }: SiteNavProp
 
   const links = (
     <>
-      <a href="#experience" className="hash-link" onClick={() => setOpen(false)}>
-        {experience}
-      </a>
       <a href="#plans" className="hash-link" onClick={() => setOpen(false)}>
         {plans}
       </a>
       <a href="#book" className="hash-link" onClick={() => setOpen(false)}>
         {calendar}
+      </a>
+      <a href="#experience" className="hash-link" onClick={() => setOpen(false)}>
+        {experience}
       </a>
       <a href="#faq" className="hash-link" onClick={() => setOpen(false)}>
         {faq}

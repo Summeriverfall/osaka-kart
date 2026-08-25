@@ -1,3 +1,6 @@
+import { addDaysIso } from "@/lib/calendar";
+import { todayIsoDate } from "@/lib/booking/slots";
+
 export type OrderStatus = "pending" | "confirmed" | "cancelled" | "completed";
 export type OrderChannel = "官网" | "Klook" | "Viator" | "微信" | "WhatsApp" | "线下";
 
@@ -41,419 +44,100 @@ export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
 
 export const CHANNELS: OrderChannel[] = ["Klook", "官网", "Viator", "微信", "WhatsApp", "线下"];
 
+const SLOTS = ["10:00", "11:30", "13:00", "14:30", "16:00", "17:30", "19:00"] as const;
+
+type GuestSeed = {
+  customer: string;
+  nationality: string;
+  email: string;
+  phone: string;
+  passport: string;
+  planName: string;
+  planSlug: string;
+  riders: number;
+  male: number;
+  female: number;
+  addons: string[];
+  totalJpy: number;
+  channel: OrderChannel;
+  note: string;
+};
+
+const GUESTS: GuestSeed[] = [
+  { customer: "Alex Morgan", nationality: "USA", email: "alex.m@example.com", phone: "+1-415-555-0198", passport: "US5591021", planName: "难波 60 分钟", planSlug: "standard", riders: 2, male: 1, female: 1, addons: ["GoPro 租赁"], totalJpy: 28100, channel: "官网", note: "首次体验，需要英文向导。" },
+  { customer: "林佳颖", nationality: "TW", email: "chia.lin@example.com", phone: "+886-912-555-017", passport: "TW3128891", planName: "通天阁 90 分钟", planSlug: "night-run", riders: 3, male: 1, female: 2, addons: ["赛车服升级", "专业跟拍照片"], totalJpy: 53400, channel: "Klook", note: "三人同行，希望同色赛车服。" },
+  { customer: "김민준", nationality: "KR", email: "minjun.k@example.com", phone: "+82-10-5555-0192", passport: "KR8802143", planName: "大阪城 120 分钟", planSlug: "grand-tour", riders: 1, male: 1, female: 0, addons: ["额外保险"], totalJpy: 19300, channel: "Viator", note: "" },
+  { customer: "Nora Patel", nationality: "UK", email: "nora.p@example.com", phone: "+44-7700-555-019", passport: "UK1029384", planName: "难波 60 分钟", planSlug: "standard", riders: 2, male: 0, female: 2, addons: ["GoPro 租赁", "额外保险"], totalJpy: 28600, channel: "WhatsApp", note: "到店付尾款。" },
+  { customer: "陈浩宇", nationality: "CN", email: "haoyu.c@example.com", phone: "+86-138-5550-1120", passport: "CN E12345678", planName: "通天阁 90 分钟", planSlug: "night-run", riders: 2, male: 2, female: 0, addons: ["专业跟拍照片"], totalJpy: 34600, channel: "微信", note: "" },
+  { customer: "Hannah Lee", nationality: "USA", email: "hannah.l@example.com", phone: "+1-310-555-0144", passport: "US4412098", planName: "大阪城 120 分钟", planSlug: "grand-tour", riders: 3, male: 1, female: 2, addons: ["赛车服升级"], totalJpy: 59400, channel: "Klook", note: "" },
+  { customer: "Jonas Keller", nationality: "DE", email: "jonas.k@example.com", phone: "+49-170-555-0181", passport: "DE9981120", planName: "难波 60 分钟", planSlug: "standard", riders: 1, male: 1, female: 0, addons: [], totalJpy: 12800, channel: "Viator", note: "" },
+  { customer: "Sophie Dubois", nationality: "FR", email: "sophie.d@example.com", phone: "+33-6-12-55-01-88", passport: "FR2201987", planName: "难波 60 分钟", planSlug: "standard", riders: 2, male: 0, female: 2, addons: ["专业跟拍照片"], totalJpy: 28600, channel: "官网", note: "要下午出片。" },
+  { customer: "田中 翔", nationality: "JP", email: "sho.tanaka@example.com", phone: "+81-90-5555-0144", passport: "JP TK88021", planName: "通天阁 90 分钟", planSlug: "night-run", riders: 4, male: 3, female: 1, addons: ["GoPro 租赁", "赛车服升级"], totalJpy: 70200, channel: "线下", note: "公司团建。" },
+  { customer: "Ryan Cole", nationality: "USA", email: "ryan.c@example.com", phone: "+1-646-555-0177", passport: "US7781203", planName: "黄昏湾岸 45 分钟", planSlug: "sunset", riders: 2, male: 2, female: 0, addons: ["GoPro 租赁"], totalJpy: 17500, channel: "Klook", note: "" },
+  { customer: "Mei Wong", nationality: "SG", email: "mei.wong@example.com", phone: "+65-8555-0190", passport: "SG K192833", planName: "大阪城 120 分钟", planSlug: "grand-tour", riders: 2, male: 0, female: 2, addons: ["GoPro 租赁"], totalJpy: 40100, channel: "Klook", note: "" },
+  { customer: "王磊", nationality: "CN", email: "lei.wang@example.com", phone: "+86-139-5550-2201", passport: "CN E87654321", planName: "夜间霓虹 90 分钟", planSlug: "vip-night", riders: 2, male: 1, female: 1, addons: ["专业跟拍照片", "额外保险"], totalJpy: 36500, channel: "微信", note: "想走道顿堀多停一次。" },
+  { customer: "Emily Chen", nationality: "AU", email: "emily.chen@example.com", phone: "+61-412-555-016", passport: "AU 8891203", planName: "难波 60 分钟", planSlug: "standard", riders: 3, male: 1, female: 2, addons: ["赛车服升级"], totalJpy: 41400, channel: "Klook", note: "其中一位身高 158cm。" },
+  { customer: "Luca Rossi", nationality: "IT", email: "luca.r@example.com", phone: "+39-347-555-0194", passport: "IT YA10293", planName: "大阪城 120 分钟", planSlug: "grand-tour", riders: 2, male: 1, female: 1, addons: ["GoPro 租赁", "专业跟拍照片"], totalJpy: 43100, channel: "官网", note: "希望尽量拍城堡背景。" },
+];
+
 function log(time: string, actor: string, action: string, note = ""): OrderLog {
   return { time, actor, action, note };
 }
 
-export const MOCK_ORDERS: MockOrder[] = [
-  {
-    id: "FK-260820-001",
-    customer: "Alex Morgan",
-    nationality: "USA",
-    email: "alex.m@example.com",
-    phone: "+1-415-555-0198",
-    passport: "US5591021",
-    planName: "难波 60 分钟",
-    planSlug: "standard",
-    date: "2026-08-20",
-    time: "11:30",
-    riders: 2,
-    male: 1,
-    female: 1,
-    addons: ["GoPro 租赁"],
-    totalJpy: 28100,
-    channel: "官网",
-    status: "confirmed",
-    paid: true,
-    note: "首次体验，需要英文向导。",
-    logs: [
-      log("2026-08-19 21:04", "系统", "创建订单"),
-      log("2026-08-20 09:12", "店长 佐藤", "确认订单"),
-    ],
-  },
-  {
-    id: "FK-260820-002",
-    customer: "林佳颖",
-    nationality: "TW",
-    email: "chia.lin@example.com",
-    phone: "+886-912-555-017",
-    passport: "TW3128891",
-    planName: "通天阁 90 分钟",
-    planSlug: "night-run",
-    date: "2026-08-20",
-    time: "14:30",
-    riders: 3,
-    male: 1,
-    female: 2,
-    addons: ["赛车服升级", "专业跟拍照片"],
-    totalJpy: 53400,
-    channel: "Klook",
-    status: "pending",
-    paid: true,
-    note: "三人同行，希望同色赛车服。",
-    logs: [log("2026-08-20 08:41", "Klook", "渠道同步")],
-  },
-  {
-    id: "FK-260820-003",
-    customer: "김민준",
-    nationality: "KR",
-    email: "minjun.k@example.com",
-    phone: "+82-10-5555-0192",
-    passport: "KR8802143",
-    planName: "大阪城 120 分钟",
-    planSlug: "grand-tour",
-    date: "2026-08-20",
-    time: "16:00",
-    riders: 1,
-    male: 1,
-    female: 0,
-    addons: ["额外保险"],
-    totalJpy: 19300,
-    channel: "Viator",
-    status: "confirmed",
-    paid: true,
-    note: "",
-    logs: [
-      log("2026-08-19 18:02", "Viator", "渠道同步"),
-      log("2026-08-20 10:01", "店长 佐藤", "确认订单"),
-    ],
-  },
-  {
-    id: "FK-260820-011",
-    customer: "Nora Patel",
-    nationality: "UK",
-    email: "nora.p@example.com",
-    phone: "+44-7700-555-019",
-    passport: "UK1029384",
-    planName: "难波 60 分钟",
-    planSlug: "standard",
-    date: "2026-08-20",
-    time: "19:00",
-    riders: 2,
-    male: 0,
-    female: 2,
-    addons: ["GoPro 租赁", "额外保险"],
-    totalJpy: 28600,
-    channel: "WhatsApp",
-    status: "confirmed",
-    paid: false,
-    note: "到店付尾款。",
-    logs: [log("2026-08-20 12:18", "店长 佐藤", "WhatsApp 录单")],
-  },
-  {
-    id: "FK-260819-008",
-    customer: "陈浩宇",
-    nationality: "CN",
-    email: "haoyu.c@example.com",
-    phone: "+86-138-5550-1120",
-    passport: "CN E12345678",
-    planName: "通天阁 90 分钟",
-    planSlug: "night-run",
-    date: "2026-08-19",
-    time: "11:30",
-    riders: 2,
-    male: 2,
-    female: 0,
-    addons: ["专业跟拍照片"],
-    totalJpy: 34600,
-    channel: "微信",
-    status: "cancelled",
-    paid: false,
-    note: "航班延误，客人取消。",
-    logs: [
-      log("2026-08-18 20:11", "微信", "创建订单"),
-      log("2026-08-19 08:02", "店长 佐藤", "取消订单", "航班延误"),
-    ],
-  },
-  {
-    id: "FK-260819-012",
-    customer: "Hannah Lee",
-    nationality: "USA",
-    email: "hannah.l@example.com",
-    phone: "+1-310-555-0144",
-    passport: "US4412098",
-    planName: "大阪城 120 分钟",
-    planSlug: "grand-tour",
-    date: "2026-08-19",
-    time: "16:00",
-    riders: 3,
-    male: 1,
-    female: 2,
-    addons: ["赛车服升级"],
-    totalJpy: 59400,
-    channel: "Klook",
-    status: "completed",
-    paid: true,
-    note: "",
-    logs: [log("2026-08-19 18:40", "店长 佐藤", "标记完成")],
-  },
-  {
-    id: "FK-260818-007",
-    customer: "Jonas Keller",
-    nationality: "DE",
-    email: "jonas.k@example.com",
-    phone: "+49-170-555-0181",
-    passport: "DE9981120",
-    planName: "难波 60 分钟",
-    planSlug: "standard",
-    date: "2026-08-18",
-    time: "17:30",
-    riders: 1,
-    male: 1,
-    female: 0,
-    addons: [],
-    totalJpy: 12800,
-    channel: "Viator",
-    status: "completed",
-    paid: true,
-    note: "已完成，评价 5 星。",
-    logs: [log("2026-08-18 19:05", "系统", "完成并发送评价邮件")],
-  },
-  {
-    id: "FK-260821-004",
-    customer: "Sophie Dubois",
-    nationality: "FR",
-    email: "sophie.d@example.com",
-    phone: "+33-6-12-55-01-88",
-    passport: "FR2201987",
-    planName: "难波 60 分钟",
-    planSlug: "standard",
-    date: "2026-08-21",
-    time: "10:00",
-    riders: 2,
-    male: 0,
-    female: 2,
-    addons: ["专业跟拍照片"],
-    totalJpy: 28600,
-    channel: "官网",
-    status: "confirmed",
-    paid: true,
-    note: "要下午出片。",
-    logs: [log("2026-08-20 16:44", "超管 Aya", "确认订单")],
-  },
-  {
-    id: "FK-260821-005",
-    customer: "田中 翔",
-    nationality: "JP",
-    email: "sho.tanaka@example.com",
-    phone: "+81-90-5555-0144",
-    passport: "JP TK88021",
-    planName: "通天阁 90 分钟",
-    planSlug: "night-run",
-    date: "2026-08-21",
-    time: "19:00",
-    riders: 4,
-    male: 3,
-    female: 1,
-    addons: ["GoPro 租赁", "赛车服升级"],
-    totalJpy: 70200,
-    channel: "线下",
-    status: "pending",
-    paid: false,
-    note: "公司团建，发票抬头后补。",
-    logs: [log("2026-08-21 09:08", "店长 佐藤", "前台录单")],
-  },
-  {
-    id: "FK-260821-013",
-    customer: "Ryan Cole",
-    nationality: "USA",
-    email: "ryan.c@example.com",
-    phone: "+1-646-555-0177",
-    passport: "US7781203",
-    planName: "黄昏湾岸 45 分钟",
-    planSlug: "sunset",
-    date: "2026-08-21",
-    time: "17:30",
-    riders: 2,
-    male: 2,
-    female: 0,
-    addons: ["GoPro 租赁"],
-    totalJpy: 17500,
-    channel: "Klook",
-    status: "confirmed",
-    paid: true,
-    note: "",
-    logs: [log("2026-08-20 22:01", "Klook", "渠道同步")],
-  },
-  {
-    id: "FK-260822-006",
-    customer: "Mei Wong",
-    nationality: "SG",
-    email: "mei.wong@example.com",
-    phone: "+65-8555-0190",
-    passport: "SG K192833",
-    planName: "大阪城 120 分钟",
-    planSlug: "grand-tour",
-    date: "2026-08-22",
-    time: "13:00",
-    riders: 2,
-    male: 0,
-    female: 2,
-    addons: ["GoPro 租赁"],
-    totalJpy: 40100,
-    channel: "Klook",
-    status: "confirmed",
-    paid: true,
-    note: "",
-    logs: [log("2026-08-21 11:19", "Klook", "渠道同步")],
-  },
-  {
-    id: "FK-260822-014",
-    customer: "王磊",
-    nationality: "CN",
-    email: "lei.wang@example.com",
-    phone: "+86-139-5550-2201",
-    passport: "CN E87654321",
-    planName: "夜间霓虹 90 分钟",
-    planSlug: "vip-night",
-    date: "2026-08-22",
-    time: "19:00",
-    riders: 2,
-    male: 1,
-    female: 1,
-    addons: ["专业跟拍照片", "额外保险"],
-    totalJpy: 36500,
-    channel: "微信",
-    status: "pending",
-    paid: true,
-    note: "想走道顿堀多停一次。",
-    logs: [log("2026-08-22 07:55", "微信", "创建订单")],
-  },
-  {
-    id: "FK-260823-009",
-    customer: "Emily Chen",
-    nationality: "AU",
-    email: "emily.chen@example.com",
-    phone: "+61-412-555-016",
-    passport: "AU 8891203",
-    planName: "难波 60 分钟",
-    planSlug: "standard",
-    date: "2026-08-23",
-    time: "14:30",
-    riders: 3,
-    male: 1,
-    female: 2,
-    addons: ["赛车服升级"],
-    totalJpy: 41400,
-    channel: "Klook",
-    status: "confirmed",
-    paid: true,
-    note: "其中一位身高 158cm。",
-    logs: [log("2026-08-22 15:03", "Klook", "渠道同步")],
-  },
-  {
-    id: "FK-260824-010",
-    customer: "Luca Rossi",
-    nationality: "IT",
-    email: "luca.r@example.com",
-    phone: "+39-347-555-0194",
-    passport: "IT YA10293",
-    planName: "大阪城 120 分钟",
-    planSlug: "grand-tour",
-    date: "2026-08-24",
-    time: "16:00",
-    riders: 2,
-    male: 1,
-    female: 1,
-    addons: ["GoPro 租赁", "专业跟拍照片"],
-    totalJpy: 43100,
-    channel: "官网",
-    status: "pending",
-    paid: true,
-    note: "希望尽量拍城堡背景。",
-    logs: [log("2026-08-23 19:40", "官网", "创建订单")],
-  },
-  {
-    id: "FK-260813-015",
-    customer: "Olivia Park",
-    nationality: "KR",
-    email: "olivia.p@example.com",
-    phone: "+82-10-5555-4410",
-    passport: "KR 4410922",
-    planName: "黄昏湾岸 45 分钟",
-    planSlug: "sunset",
-    date: "2026-08-13",
-    time: "16:00",
-    riders: 2,
-    male: 0,
-    female: 2,
-    addons: ["额外保险"],
-    totalJpy: 15500,
-    channel: "Viator",
-    status: "completed",
-    paid: true,
-    note: "上周来过，这次带朋友。",
-    logs: [log("2026-08-13 18:12", "店长 佐藤", "标记完成")],
-  },
-  {
-    id: "SK-260821-101",
-    customer: "James Wu",
-    nationality: "HK",
-    email: "james.wu@example.com",
-    phone: "+852-5550-2211",
-    passport: "HK 2291844",
-    planName: "难波 60 分钟",
-    planSlug: "standard",
-    date: "2026-08-21",
-    time: "14:30",
-    riders: 2,
-    male: 1,
-    female: 1,
-    addons: [],
-    totalJpy: 25600,
-    channel: "官网",
-    status: "pending",
-    paid: true,
-    note: "心斋桥预留店试运营询单。",
-    logs: [log("2026-08-21 10:12", "Chris Ng", "预留店录单")],
-    storeId: "shinsaibashi",
-  },
-  {
-    id: "SK-260822-102",
-    customer: "Sara Kim",
-    nationality: "KR",
-    email: "sara.k@example.com",
-    phone: "+82-10-5555-8821",
-    passport: "KR 8821903",
-    planName: "通天阁 90 分钟",
-    planSlug: "night-run",
-    date: "2026-08-22",
-    time: "16:00",
-    riders: 1,
-    male: 0,
-    female: 1,
-    addons: ["GoPro 租赁"],
-    totalJpy: 17300,
-    channel: "Klook",
-    status: "confirmed",
-    paid: true,
-    note: "",
-    logs: [log("2026-08-21 19:40", "Klook", "渠道同步")],
-    storeId: "shinsaibashi",
-  },
-  {
-    id: "UM-260820-201",
-    customer: "大野 健",
-    nationality: "JP",
-    email: "ken.ohno@example.com",
-    phone: "+81-90-5555-3301",
-    passport: "JP ON10293",
-    planName: "难波 60 分钟",
-    planSlug: "standard",
-    date: "2026-08-20",
-    time: "13:00",
-    riders: 2,
-    male: 2,
-    female: 0,
-    addons: [],
-    totalJpy: 25600,
-    channel: "线下",
-    status: "pending",
-    paid: false,
-    note: "梅田预留店咨询转预约。",
-    logs: [log("2026-08-20 11:05", "田中 美咲", "预留店录单")],
-    storeId: "umeda",
-  },
-];
+function storeOf(dayOffset: number, index: number) {
+  if (index === 3 && dayOffset % 3 === 0) return "shinsaibashi";
+  if (index === 2 && dayOffset % 2 === 0) return "umeda";
+  return "namba";
+}
 
+function prefixOf(storeId: string) {
+  if (storeId === "shinsaibashi") return "SK";
+  if (storeId === "umeda") return "UM";
+  return "FK";
+}
+
+function statusOf(dayOffset: number, index: number): OrderStatus {
+  if (index === 1) return "pending";
+  if (dayOffset <= -4 && index === 3) return "completed";
+  if (dayOffset === -5 && index === 0) return "cancelled";
+  return "confirmed";
+}
+
+export function isWebsiteLiveOrder(order: MockOrder) {
+  return order.logs.some((item) => item.note === "官网支付" || item.action === "官网支付") || order.note.includes("官网支付完成");
+}
+
+export function buildWeekDemoOrders(today = todayIsoDate()): MockOrder[] {
+  const rows: MockOrder[] = [];
+  for (let offset = -6; offset <= 0; offset += 1) {
+    const date = addDaysIso(today, offset);
+    const compact = date.replace(/-/g, "").slice(2);
+    for (let index = 0; index < 4; index += 1) {
+      const guest = GUESTS[((offset + 6) * 4 + index) % GUESTS.length];
+      const storeId = storeOf(offset, index);
+      const status = statusOf(offset, index);
+      const time = SLOTS[(index + Math.abs(offset)) % SLOTS.length];
+      rows.push({
+        ...guest,
+        id: `${prefixOf(storeId)}-${compact}-${String(index + 1).padStart(3, "0")}`,
+        date,
+        time,
+        status,
+        paid: status !== "pending" || index % 2 === 0,
+        storeId,
+        logs: [
+          log(`${addDaysIso(date, -1)} 18:20`, guest.channel, "创建订单"),
+          ...(status === "confirmed" || status === "completed"
+            ? [log(`${date} 09:10`, "店长 佐藤", "确认订单")]
+            : []),
+          ...(status === "completed" ? [log(`${date} 18:40`, "店长 佐藤", "标记完成")] : []),
+          ...(status === "cancelled" ? [log(`${date} 08:02`, "店长 佐藤", "取消订单", "行程变更")] : []),
+        ],
+      });
+    }
+  }
+  return rows;
+}
+
+export const MOCK_ORDERS: MockOrder[] = buildWeekDemoOrders();
 export const MOCK_ORDER_IDS = MOCK_ORDERS.map((item) => item.id);

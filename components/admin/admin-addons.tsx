@@ -6,6 +6,7 @@ import { Camera, Image as ImageIcon, Shield, Shirt, Trash2 } from "lucide-react"
 import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import { adminCopy } from "@/lib/admin/copy";
+import { AdminLangSelect, adminLangFromLocale, type AdminLangKey } from "@/components/admin/locale-field";
 import { formatYenShort } from "@/lib/format";
 import { type AddonSlug, type MockAddon } from "@/lib/mock/addons";
 import { cn } from "@/lib/utils";
@@ -41,11 +42,16 @@ export function AdminAddonsView() {
   const notify = useToastStore((state) => state.notify);
   const [editing, setEditing] = useState<MockAddon | null>(null);
   const [removing, setRemoving] = useState<MockAddon | null>(null);
+  const [nameLang, setNameLang] = useState<AdminLangKey>(() => adminLangFromLocale(locale));
+  const nameKeys: AdminLangKey[] = ["zh", "en", "ja"];
+  const activeNameLang = nameKeys.includes(nameLang) ? nameLang : "zh";
+  const nameValue =
+    !editing ? "" : activeNameLang === "en" ? editing.nameEn : activeNameLang === "ja" ? editing.nameJa : editing.name;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-        <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setEditing({ ...BLANK, id: `addon-${Date.now()}` })}>
+          <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { setNameLang(adminLangFromLocale(locale)); setEditing({ ...BLANK, id: `addon-${Date.now()}` }); }}>
           {copy.addons.add}
         </button>
       </div>
@@ -74,7 +80,7 @@ export function AdminAddonsView() {
               <div className="mt-5 flex items-center justify-between">
                 <NeonToggle checked={addon.active} onChange={(on) => patchAddon(addon.id, { active: on })} />
                 <div className="flex gap-2">
-                  <button type="button" className="rounded-full border border-slate-200 px-3 py-1.5 text-xs hover:border-blue-400" onClick={() => setEditing(addon)}>
+                  <button type="button" className="rounded-full border border-slate-200 px-3 py-1.5 text-xs hover:border-blue-400" onClick={() => { setNameLang(adminLangFromLocale(locale)); setEditing(addon); }}>
                     {copy.common.edit}
                   </button>
                   <button type="button" className="rounded-full border border-slate-200 p-1.5 hover:border-rose-400" onClick={() => setRemoving(addon)} aria-label="delete">
@@ -95,9 +101,38 @@ export function AdminAddonsView() {
       >
         {editing ? (
           <>
-            <label className="admin-field">{copy.addons.nameZh}<input className="admin-input" value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></label>
-            <label className="admin-field">English<input className="admin-input" value={editing.nameEn} onChange={(e) => setEditing({ ...editing, nameEn: e.target.value })} /></label>
-            <label className="admin-field">日本語<input className="admin-input" value={editing.nameJa} onChange={(e) => setEditing({ ...editing, nameJa: e.target.value })} /></label>
+            <div className="admin-locale-field">
+              <div className="admin-locale-head">
+                <p>{copy.plans.name}</p>
+                <AdminLangSelect
+                  value={activeNameLang}
+                  onChange={setNameLang}
+                  keys={nameKeys}
+                  labels={{ zh: copy.plans.zh, en: copy.plans.en, ja: copy.plans.ja, ko: copy.plans.ko }}
+                  emptyLabel={copy.plans.unfilled}
+                  filled={
+                    editing
+                      ? {
+                          zh: Boolean(editing.name.trim()),
+                          en: Boolean(editing.nameEn.trim()),
+                          ja: Boolean(editing.nameJa.trim()),
+                        }
+                      : undefined
+                  }
+                />
+              </div>
+              <input
+                className="admin-input"
+                value={nameValue}
+                onChange={(e) => {
+                  if (!editing) return;
+                  const next = e.target.value;
+                  if (activeNameLang === "en") setEditing({ ...editing, nameEn: next });
+                  else if (activeNameLang === "ja") setEditing({ ...editing, nameJa: next });
+                  else setEditing({ ...editing, name: next });
+                }}
+              />
+            </div>
             <label className="admin-field">{copy.addons.desc}<textarea className="admin-input min-h-20" value={editing.description} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></label>
             <label className="admin-field">{copy.addons.price}<input className="admin-input" type="number" value={editing.priceJpy} onChange={(e) => setEditing({ ...editing, priceJpy: Number(e.target.value) })} /></label>
             <label className="admin-field">{copy.addons.maxQty}<input className="admin-input" type="number" value={editing.maxQty} onChange={(e) => setEditing({ ...editing, maxQty: Number(e.target.value) })} /></label>

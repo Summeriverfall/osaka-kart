@@ -1,4 +1,5 @@
-import { BOOKING_SLOTS } from "@/lib/booking/slots";
+import { BOOKING_SLOTS, todayIsoDate } from "@/lib/booking/slots";
+import { eachIso, monthEndIso, monthStartIso, addMonthsIso } from "@/lib/calendar";
 import { MOCK_ORDERS, type MockOrder } from "@/lib/mock/orders";
 import { MOCK_VEHICLES, type MockVehicle } from "@/lib/mock/vehicles";
 
@@ -76,16 +77,20 @@ function capacityFor(vehicle: MockVehicle, vehicleIndex: number) {
   return CAPACITY_CYCLE[vehicleIndex % CAPACITY_CYCLE.length] ?? 4;
 }
 
+export function timelineSpan(today = todayIsoDate()) {
+  return {
+    from: monthStartIso(addMonthsIso(today, -1)),
+    to: monthEndIso(addMonthsIso(today, 1)),
+  };
+}
+
 export function buildVehicleTimeline(
   vehicles: MockVehicle[] = MOCK_VEHICLES,
   orders: MockOrder[] = MOCK_ORDERS,
+  today = todayIsoDate(),
 ): VehicleSlotCell[] {
-  const rows: VehicleSlotCell[] = [];
-  for (let day = 1; day <= 31; day += 1) {
-    const date = `2026-08-${String(day).padStart(2, "0")}`;
-    rows.push(...buildVehicleTimelineForDate(date, vehicles, orders));
-  }
-  return rows;
+  const { from, to } = timelineSpan(today);
+  return eachIso(from, to).flatMap((date) => buildVehicleTimelineForDate(date, vehicles, orders));
 }
 
 export function buildVehicleTimelineForDate(
@@ -95,7 +100,7 @@ export function buildVehicleTimelineForDate(
 ): VehicleSlotCell[] {
   return vehicles.flatMap((vehicle, vehicleIndex) =>
     BOOKING_SLOTS.map((time, slotIndex) => {
-      const forcedClosed = vehicle.status !== "available" || date === "2026-08-25";
+      const forcedClosed = vehicle.status !== "available";
       const capacity = capacityFor(vehicle, vehicleIndex);
       const slotOrders = orders.filter(
         (order) => order.date === date && order.time === time && order.status !== "cancelled",

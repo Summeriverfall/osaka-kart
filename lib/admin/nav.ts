@@ -22,7 +22,6 @@ export const ADMIN_NAV: AdminNavItem[] = [
 export const ADMIN_BOOKING_NAV: AdminNavItem[] = [
   { href: "/admin/orders", label: "订单列表", roles: ["admin", "manager"] },
   { href: "/admin/calendar", label: "日历", roles: ["admin", "manager"] },
-  { href: "/admin/bookings/how", label: "怎么预约", roles: ["admin", "manager"] },
 ];
 
 export const ADMIN_CONTENT_NAV: AdminNavItem[] = [
@@ -41,6 +40,7 @@ export const ADMIN_REPORT_NAV: AdminNavItem[] = [
 export const ADMIN_SETTINGS_NAV: AdminNavItem[] = [
   { href: "/admin/settings/pay", label: "支付配置", roles: ["admin"] },
   { href: "/admin/settings/channels", label: "渠道设置", roles: ["admin"] },
+  { href: "/admin/settings/booking", label: "预约开关设置", roles: ["admin"] },
   { href: "/admin/settings/stores", label: "门店管理", roles: ["admin"] },
   { href: "/admin/settings/email", label: "邮件设置", roles: ["admin"] },
   { href: "/admin/settings/logs", label: "操作日志", roles: ["admin"] },
@@ -56,7 +56,7 @@ export const ADMIN_PAGE_META: Record<string, { title: string; lead: string }> = 
   "/admin/bookings": { title: "订单列表", lead: "列表处理订单。点状态可直接改，不必进详情。" },
   "/admin/orders": { title: "订单列表", lead: "列表处理订单。点状态可直接改，不必进详情。" },
   "/admin/calendar": { title: "日历", lead: "月 / 周 / 日看订单分布。点日期更新下方列表，点色块打开订单详情。" },
-  "/admin/inventory": { title: "库存管理", lead: "车辆时间轴。色块看出松紧，点击或拖拽即可改库存。" },
+  "/admin/inventory": { title: "库存管理", lead: "日 / 周 / 月看车辆库存。可指定起止日期批量设置。" },
   "/admin/vehicles": { title: "车辆管理", lead: "10 辆车。维修中的会从当日库存扣除。" },
   "/admin/plans": { title: "套餐管理", lead: "编辑前台卡片：标题图、说明图、介绍与亮点，以及价格、时长和附加项。" },
   "/admin/content": { title: "视频管理", lead: "管理前台各处视频。可上传本地文件，或贴 YouTube 链接。" },
@@ -65,7 +65,8 @@ export const ADMIN_PAGE_META: Record<string, { title: string; lead: string }> = 
   "/admin/content/faq": { title: "FAQ 管理", lead: "首页只显示勾了「首页」的条目，FAQ 页显示全部上架问题。" },
   "/admin/content/press": { title: "新闻报道", lead: "首页新闻区块最多显示 3 条上架内容。" },
   "/admin/content/meetup": { title: "集合地点", lead: "前台 Access 区块的集合文案。门牌细节预订后发送，这里写客人能看到的指引。" },
-  "/admin/bookings/how": { title: "怎么预约", lead: "开关预约入口，并填写 WhatsApp、电话、邮件、LINE 链接。关掉的渠道不会出现在官网。" },
+  "/admin/bookings/how": { title: "预约开关设置", lead: "开关预约入口，并填写 WhatsApp、电话、邮件、LINE 链接。关掉的渠道不会出现在官网。" },
+  "/admin/settings/booking": { title: "预约开关设置", lead: "开关预约入口，并填写 WhatsApp、电话、邮件、LINE 链接。关掉的渠道不会出现在官网。" },
   "/admin/site": { title: "全站配置", lead: "公司名称、Logo、电话邮箱和页脚社交媒体。" },
   "/admin/reports": { title: "营收报表", lead: "营收趋势、渠道占比、用户画像。" },
   "/admin/reports/overview": { title: "营收报表", lead: "营收趋势、渠道占比、用户画像。" },
@@ -104,8 +105,6 @@ export function reportNavForRole(role: AdminRole) {
 export function isBookingPath(href: string) {
   return (
     href === "/admin/bookings" ||
-    href === "/admin/bookings/how" ||
-    href.startsWith("/admin/bookings/how") ||
     href === "/admin/orders" ||
     href.startsWith("/admin/orders/") ||
     href === "/admin/calendar" ||
@@ -148,6 +147,7 @@ export function normalizeAdminTab(href: string) {
   if (tab === "/admin/content") return CONTENT_HOME;
   if (tab === "/admin/reports") return REPORT_HOME;
   if (tab === "/admin/settings") return SETTINGS_HOME;
+  if (tab === "/admin/bookings/how") return "/admin/settings/booking";
   if (tab === "/admin/settings/send" || tab === "/admin/settings/mail") return "/admin/settings/email";
   return tab;
 }

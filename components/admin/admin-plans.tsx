@@ -9,6 +9,7 @@ import { coverOf, planImage, planRoute } from "@/lib/media";
 import { MOCK_PLANS, type MockPlan } from "@/lib/mock/plans";
 import { readLocalImage } from "@/lib/read-local-image";
 import { adminCopy } from "@/lib/admin/copy";
+import { AdminLangSelect, adminLangFromLocale, type AdminLangKey } from "@/components/admin/locale-field";
 import { cn } from "@/lib/utils";
 import { useOpsStore } from "@/stores/ops-store";
 import { useStoreData } from "@/lib/use-store-data";
@@ -199,10 +200,12 @@ export function AdminPlansView() {
   const notify = useToastStore((state) => state.notify);
   const [editing, setEditing] = useState<MockPlan | null>(null);
   const [copyOpen, setCopyOpen] = useState(-1);
+  const [copyLang, setCopyLang] = useState<AdminLangKey>(() => adminLangFromLocale(locale));
 
   function openEditor(plan: MockPlan) {
     setEditing(plan);
     setCopyOpen(-1);
+    setCopyLang(adminLangFromLocale(locale));
   }
 
   const groupLabel = {
@@ -253,16 +256,16 @@ export function AdminPlansView() {
       >
         {copy.add}
       </button>
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {plans.map((plan) => (
           <article
             key={plan.id}
-            className={`rounded-2xl border bg-white p-5 ${plan.active ? "border-slate-200" : "border-slate-100 opacity-50"}`}
+            className={`min-w-0 rounded-2xl border bg-white p-4 ${plan.active ? "border-slate-200" : "border-slate-100 opacity-50"}`}
           >
             <img
               src={coverOf({ slug: plan.slug, cover_image: plan.coverImage })}
               alt=""
-              className="mb-4 h-32 w-full rounded-xl object-cover"
+              className="mb-3 h-24 w-full rounded-xl object-cover"
             />
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -276,30 +279,9 @@ export function AdminPlansView() {
               <NeonToggle checked={plan.active} onChange={(on) => patchPlan(plan.id, { active: on })} />
             </div>
 
-            <p className="mt-5 text-xs font-semibold tracking-wide text-slate-500 uppercase">{copy.addons}</p>
-            <ul className="mt-2 space-y-1">
-              {addons.map((addon) => {
-                const allowed = (plan.allowedAddonIds ?? []).includes(addon.id);
-                return (
-                  <li key={addon.id}>
-                    <label className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 hover:bg-slate-50">
-                      <input
-                        type="checkbox"
-                        checked={allowed}
-                        onChange={() => patchPlan(plan.id, toggleAddon(plan, addon.id))}
-                        className="size-4 accent-blue-600"
-                      />
-                      <span className={cn("flex-1 text-sm", allowed ? "text-slate-800" : "text-slate-400")}>
-                        {addon.name}
-                      </span>
-                      <span className="text-xs text-slate-500">
-                        {formatYenShort(addon.priceJpy)} {addon.unitLabel}
-                      </span>
-                    </label>
-                  </li>
-                );
-              })}
-            </ul>
+            <p className="mt-4 text-xs text-slate-500">
+              {copy.addons} {(plan.allowedAddonIds ?? []).length}/{addons.length}
+            </p>
 
             <button
               type="button"
@@ -366,10 +348,29 @@ export function AdminPlansView() {
             />
 
             <div>
-              <p className="text-sm font-semibold text-slate-700">{copy.copy}</p>
+              <div className="admin-locale-head">
+                <p className="text-sm font-semibold text-slate-700">{copy.copy}</p>
+                <AdminLangSelect
+                  value={copyLang}
+                  onChange={setCopyLang}
+                  labels={langLabel}
+                  emptyLabel={copy.unfilled}
+                  filled={
+                    editing
+                      ? {
+                          zh: Boolean(editing.name.trim() || (editing.description ?? "").trim() || (editing.highlights ?? []).length),
+                          en: Boolean(editing.nameEn.trim() || (editing.descriptionEn ?? "").trim() || (editing.highlightsEn ?? []).length),
+                          ja: Boolean(editing.nameJa.trim() || (editing.descriptionJa ?? "").trim() || (editing.highlightsJa ?? []).length),
+                          ko: Boolean((editing.nameKo ?? "").trim() || (editing.descriptionKo ?? "").trim() || (editing.highlightsKo ?? []).length),
+                        }
+                      : undefined
+                  }
+                />
+              </div>
               <ol className="admin-copy-list">
                 {COPY_GROUPS.map((group, index) => {
                   const open = copyOpen === index;
+                  const activeLang = group.langs.find((item) => item.lang === copyLang) ?? group.langs[0];
                   return (
                     <li key={group.key} className={cn("admin-copy-row", open && "is-open")}>
                       <button
@@ -388,28 +389,24 @@ export function AdminPlansView() {
                         </span>
                         <ChevronDown className={cn("size-4 shrink-0 text-slate-400 transition", open && "rotate-180")} />
                       </button>
-                      {open ? (
+                      {open && activeLang ? (
                         <div className="admin-copy-body">
-                          <div className="space-y-3">
-                            {group.langs.map((lang) => (
-                              <label key={lang.lang} className="admin-field">
-                                {langLabel[lang.lang]}
-                                {group.lines ? (
-                                  <textarea
-                                    className="admin-input min-h-20"
-                                    value={lang.get(editing)}
-                                    onChange={(event) => setEditing(lang.set(editing, event.target.value))}
-                                  />
-                                ) : (
-                                  <input
-                                    className="admin-input"
-                                    value={lang.get(editing)}
-                                    onChange={(event) => setEditing(lang.set(editing, event.target.value))}
-                                  />
-                                )}
-                              </label>
-                            ))}
-                          </div>
+                          <label className="admin-field">
+                            {langLabel[activeLang.lang]}
+                            {group.lines ? (
+                              <textarea
+                                className="admin-input min-h-20"
+                                value={activeLang.get(editing)}
+                                onChange={(event) => setEditing(activeLang.set(editing, event.target.value))}
+                              />
+                            ) : (
+                              <input
+                                className="admin-input"
+                                value={activeLang.get(editing)}
+                                onChange={(event) => setEditing(activeLang.set(editing, event.target.value))}
+                              />
+                            )}
+                          </label>
                           {group.hint ? <p className="mt-2 text-xs text-slate-500">{copy.highlightHint}</p> : null}
                           {index < COPY_GROUPS.length - 1 ? (
                             <button

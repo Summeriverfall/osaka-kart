@@ -6,6 +6,8 @@ import { OrderCalendarDrill } from "@/components/admin/order-calendar-drill";
 import { OrderDetailModal } from "@/components/admin/order-detail-modal";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { adminCopy, adminPlanName } from "@/lib/admin/copy";
+import { readAdminFocusDate } from "@/lib/admin/focus-date";
+import { todayIsoDate } from "@/lib/booking/slots";
 import { formatYenShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useStoreData } from "@/lib/use-store-data";
@@ -28,7 +30,7 @@ export function AdminCalendarView() {
   const { orders, plans } = useStoreData();
   const listRef = useRef<HTMLElement>(null);
   const [view, setView] = useState<"month" | "week" | "day">("week");
-  const [picked, setPicked] = useState("2026-08-20");
+  const [picked, setPicked] = useState(() => readAdminFocusDate() || todayIsoDate());
   const [detailId, setDetailId] = useState<string | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
   const dayOrders = useMemo(

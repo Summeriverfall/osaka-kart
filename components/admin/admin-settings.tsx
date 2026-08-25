@@ -98,9 +98,9 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
       ) : null}
 
       {section === "channels" ? (
-        <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {(settings.channels ?? []).map((item, index) => (
-            <div key={item.id} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div key={item.id} className="min-w-0 rounded-xl border border-slate-200 bg-white p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-black">{adminChannel(locale, item.id)}</p>
@@ -139,25 +139,13 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
                   }}
                 />
               </label>
-              {item.fieldLabel ? (
-                <label className="admin-field mt-3 min-w-0">
-                  {item.fieldLabel}
-                  <input
-                    className="admin-input"
-                    type="password"
-                    value={item.fieldValue ?? ""}
-                    onChange={(event) => {
-                      const next = (settings.channels ?? []).map((row, i) => (i === index ? { ...row, fieldValue: event.target.value } : row));
-                      patchSettings({ channels: next });
-                    }}
-                  />
-                </label>
-              ) : null}
             </div>
           ))}
-          <button type="button" className="cta-btn w-full px-5 py-2.5 sm:w-auto" onClick={() => notify(copy.settings.channelSaved)}>
-            {copy.settings.saveChannels}
-          </button>
+          <div className="sm:col-span-2 xl:col-span-3">
+            <button type="button" className="cta-btn w-full px-5 py-2.5 sm:w-auto" onClick={() => notify(copy.settings.channelSaved)}>
+              {copy.settings.saveChannels}
+            </button>
+          </div>
         </section>
       ) : null}
 

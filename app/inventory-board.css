@@ -474,6 +474,45 @@
   color: #fff;
 }
 
+.ib-office-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ib-date-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .ib-date-pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ib-range-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+
+.ib-range-preview,
+.ib-range-error {
+  margin: 0.55rem 0 0;
+  font-size: 0.82rem;
+}
+
+.ib-range-preview {
+  color: #64748b;
+}
+
+.ib-range-error {
+  color: #dc2626;
+}
+
 .ib-drawer-mask {
   position: fixed;
   inset: 0;
@@ -516,6 +555,84 @@
   padding: 0.55rem 0;
   border-bottom: 1px solid #f5f5f5;
   font-size: 0.84rem;
+}
+
+.ib-range-scroller {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.75rem;
+}
+
+.ib-week-head,
+.ib-week-row {
+  display: grid;
+  grid-template-columns: 6.5rem repeat(7, minmax(4.5rem, 1fr));
+  gap: 0.4rem;
+  align-items: stretch;
+  margin-bottom: 0.4rem;
+}
+
+.ib-week-head button,
+.ib-week-head span {
+  font-size: 0.72rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.ib-week-head button.is-on {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.ib-week-row .ib-code {
+  align-self: center;
+  font-size: 0.8rem;
+}
+
+.ib-range-cell {
+  min-height: 2.6rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  font-size: 0.72rem;
+  color: #334155;
+}
+
+.ib-range-cell.free { background: #ecfdf5; border-color: #a7f3d0; }
+.ib-range-cell.tight { background: #fff7ed; border-color: #fed7aa; }
+.ib-range-cell.full { background: #fef2f2; border-color: #fecaca; }
+.ib-range-cell.idle { background: #f1f5f9; color: #94a3b8; }
+.ib-range-cell.is-on { outline: 2px solid #2563eb; }
+
+.ib-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.ib-month {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.ib-month-dow {
+  text-align: center;
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.ib-month .ib-range-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  min-height: 4rem;
+  padding: 0.45rem;
+  text-align: left;
 }
 
 @media (max-width: 767px) {
