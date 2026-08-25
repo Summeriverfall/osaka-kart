@@ -93,7 +93,7 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
               ) : null}
             </div>
           ))}
-          <button type="button" className="cta-btn w-full px-5 py-2.5 sm:w-auto" onClick={() => notify(copy.settings.paySaved)}>
+          <button type="button" className="cta-btn" onClick={() => notify(copy.settings.paySaved)}>
             {copy.settings.savePay}
           </button>
         </section>
@@ -197,7 +197,7 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
           <div className="sm:col-span-2 xl:col-span-3">
             <button
               type="button"
-              className="cta-btn w-full px-5 py-2.5 sm:w-auto"
+              className="cta-btn"
               onClick={() => {
                 const unnamed = (settings.channels ?? []).some((row) => !isBuiltinChannel(row.id) && !row.name?.trim());
                 if (unnamed) {
@@ -396,7 +396,7 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
         footer={
           <button
             type="button"
-            className="cta-btn w-full px-5 py-2.5 sm:w-auto"
+            className="cta-btn"
             onClick={() => {
               if (!tpl) return;
               patchTemplate(tpl.id, tpl);
@@ -429,7 +429,7 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
         footer={
           <button
             type="button"
-            className="cta-btn w-full px-5 py-2.5 sm:w-auto"
+            className="cta-btn"
             onClick={() => {
               if (!store) return;
               upsertStore(store);

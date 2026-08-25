@@ -224,7 +224,7 @@ export function AdminPlansView() {
     <div className="space-y-4">
       <button
         type="button"
-        className="cta-btn px-5 py-2.5"
+        className="cta-btn"
         onClick={() =>
           openEditor({
             id: `plan-${Date.now()}`,
@@ -238,7 +238,7 @@ export function AdminPlansView() {
             priceJpy: 12800,
             active: true,
             maxRiders: 4,
-            includes: ["头盔", "赛车服", "保险", "向导"],
+            includes: ["头盔", "赛车朝", "保险", "坑导"],
             allowedAddonIds: addons.map((item) => item.id),
             storeIds: [storeId],
             coverImage: undefined,

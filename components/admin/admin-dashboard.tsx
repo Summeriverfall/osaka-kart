@@ -158,13 +158,13 @@ export function AdminDashboardView() {
               setAdminFocusDate(todayIso);
               go(card.href === "/admin/inventory" ? "/admin/inventory" : "/admin/orders");
             }}
-            className="rounded-2xl border border-slate-200 bg-white p-6 text-left transition hover:border-blue-400"
+            className="rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:border-blue-400 sm:p-6"
           >
             <div className="flex items-center justify-between text-slate-500">
               <span>{card.label}</span>
               <card.icon className="size-4 text-blue-600" />
             </div>
-            <p className="mt-3 text-3xl font-black text-slate-900">
+            <p className="mt-3 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
               <CountUp value={card.value} yen={"yen" in card} />
             </p>
             <p className={`mt-2 text-xs ${card.warn ? "text-amber-600" : "text-emerald-600"}`}>{card.trend}</p>
@@ -230,18 +230,20 @@ export function AdminDashboardView() {
                       setAdminFocusDate(order.date);
                       go("/admin/calendar");
                     }}
-                    className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-3 py-3 text-left hover:border-blue-400"
+                    className="flex w-full min-w-0 items-start justify-between gap-3 rounded-xl border border-slate-200 px-3 py-3 text-left hover:border-blue-400"
                   >
-                    <div>
-                      <p className="font-black">
+                    <div className="min-w-0">
+                      <p className="font-black break-words">
                         {order.time} · {planName}
                       </p>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm break-words text-slate-500">
                         {copy.dashboard.orderMeta(order.customer, order.riders, formatYenShort(order.totalJpy))}
                         {showingAll ? ` · ${storeName}` : ""}
                       </p>
                     </div>
+                    <span className="shrink-0">
                     <StatusBadge status={order.status} />
+                    </span>
                   </button>
                 </li>
               );

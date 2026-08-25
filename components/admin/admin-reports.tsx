@@ -132,21 +132,21 @@ export function AdminReportsView() {
 
       {kind === "custom" ? (
         <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
-          <label className="grid gap-1 text-xs text-slate-500">
+          <label className="grid min-w-0 flex-[1_1_8rem] gap-1 text-xs text-slate-500">
             {copy.reports.from}
             <input
-              className="admin-input mt-0 w-auto"
+              className="admin-input mt-0 w-full min-w-0"
               type="date"
               value={custom.from}
               max={custom.to}
               onChange={(event) => setCustom((prev) => ({ ...prev, from: event.target.value }))}
             />
           </label>
-          <span className="pb-2 text-slate-400">–</span>
-          <label className="grid gap-1 text-xs text-slate-500">
+          <span className="hidden pb-2 text-slate-400 sm:inline">–</span>
+          <label className="grid min-w-0 flex-[1_1_8rem] gap-1 text-xs text-slate-500">
             {copy.reports.to}
             <input
-              className="admin-input mt-0 w-auto"
+              className="admin-input mt-0 w-full min-w-0"
               type="date"
               value={custom.to}
               min={custom.from}

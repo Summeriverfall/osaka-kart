@@ -361,12 +361,12 @@ export function AdminOrdersView() {
         {rows.map((order) => (
           <article key={order.id} className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="flex items-start justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <p className="font-mono text-xs text-blue-600">{order.id}</p>
-                <p className="mt-1 font-black">{order.customer}</p>
-                <p className="text-sm text-slate-500">{order.date} {order.time} · {planLabel(order)}</p>
+                <p className="mt-1 font-black break-words">{order.customer}</p>
+                <p className="text-sm break-words text-slate-500">{order.date} {order.time} · {planLabel(order)}</p>
               </div>
-              <div className="flex flex-col items-end gap-2">
+              <div className="flex shrink-0 flex-col items-end gap-2">
                 <ChannelBadge channel={order.channel} />
                 <StatusSelect status={order.status} onChange={(next) => changeStatus(order.id, next)} />
               </div>

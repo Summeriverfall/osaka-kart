@@ -51,7 +51,7 @@ export function AdminAddonsView() {
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-          <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { setNameLang(adminLangFromLocale(locale)); setEditing({ ...BLANK, id: `addon-${Date.now()}` }); }}>
+          <button type="button" className="cta-btn" onClick={() => { setNameLang(adminLangFromLocale(locale)); setEditing({ ...BLANK, id: `addon-${Date.now()}` }); }}>
           {copy.addons.add}
         </button>
       </div>

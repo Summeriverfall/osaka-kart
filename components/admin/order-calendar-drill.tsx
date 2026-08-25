@@ -143,14 +143,14 @@ export function OrderCalendarDrill({ value, view, onView, onChange, onSelectOrde
   return (
     <section className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex rounded-full border border-slate-200 p-1">
+        <div className="flex w-full min-w-0 rounded-full border border-slate-200 p-1 md:w-auto">
           {(["month", "week", "day"] as const).map((item) => (
             <button
               key={item}
               type="button"
               onClick={() => onView(item)}
               className={cn(
-                "rounded-full px-3 py-1.5 text-sm transition",
+                "min-w-0 flex-1 rounded-full px-2 py-1.5 text-xs transition md:flex-none md:px-3 md:text-sm",
                 view === item ? "bg-blue-600 text-white" : "text-slate-500",
               )}
             >
@@ -158,11 +158,11 @@ export function OrderCalendarDrill({ value, view, onView, onChange, onSelectOrde
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full min-w-0 items-center gap-2 md:w-auto">
           <button type="button" className="plan-qty-btn" onClick={goPrev} aria-label={copy.calendar.prev}>
             <ChevronLeft className="size-4" />
           </button>
-          <span className="min-w-28 text-center text-sm text-slate-500">{headerLabel}</span>
+          <span className="min-w-0 flex-1 text-center text-sm text-slate-500 md:flex-none">{headerLabel}</span>
           <button type="button" className="plan-qty-btn" onClick={goNext} aria-label={copy.calendar.next}>
             <ChevronRight className="size-4" />
           </button>
@@ -173,12 +173,12 @@ export function OrderCalendarDrill({ value, view, onView, onChange, onSelectOrde
         <>
           <div className="mb-2 grid grid-cols-7 gap-1 text-center text-xs text-slate-500">
             {weekdayLabels(calendarIntlLocale(locale)).map((label, index) => (
-              <span key={`${label}-${index}`}>{label}</span>
+              <span key={`${label}-${index}`} className="truncate px-0.5 text-[0.65rem] sm:text-xs">{label}</span>
             ))}
           </div>
           <div className="grid grid-cols-7 gap-1">
             {cells.map((cell, index) => {
-              if (!cell.iso) return <div key={`e-${index}`} className="min-h-20" />;
+              if (!cell.iso) return <div key={`e-${index}`} className="min-h-14 sm:min-h-20" />;
               const count = counts.get(cell.iso) ?? 0;
               return (
                 <button
@@ -186,13 +186,13 @@ export function OrderCalendarDrill({ value, view, onView, onChange, onSelectOrde
                   type="button"
                   onClick={() => onChange(cell.iso!)}
                   className={cn(
-                    "flex min-h-20 flex-col items-center justify-center rounded-xl border text-sm transition hover:border-blue-400",
+                    "flex min-h-14 flex-col items-center justify-center rounded-lg border px-0.5 py-1 text-[0.7rem] transition hover:border-blue-400 sm:min-h-20 sm:rounded-xl sm:text-sm",
                     heat(count, heatFor),
                     value === cell.iso && "ring-1 ring-blue-500",
                   )}
                 >
                   <b>{cell.day}</b>
-                  <span className="text-lg font-black leading-none">{count || "·"}</span>
+                  <span className="text-sm font-black leading-none sm:text-lg">{count || "·"}</span>
                 </button>
               );
             })}

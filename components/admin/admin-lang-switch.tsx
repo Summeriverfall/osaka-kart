@@ -1,36 +1,43 @@
 "use client";
 
 import { adminCopy } from "@/lib/admin/copy";
-import { goToAppPath } from "@/lib/file-href";
+import { appPageHref } from "@/lib/file-href";
+import { normalizeAdminTab } from "@/lib/admin/nav";
 import { cn } from "@/lib/utils";
+import { usePathname } from "@/i18n/navigation";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 
 const LANGS = [
-  { id: "zh-TW", key: "langZh" as const, active: (locale: string) => locale.startsWith("zh") },
-  { id: "en", key: "langEn" as const, active: (locale: string) => locale.startsWith("en") },
-  { id: "ja", key: "langJa" as const, active: (locale: string) => locale.startsWith("ja") },
+  { id: "zh-TW", key: "langZh" as const, short: "中", active: (locale: string) => locale.startsWith("zh") },
+  { id: "en", key: "langEn" as const, short: "EN", active: (locale: string) => locale.startsWith("en") },
+  { id: "ja", key: "langJa" as const, short: "日", active: (locale: string) => locale.startsWith("ja") },
 ];
 
 export function AdminLangSwitch({ locale, path }: { locale: string; path?: string }) {
   const tab = useAdminNavStore((state) => state.tab);
+  const pathname = usePathname() ?? "";
   const copy = adminCopy(locale);
-  const dest = path || tab || "/admin/dashboard";
+  const dest = normalizeAdminTab(path || tab || pathname || "/admin/dashboard");
 
   return (
-    <div className="inline-flex max-w-full shrink-0 overflow-x-auto rounded-full border border-slate-200 bg-white p-0.5 text-xs">
+    <nav className="admin-lang-switch" aria-label="Language">
       {LANGS.map((item) => {
         const on = item.active(locale);
         return (
-          <button
+          <a
             key={item.id}
-            type="button"
-            className={cn("rounded-full px-2.5 py-1", on ? "bg-blue-50 font-semibold text-blue-700" : "text-slate-500")}
-            onClick={() => goToAppPath(dest, item.id)}
+            href={appPageHref(dest, item.id)}
+            aria-current={on ? "page" : undefined}
+            className={cn("admin-lang-chip", on && "is-on")}
+            onClick={(event) => {
+              if (on) event.preventDefault();
+            }}
           >
-            {copy[item.key]}
-          </button>
+            <span className="md:hidden">{item.short}</span>
+            <span className="hidden md:inline">{copy[item.key]}</span>
+          </a>
         );
       })}
-    </div>
+    </nav>
   );
 }

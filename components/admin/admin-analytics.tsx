@@ -217,28 +217,28 @@ export function AdminAnalyticsView() {
   return (
     <div className="grid min-w-0 gap-5 md:gap-6">
       <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
-        <label className="grid gap-1 text-xs text-slate-500">
+        <label className="grid min-w-0 flex-[1_1_8rem] gap-1 text-xs text-slate-500">
           {copy.reports.from}
           <input
-            className="admin-input mt-0 w-auto"
+            className="admin-input mt-0 w-full min-w-0"
             type="date"
             value={draft.from}
             max={draft.to}
             onChange={(event) => setDraft((prev) => ({ ...prev, from: event.target.value }))}
           />
         </label>
-        <span className="pb-2 text-slate-400">–</span>
-        <label className="grid gap-1 text-xs text-slate-500">
+        <span className="hidden pb-2 text-slate-400 sm:inline">–</span>
+        <label className="grid min-w-0 flex-[1_1_8rem] gap-1 text-xs text-slate-500">
           {copy.reports.to}
           <input
-            className="admin-input mt-0 w-auto"
+            className="admin-input mt-0 w-full min-w-0"
             type="date"
             value={draft.to}
             min={draft.from}
             onChange={(event) => setDraft((prev) => ({ ...prev, to: event.target.value }))}
           />
         </label>
-        <label className="grid min-w-[12rem] flex-1 gap-1 text-xs text-slate-500">
+        <label className="grid min-w-0 flex-[1_1_12rem] gap-1 text-xs text-slate-500">
           {copy.analytics.compare}
           <select
             className="admin-input mt-0"

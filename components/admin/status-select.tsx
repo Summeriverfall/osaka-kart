@@ -47,7 +47,7 @@ export function StatusSelect({ status, onChange }: Props) {
         {adminOrderStatus(locale, status)}
       </button>
       {open ? (
-        <div className="absolute top-full left-0 z-20 mt-1 min-w-28 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+        <div className="absolute top-full right-0 z-20 mt-1 min-w-28 rounded-lg border border-slate-200 bg-white py-1 shadow-lg md:right-auto md:left-0">
           {OPTIONS.map((item) => (
             <button
               key={item}

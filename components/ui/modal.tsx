@@ -33,8 +33,8 @@ export function Modal({ open, title, onClose, children, footer, wide, top }: Mod
   return (
     <div
       className={cn(
-        "fixed inset-0 z-[90] flex justify-center bg-black/80 p-3",
-        top ? "items-start pt-4 sm:pt-10" : "items-end sm:items-center sm:p-4",
+        "fixed inset-0 z-[90] flex justify-center bg-black/80 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+        top ? "items-start pt-[max(1rem,env(safe-area-inset-top))] sm:pt-10" : "items-end sm:items-center sm:p-4",
       )}
       onClick={onClose}
     >

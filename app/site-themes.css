@@ -1693,6 +1693,7 @@ html {
   position: absolute;
   inset: 0;
   z-index: 2;
+  pointer-events: none;
   background: repeating-linear-gradient(
     -18deg,
     transparent,
@@ -1947,11 +1948,11 @@ html {
 
 .float-book {
   position: fixed;
-  right: 1.25rem;
-  bottom: 1.25rem;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
   z-index: 80;
-  padding: 0.85rem 1.35rem;
-  font-size: 0.78rem;
+  padding: 0.75rem 1.15rem;
+  font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -2045,6 +2046,7 @@ html {
   background: var(--card-surface);
   border: 1px solid rgb(255 255 255 / 14%);
   border-radius: var(--cta-radius);
+  font-size: 16px;
 }
 
 .book-slots {
@@ -2786,7 +2788,14 @@ html {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.2rem 1.4rem;
+  gap: 0.6rem;
+  padding: max(0.75rem, env(safe-area-inset-top)) 0.9rem 0.75rem;
+}
+
+@media (min-width: 800px) {
+  .gateway-top {
+    padding: 1.2rem 1.4rem;
+  }
 }
 
 .gateway-top p {
@@ -3393,11 +3402,7 @@ html {
   font-size: 1rem !important;
 }
 
-.cta-btn,
-.cta-btn-solid,
-.hero-cta-neon,
-.float-book,
-.cal-go {
+html:not(:has(.admin-app)) :is(.cta-btn, .cta-btn-solid, .hero-cta-neon, .float-book, .cal-go) {
   clip-path: none !important;
   transform: none !important;
   border-radius: 0.8rem !important;
@@ -3406,10 +3411,14 @@ html {
   font-weight: 800;
 }
 
-.cta-btn:hover,
-.float-book:hover,
-.hero-cta-neon:hover {
+html:not(:has(.admin-app)) :is(.cta-btn, .float-book, .hero-cta-neon):hover {
   transform: translateY(-2px) !important;
+}
+
+html:not(:has(.admin-app)) .float-book {
+  min-height: 2.45rem;
+  padding: 0.55rem 1rem !important;
+  font-size: 0.74rem !important;
 }
 
 [data-theme="acid"] .cta-btn,
@@ -3448,10 +3457,10 @@ html {
 
 .float-book {
   position: fixed;
-  right: 1.1rem;
-  bottom: 1.1rem;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
   z-index: 80;
-  padding: 0.9rem 1.4rem;
+  padding: 0.75rem 1.15rem;
 }
 
 /* Acid: keep poster layout, mute neon */
@@ -3836,7 +3845,15 @@ html {
 .shop-block,
 .shop-book,
 .shop-visit {
-  padding: 4.8rem 1.25rem;
+  padding: 3.2rem 1rem 4.4rem;
+}
+
+@media (min-width: 800px) {
+  .shop-block,
+  .shop-book,
+  .shop-visit {
+    padding: 4.8rem 1.25rem;
+  }
 }
 
 .shop-wrap {
@@ -4099,8 +4116,14 @@ html {
 
 .shop-news img {
   width: 100%;
-  height: 11rem;
+  height: 10rem;
   object-fit: cover;
+}
+
+@media (min-width: 800px) {
+  .shop-news img {
+    height: 11rem;
+  }
 }
 
 .shop-news p {
@@ -4332,15 +4355,16 @@ html {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem 1rem;
-  padding: 0.85rem 1.15rem;
+  gap: 0.45rem 0.6rem;
+  padding: max(0.55rem, env(safe-area-inset-top)) 0.85rem 0.55rem;
   background: rgb(10 8 12 / 88%);
   border-bottom: 1px solid rgb(255 255 255 / 10%);
   backdrop-filter: blur(16px);
 }
 
 .site-bar-logo {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-width: 0;
   text-decoration: none;
   color: inherit;
 }
@@ -4353,7 +4377,7 @@ html {
 .site-bar-end {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.4rem;
   flex: 0 0 auto;
   margin-left: auto;
 }
@@ -4367,8 +4391,8 @@ html {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.6rem;
-  height: 2.6rem;
+  width: 2.25rem;
+  height: 2.25rem;
   border: 1px solid rgb(255 255 255 / 18%);
   border-radius: 0.7rem;
   background: transparent;
@@ -4379,6 +4403,15 @@ html {
 @media (min-width: 860px) {
   .site-bar-nav {
     display: flex;
+  }
+
+  .site-bar-end {
+    gap: 1rem;
+  }
+
+  .site-bar-menu {
+    width: 2.6rem;
+    height: 2.6rem;
   }
 }
 

@@ -35,7 +35,7 @@ export function AdminVehiclesView() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-amber-800">{copy.vehicles.repairNote(repair)}</p>
-        <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setEditing({ ...BLANK, id: `v-${Date.now()}`, storeId })}>{copy.vehicles.add}</button>
+        <button type="button" className="cta-btn" onClick={() => setEditing({ ...BLANK, id: `v-${Date.now()}`, storeId })}>{copy.vehicles.add}</button>
       </div>
       <div className="hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white md:block">
         <table className="admin-table">
@@ -72,7 +72,10 @@ export function AdminVehiclesView() {
             <p className="font-mono text-blue-600">{item.code}</p>
             <p className="font-black">{item.model}</p>
             <p className="text-sm text-slate-500">{adminVehicleStatus(locale, item.status)} · {item.lastService}</p>
-            <button type="button" className="mt-3 text-xs text-blue-600" onClick={() => setEditing(item)}>{copy.common.edit}</button>
+            <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1">
+              <button type="button" className="text-xs text-blue-600" onClick={() => setEditing(item)}>{copy.common.edit}</button>
+              <button type="button" className="text-xs text-sky-600" onClick={() => setLogs(item)}>{copy.vehicles.logs}</button>
+            </div>
           </article>
         ))}
       </div>

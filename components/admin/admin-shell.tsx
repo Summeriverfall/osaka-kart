@@ -64,6 +64,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }, [role, email, lockBoundStore]);
 
   useEffect(() => {
+    syncFromWindow();
     window.addEventListener("popstate", syncFromWindow);
     return () => window.removeEventListener("popstate", syncFromWindow);
   }, [syncFromWindow]);
@@ -91,7 +92,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       {open ? (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-slate-900/40 md:hidden"
+          className="fixed inset-0 z-[45] bg-slate-900/40 md:hidden"
           aria-label="Close menu"
           onClick={() => setOpen(false)}
         />
@@ -99,15 +100,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col overflow-y-auto border-r border-slate-200 bg-white p-4 transition-transform md:static md:h-full md:translate-x-0",
-          open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col overflow-y-auto border-r border-slate-200 bg-white p-4 transition-transform md:pointer-events-auto md:static md:h-full md:translate-x-0",
+          open ? "pointer-events-auto translate-x-0" : "pointer-events-none -translate-x-full md:translate-x-0",
         )}
       >
         <p className="px-3 pt-2 text-xs font-semibold tracking-[0.18em] text-blue-600 uppercase">
           Furture Kart
         </p>
         <p className="px-3 pb-4 text-sm text-slate-500">{copy.brandSub}</p>
-        <nav className="grid gap-1">
+        <nav className="grid flex-1 gap-1 content-start">
           {items.map((item) => {
             if (item.href === "/admin/bookings") {
               return (
@@ -171,13 +172,17 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
+        <p className="mt-auto px-3 pt-6 text-xs leading-5 text-slate-500 md:hidden">
+          {adminRoleLabel(locale, role)}
+          <span className="mt-0.5 block truncate">{email}</span>
+        </p>
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="z-30 flex h-16 shrink-0 items-center gap-2 border-b border-slate-200 bg-white/90 px-3 backdrop-blur md:gap-3 md:px-6">
+        <header className="admin-topbar relative z-40 shrink-0 border-b border-slate-200 bg-white/90 px-3 backdrop-blur md:px-6">
           <button
             type="button"
-            className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:border-blue-400 md:hidden"
+            className="admin-topbar-menu inline-flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:border-blue-400 md:hidden"
             onClick={() => setOpen((value) => !value)}
             aria-label="Menu"
           >
@@ -188,17 +193,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             ·
           </span>
           <StoreSwitcher />
-          <div className="ml-auto flex min-w-0 items-center gap-2 md:gap-3">
+          <div className="admin-topbar-end">
             <AdminLangSwitch locale={locale} />
-            <span className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600 sm:hidden">
-              {adminRoleLabel(locale, role)}
-            </span>
-            <span className="hidden max-w-[9.5rem] truncate rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600 sm:inline md:max-w-none">
+            <span className="admin-topbar-role hidden max-w-[12rem] truncate rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600 md:inline">
               {adminRoleLabel(locale, role)} · {email}
             </span>
             <button
               type="button"
-              className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-xs text-slate-600 transition hover:border-blue-400 hover:text-slate-900"
+              className="admin-topbar-logout shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-xs whitespace-nowrap text-slate-600 transition hover:border-blue-400 hover:text-slate-900"
               onClick={() => {
                 logout();
                 useAdminNavStore.getState().reset();

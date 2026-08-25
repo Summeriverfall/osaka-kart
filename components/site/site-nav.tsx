@@ -56,7 +56,7 @@ export function SiteNav({ look }: SiteNavProps) {
           : "bg-transparent",
       )}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:h-16 sm:gap-3 sm:px-4">
         <LiveBrandMark look={currentLook} />
         <div className="site-bar-contact">
           <ContactTicker />

@@ -125,13 +125,14 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
               type="button"
               onClick={() => setStep(index)}
               className={cn(
-                "w-full rounded-full border px-2 py-2 text-xs font-black tracking-[0.12em] uppercase transition",
+                "w-full rounded-full border px-1.5 py-2 text-[0.62rem] font-black tracking-wide uppercase transition sm:px-2 sm:text-xs sm:tracking-[0.12em]",
                 index === step
                   ? "border-neon-pink bg-gradient-to-r from-neon-pink to-neon-purple text-white"
                   : "border-white/10 text-[#9CA3AF]",
               )}
             >
-              {index + 1}. {label}
+              <span className="sm:hidden">{index + 1}</span>
+              <span className="hidden sm:inline">{index + 1}. {label}</span>
             </button>
           </li>
         ))}

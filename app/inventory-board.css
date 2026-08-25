@@ -639,4 +639,14 @@
   .inventory-board {
     height: auto;
   }
+
+  .inventory-toolbar .ib-btn,
+  .inventory-toolbar .ib-select,
+  .inventory-toolbar .ib-input {
+    font-size: 16px;
+  }
+
+  .ib-filter-panel {
+    width: min(16rem, calc(100vw - 2rem));
+  }
 }
