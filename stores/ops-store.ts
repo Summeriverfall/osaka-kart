@@ -370,7 +370,7 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 9,
+      version: 10,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
         const state = { ...((persisted ?? {}) as Partial<OpsState>) };
@@ -399,7 +399,12 @@ export const useOpsStore = create<OpsState>()(
           state.settings = {
             ...MOCK_SETTINGS,
             ...state.settings,
-            channels: refreshBundledChannels(MOCK_SETTINGS.channels, state.settings?.channels),
+            channels: refreshBundledChannels(
+              MOCK_SETTINGS.channels,
+              state.settings?.channels,
+              state.settings?.removedChannelIds,
+            ),
+            removedChannelIds: state.settings?.removedChannelIds ?? MOCK_SETTINGS.removedChannelIds,
           };
           state.orders = (state.orders ?? []).map((order) =>
             order.channel === "Viator" ? { ...order, channel: "Instagram" } : order,
@@ -407,6 +412,18 @@ export const useOpsStore = create<OpsState>()(
         }
         if (version < 9) {
           state.cms = mergeCms(MOCK_CMS, state.cms);
+        }
+        if (version < 10) {
+          state.settings = {
+            ...MOCK_SETTINGS,
+            ...state.settings,
+            channels: refreshBundledChannels(
+              MOCK_SETTINGS.channels,
+              state.settings?.channels,
+              state.settings?.removedChannelIds,
+            ),
+            removedChannelIds: state.settings?.removedChannelIds ?? MOCK_SETTINGS.removedChannelIds,
+          };
         }
         return state as OpsState;
       },
@@ -458,9 +475,12 @@ export const useOpsStore = create<OpsState>()(
           settings: {
             ...MOCK_SETTINGS,
             ...extra.settings,
-            channels: extra.settings?.channels?.length
-              ? refreshBundledChannels(MOCK_SETTINGS.channels, extra.settings.channels)
-              : MOCK_SETTINGS.channels,
+            channels: refreshBundledChannels(
+              MOCK_SETTINGS.channels,
+              extra.settings?.channels,
+              extra.settings?.removedChannelIds,
+            ),
+            removedChannelIds: extra.settings?.removedChannelIds ?? MOCK_SETTINGS.removedChannelIds,
           },
           cms: mergeCms(MOCK_CMS, extra.cms),
         };

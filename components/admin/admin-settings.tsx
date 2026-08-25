@@ -160,13 +160,16 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
                     }}
                   />
                 </label>
-                {builtin ? null : (
+                {item.locked ? null : (
                   <button
                     type="button"
                     className="mt-3 text-xs text-rose-600 hover:underline"
                     onClick={() => {
+                      const removed = new Set(settings.removedChannelIds ?? []);
+                      if (builtin) removed.add(item.id);
                       patchSettings({
                         channels: (settings.channels ?? []).filter((row) => row.id !== item.id),
+                        removedChannelIds: [...removed],
                       });
                     }}
                   >

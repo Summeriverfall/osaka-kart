@@ -56,6 +56,7 @@ export type MockSettings = {
   mailTemplateId: string;
   payments: MockPayChannel[];
   channels: MockBookChannel[];
+  removedChannelIds?: string[];
 };
 
 export const MOCK_PAYMENTS: MockPayChannel[] = [
@@ -79,19 +80,31 @@ export const MOCK_BOOK_CHANNELS: MockBookChannel[] = [
 
 const REMOVED_BOOK_CHANNELS = new Set(["Viator"]);
 
-export function refreshBundledChannels(seed: MockBookChannel[], extra?: MockBookChannel[]) {
+export function refreshBundledChannels(
+  seed: MockBookChannel[],
+  extra?: MockBookChannel[],
+  removedIds: string[] = [],
+) {
   const extraById = new Map((extra ?? []).map((item) => [item.id, item]));
   const seedIds = new Set(seed.map((item) => item.id));
-  const merged = seed.map((seedItem) => {
-    const prev = extraById.get(seedItem.id);
-    if (!prev) return seedItem;
-    return {
-      ...seedItem,
-      ...prev,
-      id: seedItem.id,
-      locked: seedItem.locked,
-    };
-  });
+  const removed = new Set([...removedIds, ...REMOVED_BOOK_CHANNELS]);
+  const merged = seed
+    .filter((seedItem) => {
+      if (seedItem.locked) return true;
+      if (REMOVED_BOOK_CHANNELS.has(seedItem.id)) return false;
+      if (removed.has(seedItem.id) && !extraById.has(seedItem.id)) return false;
+      return true;
+    })
+    .map((seedItem) => {
+      const prev = extraById.get(seedItem.id);
+      if (!prev) return seedItem;
+      return {
+        ...seedItem,
+        ...prev,
+        id: seedItem.id,
+        locked: seedItem.locked,
+      };
+    });
   const custom = (extra ?? []).filter(
     (item) => !seedIds.has(item.id) && !REMOVED_BOOK_CHANNELS.has(item.id),
   );
@@ -401,4 +414,5 @@ export const MOCK_SETTINGS: MockSettings = {
   mailTemplateId: "",
   payments: MOCK_PAYMENTS,
   channels: MOCK_BOOK_CHANNELS,
+  removedChannelIds: ["Viator"],
 };
