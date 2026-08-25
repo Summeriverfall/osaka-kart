@@ -2,11 +2,9 @@
 
 import { Calendar, ChevronDown, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { HeroVideo } from "@/components/home/hero-video";
-import { CmsVideoMedia } from "@/components/site/cms-video-media";
 import { asset } from "@/lib/asset";
 import { heroMediaOf, useLiveCms } from "@/lib/live-cms";
-import { LOOK_VIDEO, type SiteTheme } from "@/lib/visual-theme";
+import type { SiteTheme } from "@/lib/visual-theme";
 import { cn } from "@/lib/utils";
 
 type HomeHeroProps = {
@@ -16,25 +14,21 @@ type HomeHeroProps = {
 export function HomeHero({ look }: HomeHeroProps) {
   const t = useTranslations("Hero");
   const cms = useLiveCms();
-  const clip = LOOK_VIDEO[look];
   const hero = heroMediaOf(cms, look);
   const title = `${t("title")} ${t("titleRest")}`;
-  const youtube = hero.resolved?.kind === "youtube";
+  const poster = hero.resolved?.poster ?? asset("/images/hero/poster.webp");
 
   return (
     <section className="relative flex h-screen w-full items-center justify-center overflow-hidden">
-      {youtube ? (
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          <CmsVideoMedia video={hero.video} fallback={clip.src} autoPlay className="h-full w-full" />
-        </div>
-      ) : (
-        <HeroVideo
-          src={hero.resolved?.kind === "file" ? hero.resolved.src : asset(clip.src)}
-          startAt={hero.startAt}
-          poster={hero.resolved?.poster ?? asset("/images/hero/poster.webp")}
-          className="absolute inset-0 z-0 h-full w-full object-cover"
-        />
-      )}
+      <img
+        src={poster}
+        alt=""
+        className="absolute inset-0 z-0 h-full w-full object-cover"
+        width={1920}
+        height={1080}
+        fetchPriority="high"
+        decoding="async"
+      />
 
       {look === "neon" && (
         <>

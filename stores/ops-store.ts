@@ -16,7 +16,7 @@ import { MOCK_STAFF, type MockStaff } from "@/lib/mock/staff";
 import { MOCK_CMS, mergeCms, refreshBundledVideos, type CmsState } from "@/lib/mock/cms";
 import { applySlotPatch, syncOrderInventory } from "@/lib/ops-inventory";
 import { DEFAULT_STORE_ID, storeIdOf } from "@/lib/store-id";
-import { OPS_STORAGE_KEY, opsPersistStorage } from "@/lib/ops-storage";
+import { OPS_STORAGE_KEY, loadPersistedSlots, opsPersistStorage, savePersistedSlots } from "@/lib/ops-storage";
 
 export type WebsiteBookingInput = {
   ref: string;
@@ -73,7 +73,16 @@ type OpsState = {
   pushLog: (entry: Omit<MockLog, "id" | "time" | "ip"> & { time?: string; ip?: string }) => void;
   commitWebsiteBooking: (input: WebsiteBookingInput) => { ok: boolean; already: boolean; order: MockOrder | null };
   patchCms: (patch: Partial<CmsState>) => void;
+  ensureInventory: () => void;
 };
+
+function readSlots(state: { vehicleSlots: VehicleSlotCell[]; vehicles: MockVehicle[]; orders: MockOrder[] }, buildIfMissing: boolean) {
+  if (state.vehicleSlots.length) return state.vehicleSlots;
+  const cached = loadPersistedSlots() as VehicleSlotCell[];
+  if (cached.length) return cached;
+  if (!buildIfMissing) return state.vehicleSlots;
+  return buildVehicleTimeline(state.vehicles, state.orders);
+}
 
 function replaceById<T extends { id: string }>(list: T[], item: T) {
   const index = list.findIndex((row) => row.id === item.id);
@@ -147,7 +156,7 @@ export const useOpsStore = create<OpsState>()(
       orders: MOCK_ORDERS,
       addons: MOCK_ADDONS,
       plans: MOCK_PLANS,
-      vehicleSlots: buildVehicleTimeline(),
+      vehicleSlots: [] as VehicleSlotCell[],
       specialDates: MOCK_SPECIAL_DATES,
       settings: MOCK_SETTINGS,
       vehicles: MOCK_VEHICLES,
@@ -163,7 +172,7 @@ export const useOpsStore = create<OpsState>()(
           const base = fromId && fromId !== order.id ? state.orders.filter((item) => item.id !== fromId) : state.orders;
           return {
             orders: replaceById(base, order),
-            vehicleSlots: syncOrderInventory(state.vehicleSlots, prev, order, state.vehicles),
+            vehicleSlots: syncOrderInventory(readSlots(state, true), prev, order, state.vehicles),
             logs: [
               makeLog("订单修改", `${prev ? "更新" : "新建"} ${order.id}`, order.storeId, "后台", "店长"),
               ...state.logs,
@@ -187,7 +196,7 @@ export const useOpsStore = create<OpsState>()(
                   }
                 : item,
             ),
-            vehicleSlots: syncOrderInventory(state.vehicleSlots, prev, next, state.vehicles),
+            vehicleSlots: syncOrderInventory(readSlots(state, true), prev, next, state.vehicles),
             logs: statusChanged
               ? [makeLog("订单修改", `${next.id} → ${next.status}`, next.storeId, "后台", "店长"), ...state.logs]
               : state.logs,
@@ -239,7 +248,7 @@ export const useOpsStore = create<OpsState>()(
         }),
       patchVehicleSlot: (vehicleId, date, time, patch) =>
         set((state) => ({
-          vehicleSlots: state.vehicleSlots.map((item) =>
+          vehicleSlots: readSlots(state, true).map((item) =>
             item.vehicleId === vehicleId && item.date === date && item.time === time
               ? applySlotPatch(item, patch)
               : item,
@@ -249,7 +258,7 @@ export const useOpsStore = create<OpsState>()(
         set((state) => {
           const keys = new Set(targets.map((item) => `${item.vehicleId}__${item.time}`));
           return {
-            vehicleSlots: state.vehicleSlots.map((item) =>
+            vehicleSlots: readSlots(state, true).map((item) =>
               item.date === date && keys.has(`${item.vehicleId}__${item.time}`)
                 ? applySlotPatch(item, patch)
                 : item,
@@ -261,7 +270,7 @@ export const useOpsStore = create<OpsState>()(
         set((state) => {
           const dateSet = new Set(dates);
           const idSet = new Set(vehicleIds);
-          let slots = state.vehicleSlots;
+          let slots = readSlots(state, true);
           const vehicles = state.vehicles.filter((item) => idSet.has(item.id));
           for (const date of dates) {
             const missing = vehicles.filter((vehicle) => !slots.some((cell) => cell.date === date && cell.vehicleId === vehicle.id));
@@ -278,7 +287,7 @@ export const useOpsStore = create<OpsState>()(
         }),
       clearDayInventory: (date, vehicleIds) =>
         set((state) => ({
-          vehicleSlots: state.vehicleSlots.map((item) =>
+          vehicleSlots: readSlots(state, true).map((item) =>
             item.date === date && (!vehicleIds || vehicleIds.includes(item.vehicleId))
               ? applySlotPatch(item, { booked: item.capacity, closed: false, customers: [] })
               : item,
@@ -293,9 +302,10 @@ export const useOpsStore = create<OpsState>()(
           const ids = new Set(vehicles.map((item) => item.id));
           const storeIds = new Set(vehicles.map((item) => storeIdOf(item.storeId)));
           const orders = state.orders.filter((item) => storeIds.has(storeIdOf(item.storeId)));
+          const slots = readSlots(state, true);
           return {
             vehicleSlots: [
-              ...state.vehicleSlots.filter((item) => item.date !== date || !ids.has(item.vehicleId)),
+              ...slots.filter((item) => item.date !== date || !ids.has(item.vehicleId)),
               ...buildVehicleTimelineForDate(date, vehicles, orders),
             ],
             logs: [makeLog("库存调整", `${date} 重置库存`), ...state.logs],
@@ -349,7 +359,9 @@ export const useOpsStore = create<OpsState>()(
         const order = toWebsiteOrder(input, state.addons);
         set({
           orders: [order, ...state.orders],
-          vehicleSlots: syncOrderInventory(state.vehicleSlots, undefined, order, state.vehicles),
+          vehicleSlots: state.vehicleSlots.length
+            ? syncOrderInventory(state.vehicleSlots, undefined, order, state.vehicles)
+            : state.vehicleSlots,
           logs: [
             makeLog(
               "订单修改",
@@ -367,10 +379,16 @@ export const useOpsStore = create<OpsState>()(
         set((state) => ({
           cms: { ...state.cms, ...patch },
         })),
+      ensureInventory: () =>
+        set((state) => {
+          if (state.vehicleSlots.length) return state;
+          return { vehicleSlots: readSlots(state, true) };
+        }),
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 10,
+      version: 11,
+      skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
         const state = { ...((persisted ?? {}) as Partial<OpsState>) };
@@ -379,7 +397,6 @@ export const useOpsStore = create<OpsState>()(
           const demo = buildWeekDemoOrders();
           const kept = new Set(live.map((item) => item.id));
           state.orders = [...live, ...demo.filter((item) => !kept.has(item.id))];
-          state.vehicleSlots = buildVehicleTimeline(state.vehicles, state.orders);
         }
         if (version < 6) {
           const cms = mergeCms(MOCK_CMS, state.cms);
@@ -425,13 +442,16 @@ export const useOpsStore = create<OpsState>()(
             removedChannelIds: state.settings?.removedChannelIds ?? MOCK_SETTINGS.removedChannelIds,
           };
         }
+        if (version < 11 && Array.isArray(state.vehicleSlots) && state.vehicleSlots.length) {
+          savePersistedSlots(state.vehicleSlots);
+        }
+        delete state.vehicleSlots;
         return state as OpsState;
       },
       partialize: (state) => ({
         orders: state.orders,
         addons: state.addons,
         plans: state.plans,
-        vehicleSlots: state.vehicleSlots,
         specialDates: state.specialDates,
         settings: state.settings,
         vehicles: state.vehicles,
@@ -442,10 +462,12 @@ export const useOpsStore = create<OpsState>()(
         cms: state.cms,
       }),
       merge: (persisted, current) => {
-        const extra = (persisted ?? {}) as Partial<OpsState>;
+        const extra = { ...((persisted ?? {}) as Partial<OpsState>) };
+        delete extra.vehicleSlots;
         return {
           ...current,
           ...extra,
+          vehicleSlots: current.vehicleSlots,
           logs: extra.logs ?? current.logs,
           plans: (extra.plans ?? current.plans).map((row) => {
             const seed =
@@ -468,7 +490,6 @@ export const useOpsStore = create<OpsState>()(
             };
           }),
           addons: extra.addons ?? current.addons,
-          vehicleSlots: extra.vehicleSlots ?? current.vehicleSlots,
           orders: (extra.orders ?? current.orders).map((order) =>
             order.channel === "Viator" ? { ...order, channel: "Instagram" } : order,
           ),
@@ -489,10 +510,43 @@ export const useOpsStore = create<OpsState>()(
   ),
 );
 
+let hydrateStarted = false;
+let hydrateScheduled = false;
+
+export function rehydrateOpsStore() {
+  if (hydrateStarted) return useOpsStore.persist.rehydrate();
+  hydrateStarted = true;
+  return useOpsStore.persist.rehydrate();
+}
+
+export function scheduleOpsRehydrate(urgent = false) {
+  if (typeof window === "undefined") return;
+  if (useOpsStore.persist.hasHydrated()) return;
+  if (urgent) {
+    void rehydrateOpsStore();
+    return;
+  }
+  if (hydrateStarted || hydrateScheduled) return;
+  hydrateScheduled = true;
+  const start = () => {
+    void rehydrateOpsStore();
+  };
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(start, { timeout: 1200 });
+    return;
+  }
+  window.setTimeout(start, 0);
+}
+
 if (typeof window !== "undefined") {
+  useOpsStore.subscribe((state, prev) => {
+    if (!prev || state.vehicleSlots === prev.vehicleSlots || !state.vehicleSlots.length) return;
+    savePersistedSlots(state.vehicleSlots);
+  });
   window.addEventListener("storage", (event) => {
     if (event.key === OPS_STORAGE_KEY) {
-      void useOpsStore.persist.rehydrate();
+      hydrateStarted = false;
+      void rehydrateOpsStore();
     }
   });
 }

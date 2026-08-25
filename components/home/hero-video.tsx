@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 type HeroVideoProps = {
   src: string;
@@ -28,28 +28,7 @@ export function HeroVideo({
   eager = false,
 }: HeroVideoProps) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [active, setActive] = useState(eager);
-
-  useEffect(() => {
-    if (eager) return;
-    const video = ref.current;
-    if (!video) return;
-    let timer = 0;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        io.disconnect();
-        if (skipHeavyVideo()) return;
-        timer = window.setTimeout(() => setActive(true), 700);
-      },
-      { rootMargin: "0px", threshold: 0.2 },
-    );
-    io.observe(video);
-    return () => {
-      io.disconnect();
-      if (timer) window.clearTimeout(timer);
-    };
-  }, [eager]);
+  const active = eager && !skipHeavyVideo();
 
   useEffect(() => {
     const video = ref.current;
@@ -97,7 +76,7 @@ export function HeroVideo({
       className={className}
       muted
       playsInline
-      autoPlay
+      autoPlay={active}
       preload={active ? preload : "none"}
       {...(poster ? { poster } : {})}
     >

@@ -98,13 +98,18 @@ export function buildVehicleTimelineForDate(
   vehicles: MockVehicle[] = MOCK_VEHICLES,
   orders: MockOrder[] = MOCK_ORDERS,
 ): VehicleSlotCell[] {
+  const ordersByTime = new Map<string, MockOrder[]>();
+  for (const order of orders) {
+    if (order.date !== date || order.status === "cancelled") continue;
+    const list = ordersByTime.get(order.time);
+    if (list) list.push(order);
+    else ordersByTime.set(order.time, [order]);
+  }
   return vehicles.flatMap((vehicle, vehicleIndex) =>
     BOOKING_SLOTS.map((time, slotIndex) => {
       const forcedClosed = vehicle.status !== "available";
       const capacity = capacityFor(vehicle, vehicleIndex);
-      const slotOrders = orders.filter(
-        (order) => order.date === date && order.time === time && order.status !== "cancelled",
-      );
+      const slotOrders = ordersByTime.get(time) ?? [];
       const seed = hash(`${date}|${time}|${vehicle.id}`);
       const roll = seed % 10;
       let booked = 0;

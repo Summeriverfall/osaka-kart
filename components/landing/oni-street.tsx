@@ -1,12 +1,9 @@
 "use client";
 
-import { HeroVideo } from "@/components/home/hero-video";
 import { HeroTitle } from "@/components/landing/hero-title";
 import type { LandingCopy } from "@/components/landing/copy";
-import { CmsVideoMedia } from "@/components/site/cms-video-media";
 import { asset } from "@/lib/asset";
 import { heroMediaOf, useLiveCms } from "@/lib/live-cms";
-import { LOOK_VIDEO } from "@/lib/visual-theme";
 
 type OniStreetProps = {
   copy: LandingCopy;
@@ -14,9 +11,8 @@ type OniStreetProps = {
 
 export function OniStreet({ copy }: OniStreetProps) {
   const cms = useLiveCms();
-  const clip = LOOK_VIDEO.oni;
   const hero = heroMediaOf(cms, "oni");
-  const youtube = hero.resolved?.kind === "youtube";
+  const poster = hero.resolved?.poster ?? asset("/images/hero/poster.webp");
 
   return (
     <div className="oni-street">
@@ -38,15 +34,15 @@ export function OniStreet({ copy }: OniStreetProps) {
             </a>
           </div>
           <div className="oni-split-screen">
-            {youtube ? (
-              <CmsVideoMedia video={hero.video} fallback={clip.src} autoPlay className="h-full w-full object-cover" />
-            ) : (
-              <HeroVideo
-                src={hero.resolved?.kind === "file" ? hero.resolved.src : asset(clip.src)}
-                startAt={hero.startAt}
-                className="h-full w-full object-cover"
-              />
-            )}
+            <img
+              src={poster}
+              alt=""
+              className="h-full w-full object-cover"
+              width={1280}
+              height={720}
+              fetchPriority="high"
+              decoding="async"
+            />
           </div>
         </section>
       </div>

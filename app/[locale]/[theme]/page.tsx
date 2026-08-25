@@ -5,6 +5,7 @@ import { getLandingCopy } from "@/components/landing/copy";
 import { NeonLanding } from "@/components/landing/neon-landing";
 import { OniLanding } from "@/components/landing/oni-landing";
 import type { AppLocale } from "@/i18n/routing";
+import { BASE_PATH } from "@/lib/asset";
 import { getAddons, getPlans } from "@/lib/plans/queries";
 import {
   isRetiredTheme,
@@ -43,5 +44,10 @@ export default async function ThemeHomePage({ params }: PageProps) {
   ]);
   const View = LANDINGS[theme];
 
-  return <View plans={plans} addons={addons} locale={locale} copy={copy} />;
+  return (
+    <>
+      <link rel="preload" as="image" href={`${BASE_PATH}/images/hero/poster.webp`} fetchPriority="high" />
+      <View plans={plans} addons={addons} locale={locale} copy={copy} />
+    </>
+  );
 }

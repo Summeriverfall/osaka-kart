@@ -17,6 +17,7 @@ import { appPageHref, goToAppPath } from "@/lib/file-href";
 import { cn } from "@/lib/utils";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { useAdminStore } from "@/stores/admin-store";
+import { scheduleOpsRehydrate } from "@/stores/ops-store";
 import { ToastHost } from "@/components/ui/toast-host";
 
 function isAdminLoginPath(pathname: string) {
@@ -38,6 +39,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const copy = adminCopy(locale);
   const isLogin = isAdminLoginPath(pathname) || isAdminLoginPath(href);
   const current = normalizeAdminTab(tab ?? (pathname || "/admin/dashboard"));
+
+  useEffect(() => {
+    scheduleOpsRehydrate(true);
+  }, []);
 
   useEffect(() => {
     setReady(true);

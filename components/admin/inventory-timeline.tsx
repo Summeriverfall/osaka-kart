@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import { adminCopy, adminDaypart, adminVehicleStatus } from "@/lib/admin/copy";
@@ -88,6 +88,11 @@ export function InventoryTimeline() {
   } = useOpsStore();
   const { vehicles, vehicleSlots, specialDates, storeId } = useStoreData();
   const notify = useToastStore((state) => state.notify);
+  const ensureInventory = useOpsStore((state) => state.ensureInventory);
+
+  useEffect(() => {
+    ensureInventory();
+  }, [ensureInventory]);
   const today = todayIsoDate();
   const [picked, setPicked] = useState(today);
   const [view, setView] = useState<"day" | "week" | "month">("day");

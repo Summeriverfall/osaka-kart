@@ -15,7 +15,7 @@ import type { MockVehicle } from "@/lib/mock/vehicles";
 import { vehicleIdsForStore } from "@/lib/ops-inventory";
 import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 import { DEFAULT_STORE_ID, storeIdOf } from "@/lib/store-id";
-import { useOpsStore } from "@/stores/ops-store";
+import { scheduleOpsRehydrate, useOpsStore } from "@/stores/ops-store";
 import type { PayMethod } from "@/components/booking/pay-icons";
 import type { VehicleSlotCell } from "@/lib/mock/vehicle-timeline";
 
@@ -29,7 +29,9 @@ export function useOpsHydrated() {
       setReady(true);
       return;
     }
-    return useOpsStore.persist.onFinishHydration(() => setReady(true));
+    const unsub = useOpsStore.persist.onFinishHydration(() => setReady(true));
+    scheduleOpsRehydrate();
+    return unsub;
   }, []);
 
   return ready;

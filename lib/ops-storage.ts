@@ -17,6 +17,28 @@ import {
 } from "@/lib/plan-media-db";
 
 export const OPS_STORAGE_KEY = "osaka-kart-ops";
+export const OPS_SLOTS_KEY = "osaka-kart-ops-slots";
+
+export function loadPersistedSlots() {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(OPS_SLOTS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function savePersistedSlots(slots: unknown[]) {
+  if (typeof window === "undefined" || !slots.length) return;
+  try {
+    localStorage.setItem(OPS_SLOTS_KEY, JSON.stringify(slots));
+  } catch {
+    /* quota / private mode */
+  }
+}
 
 type OpsPersist = {
   plans?: MockPlan[];

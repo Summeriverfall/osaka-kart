@@ -19,7 +19,7 @@ import { SiteNav } from "@/components/site/site-nav";
 import { enabledPayMethods } from "@/lib/live-catalog";
 import { cn } from "@/lib/utils";
 import { sendNewBookingMail } from "@/lib/ops-notify";
-import { useOpsStore } from "@/stores/ops-store";
+import { useOpsStore, scheduleOpsRehydrate } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 
 type PayViewProps = {
@@ -43,6 +43,7 @@ export function PayView({ locale }: PayViewProps) {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    scheduleOpsRehydrate(true);
     try {
       const raw = sessionStorage.getItem(BOOKING_RESULT_KEY);
       if (raw) setResult(JSON.parse(raw) as BookingResult);
