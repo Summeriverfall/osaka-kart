@@ -10,7 +10,7 @@ import {
   buildVehicleTimelineForDate,
   type VehicleSlotCell,
 } from "@/lib/mock/vehicle-timeline";
-import { MOCK_SETTINGS, MOCK_EMAIL_TEMPLATES, MOCK_STORES, type MockSettings, type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
+import { MOCK_SETTINGS, MOCK_EMAIL_TEMPLATES, MOCK_STORES, refreshBundledChannels, type MockSettings, type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
 import { MOCK_VEHICLES, type MockVehicle } from "@/lib/mock/vehicles";
 import { MOCK_STAFF, type MockStaff } from "@/lib/mock/staff";
 import { MOCK_CMS, mergeCms, refreshBundledVideos, type CmsState } from "@/lib/mock/cms";
@@ -370,7 +370,7 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 5,
+      version: 9,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
         const state = { ...((persisted ?? {}) as Partial<OpsState>) };
@@ -381,7 +381,7 @@ export const useOpsStore = create<OpsState>()(
           state.orders = [...live, ...demo.filter((item) => !kept.has(item.id))];
           state.vehicleSlots = buildVehicleTimeline(state.vehicles, state.orders);
         }
-        if (version < 5) {
+        if (version < 6) {
           const cms = mergeCms(MOCK_CMS, state.cms);
           state.cms = {
             ...cms,
@@ -394,6 +394,19 @@ export const useOpsStore = create<OpsState>()(
               experienceLead: MOCK_CMS.labels.experienceLead,
             },
           };
+        }
+        if (version < 8) {
+          state.settings = {
+            ...MOCK_SETTINGS,
+            ...state.settings,
+            channels: refreshBundledChannels(MOCK_SETTINGS.channels, state.settings?.channels),
+          };
+          state.orders = (state.orders ?? []).map((order) =>
+            order.channel === "Viator" ? { ...order, channel: "Instagram" } : order,
+          );
+        }
+        if (version < 9) {
+          state.cms = mergeCms(MOCK_CMS, state.cms);
         }
         return state as OpsState;
       },
@@ -417,7 +430,6 @@ export const useOpsStore = create<OpsState>()(
           ...current,
           ...extra,
           logs: extra.logs ?? current.logs,
-          orders: extra.orders ?? current.orders,
           plans: (extra.plans ?? current.plans).map((row) => {
             const seed =
               MOCK_PLANS.find((item) => item.id === row.id) ??
@@ -440,10 +452,15 @@ export const useOpsStore = create<OpsState>()(
           }),
           addons: extra.addons ?? current.addons,
           vehicleSlots: extra.vehicleSlots ?? current.vehicleSlots,
+          orders: (extra.orders ?? current.orders).map((order) =>
+            order.channel === "Viator" ? { ...order, channel: "Instagram" } : order,
+          ),
           settings: {
             ...MOCK_SETTINGS,
             ...extra.settings,
-            channels: extra.settings?.channels?.length ? extra.settings.channels : MOCK_SETTINGS.channels,
+            channels: extra.settings?.channels?.length
+              ? refreshBundledChannels(MOCK_SETTINGS.channels, extra.settings.channels)
+              : MOCK_SETTINGS.channels,
           },
           cms: mergeCms(MOCK_CMS, extra.cms),
         };

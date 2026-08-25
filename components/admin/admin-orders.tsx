@@ -6,13 +6,14 @@ import { Ban, Check, ChevronRight, Eye, Pencil, Plus, Search } from "lucide-reac
 import { ChannelBadge } from "@/components/admin/channel-badge";
 import { StatusSelect } from "@/components/admin/status-select";
 import { Modal } from "@/components/ui/modal";
-import { adminChannel, adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
+import { adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
+import { collectChannelIds, labelChannel, liveChannelIds } from "@/lib/channel-options";
 import { readAdminFocusDate } from "@/lib/admin/focus-date";
 import { todayIsoDate } from "@/lib/booking/slots";
 import { formatYenShort } from "@/lib/format";
 import { OrderDocs } from "@/components/admin/order-docs";
 import { OrderEditFields } from "@/components/admin/order-edit-fields";
-import { CHANNELS, type MockOrder, type OrderChannel, type OrderStatus } from "@/lib/mock/orders";
+import { type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import { MOCK_PLANS } from "@/lib/mock/plans";
 import { cn } from "@/lib/utils";
 import { useOpsStore } from "@/stores/ops-store";
@@ -109,7 +110,7 @@ export function AdminOrdersView() {
   const [picked, setPicked] = useState(() => readAdminFocusDate());
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<OrderStatus | "all">("all");
-  const [channel, setChannel] = useState<OrderChannel | "all">("all");
+  const [channel, setChannel] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("time");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [editing, setEditing] = useState<MockOrder | null>(null);
@@ -137,19 +138,23 @@ export function AdminOrdersView() {
     return sorted;
   }, [storeOrders, picked, status, channel, query, sortKey, sortDir]);
 
+  const listedChannels = useMemo(
+    () => collectChannelIds(settings.channels, storeOrders.map((item) => item.channel)),
+    [settings.channels, storeOrders],
+  );
+
   const channelCounts = useMemo(() => {
-    const map = new Map<OrderChannel | "all", number>();
+    const map = new Map<string, number>();
     map.set("all", storeOrders.length);
-    for (const item of CHANNELS) map.set(item, 0);
+    for (const id of listedChannels) map.set(id, 0);
     for (const order of storeOrders) map.set(order.channel, (map.get(order.channel) ?? 0) + 1);
     return map;
-  }, [storeOrders]);
+  }, [storeOrders, listedChannels]);
 
-  const channelOptions = useMemo(() => {
-    const enabled = new Set((settings.channels ?? []).filter((item) => item.enabled).map((item) => item.id));
-    if (!enabled.size) return CHANNELS;
-    return CHANNELS.filter((id) => enabled.has(id) || id === editing?.channel);
-  }, [settings.channels, editing?.channel]);
+  const channelOptions = useMemo(
+    () => liveChannelIds(settings.channels, editing?.channel),
+    [settings.channels, editing?.channel],
+  );
 
   function toggleSort(key: SortKey) {
     if (sortKey !== key) {
@@ -277,7 +282,7 @@ export function AdminOrdersView() {
           </button>
         </div>
         <div className="order-toolbar-channels">
-          {([["all", copy.orders.allChannels], ...CHANNELS.map((item) => [item, adminChannel(locale, item)])] as [OrderChannel | "all", string][]).map(([id, label]) => (
+          {([["all", copy.orders.allChannels], ...listedChannels.map((item) => [item, labelChannel(locale, item, settings.channels)])] as [string, string][]).map(([id, label]) => (
             <button
               key={id}
               type="button"

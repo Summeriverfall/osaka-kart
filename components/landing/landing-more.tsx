@@ -70,7 +70,7 @@ export function LandingMore({ plans: seedPlans, locale, theme }: LandingMoreProp
           <div className="press-track">
             {[...cards, ...cards].map((item, index) => (
               <article key={`${item.key}-${index}`}>
-                <img src={item.img} alt="" />
+                <img src={item.img} alt="" loading="lazy" decoding="async" />
                 <p>{item.source}</p>
                 <h3>{item.title}</h3>
               </article>
@@ -86,7 +86,7 @@ export function LandingMore({ plans: seedPlans, locale, theme }: LandingMoreProp
         <div className="social-grid">
           {SOCIAL_CARDS.map((card) => (
             <figure key={card.nameKey}>
-              <img src={asset(card.img)} alt="" />
+              <img src={asset(card.img)} alt="" loading="lazy" decoding="async" />
               <figcaption>
                 <b>OSAKA</b>
                 <span>KART</span>

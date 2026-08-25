@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { BrandMark } from "@/components/site/brand-mark";
+import { LiveBrandMark } from "@/components/site/live-brand-mark";
 import { SocialLinks } from "@/components/site/social-links";
 import { localeText, useLiveCms } from "@/lib/live-cms";
 
@@ -16,7 +16,7 @@ export function SiteFooter() {
   return (
     <footer id="footer" className="site-foot">
       <div className="site-foot-inner">
-        <BrandMark />
+        <LiveBrandMark />
         <p className="site-foot-company">{company}</p>
         {hasSocial ? (
           <>

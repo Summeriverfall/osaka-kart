@@ -19,7 +19,9 @@ import {
   YAxis,
 } from "recharts";
 import { CountUp } from "@/components/admin/count-up";
+import { ChannelAnalysisCard } from "@/components/admin/channel-analysis-card";
 import { adminCopy } from "@/lib/admin/copy";
+import { collectChannelIds, labelChannel } from "@/lib/channel-options";
 import { downloadCsv } from "@/lib/csv";
 import { todayIsoDate } from "@/lib/booking/slots";
 import { formatYenShort } from "@/lib/format";
@@ -78,6 +80,7 @@ export function AdminAnalyticsView() {
   const today = todayIsoDate();
   const { orders, storeId } = useStoreData();
   const channels = useOpsStore((state) => state.settings.channels);
+  const patchSettings = useOpsStore((state) => state.patchSettings);
   const [mode, setMode] = useState<CompareMode>("week");
   const [draft, setDraft] = useState(() => defaultAnalyticsRange("week", today));
   const [applied, setApplied] = useState(() => defaultAnalyticsRange("week", today));
@@ -95,6 +98,35 @@ export function AdminAnalyticsView() {
     () => analyticsFromOrders(orders, currentRange, previousRange, locale, cuts, storeId, copy.analytics.deltaNew),
     [orders, currentRange, previousRange, locale, cuts, storeId, copy.analytics.deltaNew],
   );
+
+  const channelRows = useMemo(() => {
+    const byId = new Map(report.channels.map((item) => [item.id, item]));
+    const ids = collectChannelIds(channels, report.channels.map((item) => item.id));
+    return ids.map((id, index) => {
+      const found = byId.get(id);
+      const setting = (channels ?? []).find((row) => row.id === id);
+      return {
+        id,
+        name: labelChannel(locale, id, channels),
+        fill: found?.fill ?? CHANNEL_TONES[id] ?? EXTRA_TONES[index % EXTRA_TONES.length],
+        cut: setting?.cut ?? 0,
+        orders: found?.orders ?? 0,
+        revenue: found?.revenue ?? 0,
+      };
+    });
+  }, [report.channels, channels, locale]);
+
+  function setCut(id: string, pct: number) {
+    const cut = Math.min(100, Math.max(0, pct)) / 100;
+    const list = [...(channels ?? [])];
+    const index = list.findIndex((row) => row.id === id);
+    if (index >= 0) {
+      list[index] = { ...list[index], cut };
+    } else {
+      list.push({ id, enabled: true, cut });
+    }
+    patchSettings({ channels: list });
+  }
 
   const modes: { id: CompareMode; label: string }[] = [
     { id: "week", label: copy.analytics.compareWeek },
@@ -136,8 +168,14 @@ export function AdminAnalyticsView() {
       [a.planShare, a.sold, a.revenue],
       ...report.plans.map((row) => [row.name, row.sold, row.revenue]),
       [],
-      [a.channelShare, a.orders, a.revenue],
-      ...report.channels.map((row) => [row.name, row.orders, row.revenue]),
+      [a.channelShare, a.orders, a.revenue, copy.reports.cut, copy.reports.net],
+      ...channelRows.map((row) => [
+        row.name,
+        row.orders,
+        row.revenue,
+        `${Number((row.cut * 100).toFixed(1))}%`,
+        Math.round(row.revenue * (1 - row.cut)),
+      ]),
       [],
       [a.nations, a.people],
       ...report.nations.map((row) => [row.name, row.value]),
@@ -313,6 +351,36 @@ export function AdminAnalyticsView() {
         </section>
       </div>
 
+      <ChannelAnalysisCard
+        copy={{
+          title: copy.reports.channels,
+          exportCsv: copy.reports.exportCsv,
+          channel: copy.reports.channel,
+          orders: copy.reports.orders,
+          revenueCol: copy.reports.revenueCol,
+          cut: copy.reports.cut,
+          net: copy.reports.net,
+          cutHint: copy.reports.cutHint,
+          unitOrders: copy.reports.unitOrders,
+        }}
+        rows={channelRows}
+        pieRadius={pieRadius}
+        onCut={setCut}
+        onExport={() => {
+          downloadCsv(`channels-${currentRange.from}-${currentRange.to}.csv`, [
+            [copy.reports.channel, copy.reports.orders, copy.reports.revenueCol, copy.reports.cut, copy.reports.net],
+            ...channelRows.map((row) => [
+              row.name,
+              row.orders,
+              row.revenue,
+              `${Number((row.cut * 100).toFixed(1))}%`,
+              Math.round(row.revenue * (1 - row.cut)),
+            ]),
+          ]);
+          notify(copy.reports.exportOk);
+        }}
+      />
+
       <div className="grid min-w-0 gap-5 lg:grid-cols-2 md:gap-6">
         <MixPie
           title={copy.analytics.planShare}
@@ -322,14 +390,6 @@ export function AdminAnalyticsView() {
           pieRadius={pieRadius}
           inner
           fills={PLAN_FILLS}
-        />
-        <MixPie
-          title={copy.analytics.channelShare}
-          empty={copy.analytics.empty}
-          data={report.channels}
-          dataKey="orders"
-          pieRadius={pieRadius}
-          inner
         />
         <MixPie
           title={copy.analytics.nations}
@@ -406,6 +466,17 @@ export function AdminAnalyticsView() {
 }
 
 const PLAN_FILLS = ["#A855F7", "#2563eb", "#34d399", "#F59E0B", "#FF2E93", "#22D3EE"];
+const EXTRA_TONES = ["#6366f1", "#14b8a6", "#e11d48", "#84cc16", "#0ea5e9"];
+const CHANNEL_TONES: Record<string, string> = {
+  Klook: "#38BDF8",
+  官网: "#34D399",
+  Instagram: "#E1306C",
+  TikTok: "#69C9D0",
+  携程: "#287DFA",
+  微信: "#F59E0B",
+  WhatsApp: "#9CA3AF",
+  线下: "#FF2E93",
+};
 
 function MixPie({
   title,

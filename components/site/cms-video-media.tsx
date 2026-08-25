@@ -13,6 +13,7 @@ export function CmsVideoMedia({
   autoPlay,
   controls,
   startAt = 0,
+  eager,
 }: {
   video?: CmsVideo;
   fallback?: string;
@@ -20,6 +21,7 @@ export function CmsVideoMedia({
   autoPlay?: boolean;
   controls?: boolean;
   startAt?: number;
+  eager?: boolean;
 }) {
   const resolved = resolveCmsVideo(video, fallback);
   if (!resolved) return null;
@@ -30,6 +32,7 @@ export function CmsVideoMedia({
       autoPlay={autoPlay}
       controls={controls}
       startAt={startAt}
+      eager={eager}
     />
   );
 }
@@ -41,6 +44,7 @@ export function ResolvedVideo({
   controls,
   startAt = 0,
   title = "",
+  eager,
 }: {
   resolved: ResolvedCmsVideo;
   className?: string;
@@ -48,6 +52,7 @@ export function ResolvedVideo({
   controls?: boolean;
   startAt?: number;
   title?: string;
+  eager?: boolean;
 }) {
   if (resolved.kind === "youtube") {
     const params = autoPlay
@@ -70,6 +75,7 @@ export function ResolvedVideo({
         startAt={startAt}
         poster={resolved.poster}
         className={className}
+        eager={eager}
       />
     );
   }

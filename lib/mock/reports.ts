@@ -5,9 +5,11 @@ import { MOCK_PLANS } from "@/lib/mock/plans";
 import { type MockOrder } from "@/lib/mock/orders";
 
 export const REPORT_CHANNELS = [
-  { name: "Klook", value: 40, fill: "#38BDF8", orders: 86, revenue: 1284000, cut: 0.18 },
-  { name: "官网", value: 25, fill: "#34D399", orders: 54, revenue: 802000, cut: 0 },
-  { name: "Viator", value: 20, fill: "#A855F7", orders: 43, revenue: 641000, cut: 0.2 },
+  { name: "Klook", value: 32, fill: "#38BDF8", orders: 86, revenue: 1284000, cut: 0.18 },
+  { name: "官网", value: 20, fill: "#34D399", orders: 54, revenue: 802000, cut: 0 },
+  { name: "Instagram", value: 12, fill: "#E1306C", orders: 22, revenue: 286000, cut: 0 },
+  { name: "TikTok", value: 10, fill: "#69C9D0", orders: 18, revenue: 214000, cut: 0 },
+  { name: "携程", value: 11, fill: "#287DFA", orders: 21, revenue: 355000, cut: 0.15 },
   { name: "微信", value: 8, fill: "#F59E0B", orders: 17, revenue: 256000, cut: 0.05 },
   { name: "WhatsApp", value: 4, fill: "#9CA3AF", orders: 9, revenue: 128000, cut: 0 },
   { name: "线下", value: 3, fill: "#FF2E93", orders: 6, revenue: 89000, cut: 0 },
@@ -98,7 +100,9 @@ export type RangeKind = "today" | "week" | "month" | "custom";
 const CHANNEL_CUT: Record<string, number> = {
   Klook: 0.18,
   官网: 0,
-  Viator: 0.2,
+  Instagram: 0,
+  TikTok: 0,
+  携程: 0.15,
   微信: 0.05,
   WhatsApp: 0,
   线下: 0,
@@ -107,7 +111,9 @@ const CHANNEL_CUT: Record<string, number> = {
 const CHANNEL_FILL: Record<string, string> = {
   Klook: "#38BDF8",
   官网: "#34D399",
-  Viator: "#A855F7",
+  Instagram: "#E1306C",
+  TikTok: "#69C9D0",
+  携程: "#287DFA",
   微信: "#F59E0B",
   WhatsApp: "#9CA3AF",
   线下: "#FF2E93",

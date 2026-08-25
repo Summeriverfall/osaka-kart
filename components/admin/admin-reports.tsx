@@ -6,26 +6,21 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
   Legend,
   Line,
   LineChart,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import { adminChannel, adminCopy } from "@/lib/admin/copy";
+import { adminCopy } from "@/lib/admin/copy";
 import { addDaysIso } from "@/lib/calendar";
 import { todayIsoDate } from "@/lib/booking/slots";
 import { reportsFromOrders, resolveReportRange, type RangeKind } from "@/lib/mock/reports";
 import { formatYenShort } from "@/lib/format";
 import { CountUp } from "@/components/admin/count-up";
-import { CHANNELS, type OrderChannel } from "@/lib/mock/orders";
 import { useStoreData } from "@/lib/use-store-data";
-import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 
 const tooltipStyle = {
@@ -36,32 +31,6 @@ const tooltipStyle = {
   maxWidth: 220,
   fontSize: 12,
 };
-
-function CutInput({
-  value,
-  label,
-  onChange,
-}: {
-  value: number;
-  label: string;
-  onChange: (pct: number) => void;
-}) {
-  return (
-    <span className="inline-flex items-center gap-1">
-      <input
-        className="report-cut-input"
-        type="number"
-        min={0}
-        max={100}
-        step={0.1}
-        aria-label={label}
-        value={Number((value * 100).toFixed(1))}
-        onChange={(event) => onChange(Math.min(100, Math.max(0, Number(event.target.value) || 0)))}
-      />
-      <span className="text-slate-500">%</span>
-    </span>
-  );
-}
 
 function useNarrow() {
   const [narrow, setNarrow] = useState(false);
@@ -116,52 +85,11 @@ export function AdminReportsView() {
   const [kind, setKind] = useState<RangeKind>("month");
   const [custom, setCustom] = useState(() => ({ from: addDaysIso(today, -13), to: today }));
   const { orders } = useStoreData();
-  const channels = useOpsStore((state) => state.settings.channels);
-  const patchSettings = useOpsStore((state) => state.patchSettings);
   const range = useMemo(() => resolveReportRange(kind, today, custom), [kind, today, custom]);
-  const cuts = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const row of channels ?? []) map[row.id] = row.cut;
-    return map;
-  }, [channels]);
-  const report = useMemo(() => reportsFromOrders(orders, range, locale, cuts), [orders, range, locale, cuts]);
-  const channelRows = useMemo(() => {
-    const byId = new Map(report.channels.map((item) => [item.id, item]));
-    const rows = CHANNELS.map((id) => {
-      const found = byId.get(id);
-      if (found) return found;
-      const setting = (channels ?? []).find((row) => row.id === id);
-      return {
-        id,
-        name: adminChannel(locale, id),
-        fill: "#9CA3AF",
-        cut: setting?.cut ?? 0,
-        orders: 0,
-        revenue: 0,
-        value: 0,
-      };
-    });
-    for (const item of report.channels) {
-      if (!CHANNELS.includes(item.id as OrderChannel)) rows.push(item);
-    }
-    return rows;
-  }, [report.channels, channels, locale]);
-
-  function setCut(id: string, pct: number) {
-    const cut = Math.min(100, Math.max(0, pct)) / 100;
-    const list = [...(channels ?? [])];
-    const index = list.findIndex((row) => row.id === id);
-    if (index >= 0) {
-      list[index] = { ...list[index], cut };
-    } else {
-      list.push({ id: id as OrderChannel, enabled: true, cut });
-    }
-    patchSettings({ channels: list });
-  }
+  const report = useMemo(() => reportsFromOrders(orders, range, locale), [orders, range, locale]);
   const exportOk = () => notify(copy.reports.exportOk);
-  const totalRev = report.channels.reduce((sum, item) => sum + item.revenue, 0) || 1;
+  const totalRev = report.plans.reduce((sum, item) => sum + item.revenue, 0) || 1;
   const narrow = useNarrow();
-  const pieRadius = narrow ? 58 : 80;
   const axisTick = { fill: "#6B7280", fontSize: narrow ? 10 : 11 };
   const dayCount = Math.max(report.trend.length, 1);
 
@@ -280,77 +208,7 @@ export function AdminReportsView() {
         </div>
       </ChartBox>
 
-      <div className="grid min-w-0 gap-5 lg:grid-cols-2 md:gap-6">
-        <ChartBox title={copy.reports.channels} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
-          <div className="report-chart h-56 sm:h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={report.channels} dataKey="value" nameKey="name" innerRadius={narrow ? 36 : 50} outerRadius={pieRadius}>
-                  {report.channels.map((item) => (
-                    <Cell key={item.name} fill={item.fill} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
-                <Legend wrapperStyle={{ color: "#374151", fontSize: 12 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-4 hidden overflow-x-auto md:block">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>{copy.reports.channel}</th>
-                  <th>{copy.reports.orders}</th>
-                  <th>{copy.reports.revenueCol}</th>
-                  <th>{copy.reports.cut}</th>
-                  <th>{copy.reports.net}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {channelRows.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.name}</td>
-                    <td>{item.orders}</td>
-                    <td>{formatYenShort(item.revenue)}</td>
-                    <td>
-                      <CutInput
-                        value={item.cut}
-                        label={`${item.name} ${copy.reports.cut}`}
-                        onChange={(pct) => setCut(item.id, pct)}
-                      />
-                    </td>
-                    <td>{formatYenShort(Math.round(item.revenue * (1 - item.cut)))}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="mt-2 text-xs text-slate-400">{copy.reports.cutHint}</p>
-          </div>
-          <ul className="mt-4 grid gap-2 md:hidden">
-            {channelRows.map((item) => (
-              <li key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold">{item.name}</span>
-                  <span className="text-sm tabular-nums">{formatYenShort(item.revenue)}</span>
-                </div>
-                <div className="mt-2 flex items-center justify-between gap-3">
-                  <p className="text-xs text-slate-500">
-                    {item.orders}
-                    {copy.reports.unitOrders} · {copy.reports.net} {formatYenShort(Math.round(item.revenue * (1 - item.cut)))}
-                  </p>
-                  <CutInput
-                    value={item.cut}
-                    label={`${item.name} ${copy.reports.cut}`}
-                    onChange={(pct) => setCut(item.id, pct)}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-2 text-xs text-slate-400 md:hidden">{copy.reports.cutHint}</p>
-        </ChartBox>
-
-        <ChartBox title={copy.reports.plans} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
+      <ChartBox title={copy.reports.plans} exportLabel={copy.reports.exportCsv} onExport={exportOk}>
           <div className="report-chart h-64 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -404,7 +262,6 @@ export function AdminReportsView() {
             ))}
           </ul>
         </ChartBox>
-      </div>
     </div>
   );
 }

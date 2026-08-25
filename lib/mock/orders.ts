@@ -2,7 +2,7 @@ import { addDaysIso } from "@/lib/calendar";
 import { todayIsoDate } from "@/lib/booking/slots";
 
 export type OrderStatus = "pending" | "confirmed" | "cancelled" | "completed";
-export type OrderChannel = "官网" | "Klook" | "Viator" | "微信" | "WhatsApp" | "线下";
+export type OrderChannel = string;
 
 export type OrderLog = {
   time: string;
@@ -42,7 +42,7 @@ export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   completed: "已完成",
 };
 
-export const CHANNELS: OrderChannel[] = ["Klook", "官网", "Viator", "微信", "WhatsApp", "线下"];
+export const CHANNELS: OrderChannel[] = ["Klook", "官网", "Instagram", "TikTok", "携程", "微信", "WhatsApp", "线下"];
 
 const SLOTS = ["10:00", "11:30", "13:00", "14:30", "16:00", "17:30", "19:00"] as const;
 
@@ -66,11 +66,11 @@ type GuestSeed = {
 const GUESTS: GuestSeed[] = [
   { customer: "Alex Morgan", nationality: "USA", email: "alex.m@example.com", phone: "+1-415-555-0198", passport: "US5591021", planName: "难波 60 分钟", planSlug: "standard", riders: 2, male: 1, female: 1, addons: ["GoPro 租赁"], totalJpy: 28100, channel: "官网", note: "首次体验，需要英文向导。" },
   { customer: "林佳颖", nationality: "TW", email: "chia.lin@example.com", phone: "+886-912-555-017", passport: "TW3128891", planName: "通天阁 90 分钟", planSlug: "night-run", riders: 3, male: 1, female: 2, addons: ["赛车服升级", "专业跟拍照片"], totalJpy: 53400, channel: "Klook", note: "三人同行，希望同色赛车服。" },
-  { customer: "김민준", nationality: "KR", email: "minjun.k@example.com", phone: "+82-10-5555-0192", passport: "KR8802143", planName: "大阪城 120 分钟", planSlug: "grand-tour", riders: 1, male: 1, female: 0, addons: ["额外保险"], totalJpy: 19300, channel: "Viator", note: "" },
+  { customer: "김민준", nationality: "KR", email: "minjun.k@example.com", phone: "+82-10-5555-0192", passport: "KR8802143", planName: "大阪城 120 分钟", planSlug: "grand-tour", riders: 1, male: 1, female: 0, addons: ["额外保险"], totalJpy: 19300, channel: "携程", note: "" },
   { customer: "Nora Patel", nationality: "UK", email: "nora.p@example.com", phone: "+44-7700-555-019", passport: "UK1029384", planName: "难波 60 分钟", planSlug: "standard", riders: 2, male: 0, female: 2, addons: ["GoPro 租赁", "额外保险"], totalJpy: 28600, channel: "WhatsApp", note: "到店付尾款。" },
   { customer: "陈浩宇", nationality: "CN", email: "haoyu.c@example.com", phone: "+86-138-5550-1120", passport: "CN E12345678", planName: "通天阁 90 分钟", planSlug: "night-run", riders: 2, male: 2, female: 0, addons: ["专业跟拍照片"], totalJpy: 34600, channel: "微信", note: "" },
   { customer: "Hannah Lee", nationality: "USA", email: "hannah.l@example.com", phone: "+1-310-555-0144", passport: "US4412098", planName: "大阪城 120 分钟", planSlug: "grand-tour", riders: 3, male: 1, female: 2, addons: ["赛车服升级"], totalJpy: 59400, channel: "Klook", note: "" },
-  { customer: "Jonas Keller", nationality: "DE", email: "jonas.k@example.com", phone: "+49-170-555-0181", passport: "DE9981120", planName: "难波 60 分钟", planSlug: "standard", riders: 1, male: 1, female: 0, addons: [], totalJpy: 12800, channel: "Viator", note: "" },
+  { customer: "Jonas Keller", nationality: "DE", email: "jonas.k@example.com", phone: "+49-170-555-0181", passport: "DE9981120", planName: "难波 60 分钟", planSlug: "standard", riders: 1, male: 1, female: 0, addons: [], totalJpy: 12800, channel: "Instagram", note: "" },
   { customer: "Sophie Dubois", nationality: "FR", email: "sophie.d@example.com", phone: "+33-6-12-55-01-88", passport: "FR2201987", planName: "难波 60 分钟", planSlug: "standard", riders: 2, male: 0, female: 2, addons: ["专业跟拍照片"], totalJpy: 28600, channel: "官网", note: "要下午出片。" },
   { customer: "田中 翔", nationality: "JP", email: "sho.tanaka@example.com", phone: "+81-90-5555-0144", passport: "JP TK88021", planName: "通天阁 90 分钟", planSlug: "night-run", riders: 4, male: 3, female: 1, addons: ["GoPro 租赁", "赛车服升级"], totalJpy: 70200, channel: "线下", note: "公司团建。" },
   { customer: "Ryan Cole", nationality: "USA", email: "ryan.c@example.com", phone: "+1-646-555-0177", passport: "US7781203", planName: "黄昏湾岸 45 分钟", planSlug: "sunset", riders: 2, male: 2, female: 0, addons: ["GoPro 租赁"], totalJpy: 17500, channel: "Klook", note: "" },

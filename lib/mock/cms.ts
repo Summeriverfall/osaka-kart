@@ -158,47 +158,47 @@ export const MOCK_CMS: CmsState = {
     video("hero-main", "hero", L("首頁循環背景", "Hero loop", "ヒーロー映像", "히어로 영상"), "", 0, {
       source: "file",
       file: "/videos/hero-bg.mp4",
-      poster: "/images/hero/poster.jpg",
+      poster: "/images/hero/poster.webp",
     }),
     video("gallery-main", "gallery", L("夜間道頓堀", "Night Dotonbori", "ナイト道頓堀", "나이트 도톤보리"), "", 1, {
       source: "file",
       file: "/videos/street-run.mp4",
-      poster: "/images/hero/poster.jpg",
+      poster: "/images/social/yejiankadingche.webp",
     }),
     video("xp-1", "experience", L("難波出發", "Namba start", "難波スタート", "난바 출발"), "", 10, {
       source: "file",
       file: "/videos/street-run.mp4",
-      poster: "/images/hero/poster.jpg",
+      poster: "/images/social/nanbo.webp",
       startAt: 2,
     }),
     video("xp-2", "experience", L("夜間道頓堀", "Night Dotonbori", "ナイト道頓堀", "나이트 도톤보리"), "", 11, {
       source: "file",
       file: "/videos/hero-bg.mp4",
-      poster: "/images/hero/poster.jpg",
+      poster: "/images/social/yejiankadingche.webp",
       startAt: 18,
     }),
     video("xp-3", "experience", L("車隊燈光", "Convoy lights", "隊列の光", "대열의 빛"), "", 12, {
       source: "file",
       file: "/videos/street-run.mp4",
-      poster: "/images/hero/poster.jpg",
+      poster: "/images/social/33.webp",
       startAt: 7,
     }),
     video("xp-4", "experience", L("心齋橋環線", "Shinsaibashi loop", "心斎橋ループ", "신사이바시 루프"), "", 13, {
       source: "file",
       file: "/videos/hero-bg.mp4",
-      poster: "/images/hero/poster.jpg",
+      poster: "/images/social/22.webp",
       startAt: 48,
     }),
     video("xp-5", "experience", L("通天閣夜跑", "Tsutenkaku night", "通天閣ナイト", "츠텐카쿠 나이트"), "", 14, {
       source: "file",
       file: "/videos/street-run.mp4",
-      poster: "/images/hero/poster.jpg",
+      poster: "/images/social/tsutenkaku-kart.webp",
       startAt: 13,
     }),
     video("xp-6", "experience", L("大阪城路段", "Osaka Castle stretch", "大阪城区間", "오사카성 구간"), "", 15, {
       source: "file",
       file: "/videos/hero-bg.mp4",
-      poster: "/images/hero/poster.jpg",
+      poster: "/images/social/yejingtiyan.webp",
       startAt: 108,
     }),
     video("page-1", "page", L("夜間道頓堀", "Night Dotonbori", "ナイト道頓堀", "나이트 도톤보리"), "aqz-KE-bpKQ", 20),
@@ -441,7 +441,7 @@ export const MOCK_CMS: CmsState = {
     },
     {
       id: "p5",
-      image: "/images/hero/poster.jpg",
+      image: "/images/hero/poster.webp",
       active: true,
       sort: 5,
       source: L("霓虹快訊", "Neon Dispatch", "Neon Dispatch", "Neon Dispatch"),
@@ -587,13 +587,48 @@ export function refreshBundledVideos(seed: CmsVideo[], extra?: CmsVideo[]) {
   return [...merged, ...customExtra];
 }
 
+export function rewriteBundledMediaPath(value?: string) {
+  if (!value) return value;
+  return value.replace(/\/images\/hero\/poster\.jpg$/i, "/images/hero/poster.webp");
+}
+
+function isBrokenCmsImage(value?: string) {
+  const image = value?.trim() ?? "";
+  if (!image) return true;
+  return image.startsWith("data:") || image.startsWith("blob:");
+}
+
+export function refreshBundledPress(seed: CmsPress[], extra?: CmsPress[]) {
+  const rewrite = (item: CmsPress, fallback?: string) => ({
+    ...item,
+    image: isBrokenCmsImage(item.image)
+      ? (fallback || item.image)
+      : (rewriteBundledMediaPath(item.image) ?? item.image),
+  });
+  if (!Array.isArray(extra) || extra.length === 0) {
+    return seed.map((item) => rewrite(item));
+  }
+  const extraById = new Map(extra.map((item) => [item.id, item]));
+  const seedIds = new Set(seed.map((item) => item.id));
+  const merged = seed.map((seedItem) => {
+    const prev = extraById.get(seedItem.id);
+    if (!prev) return rewrite(seedItem);
+    return rewrite({ ...seedItem, ...prev }, seedItem.image);
+  });
+  const custom = extra.filter((item) => !seedIds.has(item.id)).map((item) => rewrite(item));
+  return [...merged, ...custom];
+}
+
 export function mergeCms(seed: CmsState, extra?: Partial<CmsState> | null): CmsState {
   if (!extra) return seed;
   return {
-    videos: mergeVideos(seed.videos, extra.videos),
+    videos: mergeVideos(seed.videos, extra.videos).map((item) => ({
+      ...item,
+      poster: rewriteBundledMediaPath(item.poster) ?? item.poster,
+    })),
     reviews: Array.isArray(extra.reviews) ? extra.reviews : seed.reviews,
     faqs: Array.isArray(extra.faqs) ? extra.faqs : seed.faqs,
-    press: Array.isArray(extra.press) ? extra.press : seed.press,
+    press: refreshBundledPress(seed.press, extra.press),
     meetup: extra.meetup ? { ...seed.meetup, ...extra.meetup } : seed.meetup,
     howToBook: extra.howToBook ? { ...seed.howToBook, ...extra.howToBook } : seed.howToBook,
     site: extra.site

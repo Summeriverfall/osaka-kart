@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Link } from "@/i18n/navigation";
-import { BrandMark } from "@/components/site/brand-mark";
+import { LiveBrandMark } from "@/components/site/live-brand-mark";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { landingHref } from "@/lib/booking/path";
 import type { SiteTheme } from "@/lib/visual-theme";
@@ -14,7 +14,7 @@ export function BookingNav({ theme, back }: BookingNavProps) {
   return (
     <header className={`landing-nav nav-${theme} is-scrolled`}>
       <div className="nav-brand">
-        <BrandMark className="nav-logo" look={theme} />
+        <LiveBrandMark className="nav-logo" look={theme} />
         <Link href={landingHref(theme)} className="looks-link">
           {back}
         </Link>

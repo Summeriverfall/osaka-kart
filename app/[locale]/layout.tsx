@@ -15,35 +15,46 @@ import { routing } from "@/i18n/routing";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: false,
 });
 
 const anton = Anton({
   variable: "--font-anton",
   weight: "400",
   subsets: ["latin"],
+  display: "swap",
+  preload: false,
 });
 
 const orbitron = Orbitron({
   variable: "--font-orbitron",
   subsets: ["latin"],
   weight: ["500", "700"],
+  display: "swap",
+  preload: false,
 });
 
 const notoSerifJp = Noto_Serif_JP({
   variable: "--font-noto-serif-jp",
   subsets: ["latin"],
   weight: ["600", "700"],
+  display: "swap",
+  preload: false,
 });
 
 const shareTech = Share_Tech_Mono({
   variable: "--font-share-tech",
   weight: "400",
   subsets: ["latin"],
+  display: "swap",
+  preload: false,
 });
 
 type LocaleLayoutProps = {

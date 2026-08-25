@@ -60,6 +60,8 @@ export function GatewayView({ fromPrice, locale }: GatewayViewProps) {
                   <img
                     src={PREVIEWS[look]}
                     alt=""
+                    width={800}
+                    height={600}
                     decoding="async"
                     fetchPriority={look === "neon" ? "high" : "low"}
                   />

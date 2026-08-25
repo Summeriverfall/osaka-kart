@@ -297,8 +297,6 @@ export type AdminCopy = {
     chartOrders: string;
     managerStaff: string;
     managerReport: string;
-    pickHint: string;
-    vsPrev: string;
   };
   orders: {
     date: string;
@@ -496,6 +494,11 @@ export type AdminCopy = {
     channelLocked: string;
     channelSaved: string;
     saveChannels: string;
+    addChannel: string;
+    channelName: string;
+    channelNamePh: string;
+    channelNameRequired: string;
+    removeChannel: string;
     stores: string;
     addStore: string;
     send: string;
@@ -637,7 +640,7 @@ const zh: AdminCopy = {
     "/admin/site": "全站配置",
   },
   pages: {
-    "/admin/dashboard": { title: "仪表盘", lead: "点近 7 日任意一天，看当天单量、营收和待处理。点分店可下钻。" },
+    "/admin/dashboard": { title: "仪表盘", lead: "超管默认看全店合计，点分店可下钻。店长只看自己的店。" },
     "/admin/bookings": { title: "订单列表", lead: "列表处理订单。点状态可直接改，不必进详情。" },
     "/admin/orders": { title: "订单列表", lead: "列表处理订单。点状态可直接改，不必进详情。" },
     "/admin/calendar": { title: "日历", lead: "月 / 周 / 日看订单分布。点日期更新下方列表，点色块打开订单详情。" },
@@ -653,9 +656,9 @@ const zh: AdminCopy = {
     "/admin/bookings/how": { title: "预约开关设置", lead: "开关预约入口。关掉的渠道不会出现在官网。" },
     "/admin/settings/booking": { title: "预约开关设置", lead: "开关预约入口。关掉的渠道不会出现在官网。" },
     "/admin/site": { title: "全站配置", lead: "公司名称、Logo、电话邮箱和页脚社交媒体。" },
-    "/admin/reports": { title: "营收报表", lead: "营收趋势、渠道占比、用户画像。" },
-    "/admin/reports/overview": { title: "营收报表", lead: "营收趋势、渠道占比、用户画像。" },
-    "/admin/reports/analytics": { title: "数据分析", lead: "本周对比上周、本月对比上月、本月对比去年同期。性别、国籍、预约平台、时段一并统计。" },
+    "/admin/reports": { title: "营收报表", lead: "营收趋势与套餐销量。" },
+    "/admin/reports/overview": { title: "营收报表", lead: "营收趋势与套餐销量。" },
+    "/admin/reports/analytics": { title: "数据分析", lead: "本周对比上周、本月对比上月、本月对比去年同期。渠道分析、性别、国籍和时段一并统计。" },
     "/admin/staff": { title: "员工管理", lead: "超管可添加、改角色、重置密码和停用。" },
     "/admin/settings": { title: "支付配置", lead: "开关支付方式。官网结账页只显示已开启的方式。" },
     "/admin/settings/pay": { title: "支付配置", lead: "开关支付方式。官网结账页只显示已开启的方式。" },
@@ -846,6 +849,9 @@ const zh: AdminCopy = {
     Klook: "Klook",
     Viator: "Viator",
     WhatsApp: "WhatsApp",
+    Instagram: "Instagram",
+    TikTok: "TikTok",
+    携程: "携程",
   },
   vehicleStatus: {
     available: "可用",
@@ -998,8 +1004,6 @@ const zh: AdminCopy = {
     chartOrders: "订单",
     managerStaff: "店长账号请从订单页确认预约",
     managerReport: "报表仅超管可见，已留在仪表盘",
-    pickHint: "点近 7 日任意一天，看当天数字。点订单可进日历。",
-    vsPrev: "较前一日",
   },
   orders: {
     date: "日期",
@@ -1197,6 +1201,11 @@ const zh: AdminCopy = {
     channelLocked: "官网渠道不可关闭",
     channelSaved: "渠道已保存，报表抽成与手工录单选项会同步",
     saveChannels: "保存渠道",
+    addChannel: "增加渠道",
+    channelName: "渠道名称",
+    channelNamePh: "例如 GetYourGuide",
+    channelNameRequired: "请填写渠道名称",
+    removeChannel: "删除渠道",
     stores: "门店管理",
     addStore: "添加门店",
     send: "邮件发送",
@@ -1345,7 +1354,7 @@ const en: AdminCopy = {
     "/admin/site": "Site",
   },
   pages: {
-    "/admin/dashboard": { title: "Dashboard", lead: "Click any of the last 7 days to see that day’s orders and revenue." },
+    "/admin/dashboard": { title: "Dashboard", lead: "Admins see all-store totals by default. Click a shop to drill down. Managers only see their own store." },
     "/admin/bookings": { title: "Orders", lead: "Handle bookings in the list. Change status here — no need to open the detail." },
     "/admin/orders": { title: "Orders", lead: "Handle bookings in the list. Change status here — no need to open the detail." },
     "/admin/calendar": { title: "Calendar", lead: "Month / week / day. Click a date to refresh the list below, or a block to open the order." },
@@ -1361,9 +1370,9 @@ const en: AdminCopy = {
     "/admin/bookings/how": { title: "Booking switches", lead: "Toggle booking entries. Hidden channels stay off the site." },
     "/admin/settings/booking": { title: "Booking switches", lead: "Toggle booking entries. Hidden channels stay off the site." },
     "/admin/site": { title: "Site", lead: "Company name, logo, phone, email and footer socials." },
-    "/admin/reports": { title: "Revenue", lead: "Revenue trend, channel mix and guest profile." },
-    "/admin/reports/overview": { title: "Revenue", lead: "Revenue trend, channel mix and guest profile." },
-    "/admin/reports/analytics": { title: "Analytics", lead: "This week vs last week, this month vs last month, this month vs the same month last year. Includes gender, nationality, platform and time of day." },
+    "/admin/reports": { title: "Revenue", lead: "Revenue trend and plan sales." },
+    "/admin/reports/overview": { title: "Revenue", lead: "Revenue trend and plan sales." },
+    "/admin/reports/analytics": { title: "Analytics", lead: "This week vs last week, this month vs last month, this month vs the same month last year. Includes channel mix with commission, gender, nationality and time of day." },
     "/admin/staff": { title: "Staff", lead: "Admins can add people, change roles, reset passwords and disable accounts." },
     "/admin/settings": { title: "Payments", lead: "Toggle payment methods. Checkout only shows what is on." },
     "/admin/settings/pay": { title: "Payments", lead: "Toggle payment methods. Checkout only shows what is on." },
@@ -1554,6 +1563,9 @@ const en: AdminCopy = {
     Klook: "Klook",
     Viator: "Viator",
     WhatsApp: "WhatsApp",
+    Instagram: "Instagram",
+    TikTok: "TikTok",
+    携程: "Ctrip",
   },
   vehicleStatus: {
     available: "Ready",
@@ -1706,8 +1718,6 @@ const en: AdminCopy = {
     chartOrders: "Orders",
     managerStaff: "Managers confirm bookings from the orders list",
     managerReport: "Reports are admin-only, so they stay on the dashboard",
-    pickHint: "Click any day in the last 7 to see that day’s numbers. Open an order to jump to the calendar.",
-    vsPrev: "vs previous day",
   },
   orders: {
     date: "Date",
@@ -1905,6 +1915,11 @@ const en: AdminCopy = {
     channelLocked: "The website channel cannot be turned off",
     channelSaved: "Channels saved. Report cuts and manual order options sync.",
     saveChannels: "Save channels",
+    addChannel: "Add channel",
+    channelName: "Channel name",
+    channelNamePh: "e.g. GetYourGuide",
+    channelNameRequired: "Please enter a channel name",
+    removeChannel: "Remove channel",
     stores: "Stores",
     addStore: "Add store",
     send: "Sending",
@@ -2053,7 +2068,7 @@ const ja: AdminCopy = {
     "/admin/site": "サイト設定",
   },
   pages: {
-    "/admin/dashboard": { title: "ダッシュボード", lead: "直近7日のどれかを押すと、その日の件数と売上が出ます。" },
+    "/admin/dashboard": { title: "ダッシュボード", lead: "管理者は全店合計が初期表示です。店舗カードで絞り込めます。店長は自店のみです。" },
     "/admin/bookings": { title: "予約一覧", lead: "一覧でステータスを変更できます。詳細を開く必要はありません。" },
     "/admin/orders": { title: "予約一覧", lead: "一覧でステータスを変更できます。詳細を開く必要はありません。" },
     "/admin/calendar": { title: "カレンダー", lead: "月／週／日で予約を確認。日付で下の一覧を切り替え、色ブロックで詳細を開きます。" },
@@ -2069,9 +2084,9 @@ const ja: AdminCopy = {
     "/admin/bookings/how": { title: "予約スイッチ設定", lead: "予約入口のオン／オフ。オフにするとサイトに出ません。" },
     "/admin/settings/booking": { title: "予約スイッチ設定", lead: "予約入口のオン／オフ。オフにするとサイトに出ません。" },
     "/admin/site": { title: "サイト設定", lead: "社名、ロゴ、電話・メール、フッターのSNS。" },
-    "/admin/reports": { title: "売上概況", lead: "売上推移、流入元、お客さまの傾向。" },
-    "/admin/reports/overview": { title: "売上概況", lead: "売上推移、流入元、お客さまの傾向。" },
-    "/admin/reports/analytics": { title: "データ分析", lead: "今週と先週、今月と先月、今年同月と去年同月。性別・国籍・予約チャネル・時間帯も集計します。" },
+    "/admin/reports": { title: "売上概況", lead: "売上推移とコース販売。" },
+    "/admin/reports/overview": { title: "売上概況", lead: "売上推移とコース販売。" },
+    "/admin/reports/analytics": { title: "データ分析", lead: "今週と先週、今月と先月、今年同月と去年同月。流入元の手数料、性別・国籍・時間帯も集計します。" },
     "/admin/staff": { title: "スタッフ", lead: "追加、権限変更、パスワード再設定、停止。" },
     "/admin/settings": { title: "決済設定", lead: "決済方法のオン／オフ。サイトの会計はオンの方法だけ出ます。" },
     "/admin/settings/pay": { title: "決済設定", lead: "決済方法のオン／オフ。サイトの会計はオンの方法だけ出ます。" },
@@ -2262,6 +2277,9 @@ const ja: AdminCopy = {
     Klook: "Klook",
     Viator: "Viator",
     WhatsApp: "WhatsApp",
+    Instagram: "Instagram",
+    TikTok: "TikTok",
+    携程: "Ctrip",
   },
   vehicleStatus: {
     available: "稼働中",
@@ -2414,8 +2432,6 @@ const ja: AdminCopy = {
     chartOrders: "予約",
     managerStaff: "店長は予約一覧から確定してください",
     managerReport: "レポートは管理者のみです",
-    pickHint: "直近7日のどれかを押すと、その日の数字が出ます。予約を押すとカレンダーへ。",
-    vsPrev: "前日比",
   },
   orders: {
     date: "日付",
@@ -2613,6 +2629,11 @@ const ja: AdminCopy = {
     channelLocked: "公式サイトはオフにできません",
     channelSaved: "流入元を保存しました。手数料と手入力の選択肢も同期されます",
     saveChannels: "流入元を保存",
+    addChannel: "流入元を追加",
+    channelName: "流入元名",
+    channelNamePh: "例：GetYourGuide",
+    channelNameRequired: "流入元名を入力してください",
+    removeChannel: "流入元を削除",
     stores: "店舗管理",
     addStore: "店舗を追加",
     send: "メール送信",

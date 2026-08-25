@@ -1,6 +1,6 @@
 import { eachIso, parseIsoDate } from "@/lib/calendar";
 import { MOCK_PLANS } from "@/lib/mock/plans";
-import type { MockOrder, OrderChannel, OrderStatus } from "@/lib/mock/orders";
+import { CHANNELS, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import { ALL_STORES_ID } from "@/lib/store-id";
 
 const NAMES = [
@@ -17,7 +17,6 @@ const NAMES = [
 ];
 
 const NATIONS = ["USA", "TW", "CN", "JP", "KR", "UK"];
-const CHANNELS: OrderChannel[] = ["Klook", "官网", "Viator", "微信", "WhatsApp", "线下"];
 const SLOTS = ["10:00", "11:30", "13:00", "14:30", "16:00", "17:30", "19:00"];
 const STATUSES: OrderStatus[] = [
   "completed",

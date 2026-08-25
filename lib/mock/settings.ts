@@ -1,5 +1,3 @@
-import { type OrderChannel } from "@/lib/mock/orders";
-
 export type MockPayChannel = {
   id: string;
   name: string;
@@ -30,7 +28,8 @@ export type MockStore = {
 };
 
 export type MockBookChannel = {
-  id: OrderChannel;
+  id: string;
+  name?: string;
   enabled: boolean;
   locked?: boolean;
   cut: number;
@@ -70,11 +69,34 @@ export const MOCK_PAYMENTS: MockPayChannel[] = [
 export const MOCK_BOOK_CHANNELS: MockBookChannel[] = [
   { id: "Klook", enabled: true, cut: 0.18, fieldLabel: "API Key", fieldValue: "" },
   { id: "官网", enabled: true, locked: true, cut: 0 },
-  { id: "Viator", enabled: true, cut: 0.2, fieldLabel: "API Key", fieldValue: "" },
+  { id: "Instagram", enabled: true, cut: 0 },
+  { id: "TikTok", enabled: true, cut: 0 },
+  { id: "携程", enabled: true, cut: 0.15 },
   { id: "微信", enabled: true, cut: 0.05 },
   { id: "WhatsApp", enabled: true, cut: 0 },
   { id: "线下", enabled: true, cut: 0 },
 ];
+
+const REMOVED_BOOK_CHANNELS = new Set(["Viator"]);
+
+export function refreshBundledChannels(seed: MockBookChannel[], extra?: MockBookChannel[]) {
+  const extraById = new Map((extra ?? []).map((item) => [item.id, item]));
+  const seedIds = new Set(seed.map((item) => item.id));
+  const merged = seed.map((seedItem) => {
+    const prev = extraById.get(seedItem.id);
+    if (!prev) return seedItem;
+    return {
+      ...seedItem,
+      ...prev,
+      id: seedItem.id,
+      locked: seedItem.locked,
+    };
+  });
+  const custom = (extra ?? []).filter(
+    (item) => !seedIds.has(item.id) && !REMOVED_BOOK_CHANNELS.has(item.id),
+  );
+  return [...merged, ...custom];
+}
 
 const TYPES = ["预订确认", "出发提醒", "退款通知", "回访评价"] as const;
 const LOCALES = ["zh-TW", "en", "ja"] as const;

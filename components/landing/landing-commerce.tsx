@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
-import { ChevronLeft, MapPin, Star } from "lucide-react";
+import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
+import { ChevronLeft, MapPin, Play, Star } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useFileRouter as useRouter } from "@/lib/use-file-router";
@@ -18,7 +18,7 @@ import { formatJpy } from "@/lib/format";
 import { parseIsoDate } from "@/lib/calendar";
 import { useLiveCatalog, useLiveInventory } from "@/lib/live-catalog";
 import { cmsBySlot, cmsMediaSrc, localeText, localizedList, resolveCmsVideo, useBookingContact, useLiveCms } from "@/lib/live-cms";
-import { MOCK_CMS } from "@/lib/mock/cms";
+import { MOCK_CMS, type CmsVideo } from "@/lib/mock/cms";
 import { BOOKING_SLOTS } from "@/lib/booking/slots";
 import { DEFAULT_STORE_ID } from "@/lib/store-id";
 import { withSlash } from "@/lib/paths";
@@ -39,38 +39,39 @@ type CommerceProps = {
   copy: LandingCopy;
 };
 
-function LazyLoopVideo({ src, poster }: { src: string; poster: string }) {
-  const ref = useRef<HTMLVideoElement>(null);
-  const [on, setOn] = useState(false);
+function ClickToPlayClip({
+  video,
+  fallback,
+  startAt = 0,
+  label,
+}: {
+  video?: CmsVideo;
+  fallback?: string;
+  startAt?: number;
+  label: string;
+}) {
+  const [play, setPlay] = useState(false);
+  const resolved = resolveCmsVideo(video, fallback);
+  const poster = resolved?.poster ?? asset("/images/hero/poster.webp");
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        setOn(true);
-        io.disconnect();
-      },
-      { rootMargin: "200px" },
+  if (play) {
+    return (
+      <CmsVideoMedia
+        video={video}
+        fallback={fallback}
+        autoPlay
+        eager
+        startAt={startAt}
+        className="h-full w-full"
+      />
     );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
+  }
 
   return (
-    <video
-      ref={ref}
-      poster={poster}
-      muted
-      loop
-      playsInline
-      controls
-      autoPlay
-      preload="none"
-    >
-      {on ? <source src={src} type="video/mp4" /> : null}
-    </video>
+    <button type="button" className="shop-xp-hit" onClick={() => setPlay(true)} aria-label={label}>
+      <img src={poster} alt="" loading="lazy" decoding="async" />
+      <Play className="shop-xp-play" aria-hidden />
+    </button>
   );
 }
 
@@ -93,7 +94,6 @@ export function LandingGallery({ copy }: { copy: LandingCopy }) {
   const locale = useLocale();
   const cms = useLiveCms();
   const clip = cmsBySlot(cms.videos, "gallery")[0];
-  const resolved = resolveCmsVideo(clip, "/videos/street-run.mp4");
   const title = localeText(cms.labels.videosTitle, locale, copy.videosTitle);
   const lead = localeText(cms.labels.videosLead, locale, copy.videosLead);
   const caption = clip ? localeText(clip.title, locale) : copy.videos[0]?.title;
@@ -106,14 +106,12 @@ export function LandingGallery({ copy }: { copy: LandingCopy }) {
         <p className="shop-lead">{lead}</p>
         <div className="shop-gallery shop-gallery-stack">
           <figure className="shop-gallery-video">
-            {resolved?.kind === "youtube" ? (
-              <CmsVideoMedia video={clip} autoPlay className="h-full w-full" />
-            ) : (
-              <LazyLoopVideo
-                src={resolved?.kind === "file" ? resolved.src : asset("/videos/street-run.mp4")}
-                poster={resolved?.poster ?? asset("/images/hero/poster.jpg")}
-              />
-            )}
+            <ClickToPlayClip
+              video={clip}
+              fallback="/videos/street-run.mp4"
+              startAt={clip?.startAt ?? 0}
+              label={caption || title}
+            />
             <figcaption>{caption}</figcaption>
           </figure>
           <div className="shop-gallery-grid">
@@ -524,9 +522,13 @@ function LandingExperience({ theme }: { theme: SiteTheme }) {
           <article key={item.id}>
             <div className="shop-xp-media">
               {resolved ? (
-                <CmsVideoMedia video={item} autoPlay startAt={item.startAt ?? 0} className="h-full w-full" />
+                <ClickToPlayClip
+                  video={item}
+                  startAt={item.startAt ?? 0}
+                  label={caption}
+                />
               ) : (
-                <img src={asset("/images/hero/poster.jpg")} alt="" />
+                <img src={asset("/images/hero/poster.webp")} alt="" />
               )}
             </div>
             <h3>{caption}</h3>
@@ -592,7 +594,7 @@ function LandingNotes({ theme }: { theme: SiteTheme }) {
           <div className="oni-clip">
             {cards.map((item) => (
               <article key={item.id}>
-                <img src={item.img} alt="" />
+                <img src={item.img} alt="" loading="lazy" decoding="async" />
                 <p>{item.source}</p>
                 <h3>{item.headline}</h3>
               </article>
@@ -613,13 +615,13 @@ function LandingNotes({ theme }: { theme: SiteTheme }) {
             <article key={item.id}>
               {item.href ? (
                 <a href={item.href} target="_blank" rel="noreferrer">
-                  <img src={item.img} alt="" />
+                  <img src={item.img} alt="" loading="lazy" decoding="async" />
                   <p>{item.source}</p>
                   <h3>{item.headline}</h3>
                 </a>
               ) : (
                 <>
-                  <img src={item.img} alt="" />
+                  <img src={item.img} alt="" loading="lazy" decoding="async" />
                   <p>{item.source}</p>
                   <h3>{item.headline}</h3>
                 </>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Plus } from "lucide-react";
 import { useLocale } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
@@ -14,6 +15,7 @@ import {
   adminStoreName,
 } from "@/lib/admin/copy";
 import { type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
+import { isBuiltinChannel } from "@/lib/channel-options";
 import { sendTestMail } from "@/lib/ops-notify";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
@@ -99,50 +101,109 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
 
       {section === "channels" ? (
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {(settings.channels ?? []).map((item, index) => (
-            <div key={item.id} className="min-w-0 rounded-xl border border-slate-200 bg-white p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-black">{adminChannel(locale, item.id)}</p>
-                  {item.locked ? (
-                    <span className="text-xs text-slate-500">{copy.settings.channelLocked}</span>
-                  ) : (
-                    <span className={item.enabled ? "text-xs text-emerald-600" : "text-xs text-slate-500"}>
-                      {item.enabled ? copy.settings.on : copy.settings.off}
-                    </span>
-                  )}
+          {(settings.channels ?? []).map((item, index) => {
+            const builtin = isBuiltinChannel(item.id);
+            return (
+              <div key={item.id} className="min-w-0 rounded-xl border border-slate-200 bg-white p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    {builtin ? (
+                      <p className="font-black">{adminChannel(locale, item.id)}</p>
+                    ) : (
+                      <label className="admin-field mt-0 min-w-0">
+                        {copy.settings.channelName}
+                        <input
+                          className="admin-input"
+                          value={item.name ?? ""}
+                          placeholder={copy.settings.channelNamePh}
+                          onChange={(event) => {
+                            const next = (settings.channels ?? []).map((row, i) =>
+                              i === index ? { ...row, name: event.target.value } : row,
+                            );
+                            patchSettings({ channels: next });
+                          }}
+                        />
+                      </label>
+                    )}
+                    {item.locked ? (
+                      <span className="text-xs text-slate-500">{copy.settings.channelLocked}</span>
+                    ) : (
+                      <span className={item.enabled ? "text-xs text-emerald-600" : "text-xs text-slate-500"}>
+                        {item.enabled ? copy.settings.on : copy.settings.off}
+                      </span>
+                    )}
+                  </div>
+                  <div className={item.locked ? "pointer-events-none opacity-40" : undefined}>
+                    <NeonToggle
+                      checked={item.enabled}
+                      onChange={(on) => {
+                        if (item.locked) return;
+                        const next = (settings.channels ?? []).map((row, i) => (i === index ? { ...row, enabled: on } : row));
+                        patchSettings({ channels: next });
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className={item.locked ? "pointer-events-none opacity-40" : undefined}>
-                  <NeonToggle
-                    checked={item.enabled}
-                    onChange={(on) => {
-                      if (item.locked) return;
-                      const next = (settings.channels ?? []).map((row, i) => (i === index ? { ...row, enabled: on } : row));
+                <label className="admin-field mt-3 min-w-0">
+                  {copy.settings.channelCut}
+                  <input
+                    className="admin-input"
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    value={Number((item.cut * 100).toFixed(1))}
+                    onChange={(event) => {
+                      const pct = Math.min(100, Math.max(0, Number(event.target.value) || 0));
+                      const next = (settings.channels ?? []).map((row, i) => (i === index ? { ...row, cut: pct / 100 } : row));
                       patchSettings({ channels: next });
                     }}
                   />
-                </div>
+                </label>
+                {builtin ? null : (
+                  <button
+                    type="button"
+                    className="mt-3 text-xs text-rose-600 hover:underline"
+                    onClick={() => {
+                      patchSettings({
+                        channels: (settings.channels ?? []).filter((row) => row.id !== item.id),
+                      });
+                    }}
+                  >
+                    {copy.settings.removeChannel}
+                  </button>
+                )}
               </div>
-              <label className="admin-field mt-3 min-w-0">
-                {copy.settings.channelCut}
-                <input
-                  className="admin-input"
-                  type="number"
-                  min={0}
-                  max={100}
-                  step={0.1}
-                  value={Number((item.cut * 100).toFixed(1))}
-                  onChange={(event) => {
-                    const pct = Math.min(100, Math.max(0, Number(event.target.value) || 0));
-                    const next = (settings.channels ?? []).map((row, i) => (i === index ? { ...row, cut: pct / 100 } : row));
-                    patchSettings({ channels: next });
-                  }}
-                />
-              </label>
-            </div>
-          ))}
+            );
+          })}
+          <button
+            type="button"
+            className="flex min-h-[10.5rem] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500 transition hover:border-blue-400 hover:text-blue-600"
+            onClick={() => {
+              patchSettings({
+                channels: [
+                  ...(settings.channels ?? []),
+                  { id: `ch-${Date.now().toString(36)}`, name: "", enabled: true, cut: 0 },
+                ],
+              });
+            }}
+          >
+            <Plus className="size-5" />
+            {copy.settings.addChannel}
+          </button>
           <div className="sm:col-span-2 xl:col-span-3">
-            <button type="button" className="cta-btn w-full px-5 py-2.5 sm:w-auto" onClick={() => notify(copy.settings.channelSaved)}>
+            <button
+              type="button"
+              className="cta-btn w-full px-5 py-2.5 sm:w-auto"
+              onClick={() => {
+                const unnamed = (settings.channels ?? []).some((row) => !isBuiltinChannel(row.id) && !row.name?.trim());
+                if (unnamed) {
+                  notify(copy.settings.channelNameRequired);
+                  return;
+                }
+                notify(copy.settings.channelSaved);
+              }}
+            >
               {copy.settings.saveChannels}
             </button>
           </div>

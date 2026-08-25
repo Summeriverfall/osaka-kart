@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { weekdayLabel } from "@/lib/calendar";
 import { formatYenShort } from "@/lib/format";
-import { adminChannel, adminCopy, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
+import { adminCopy, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
+import { labelChannel } from "@/lib/channel-options";
 import { type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import type { MockPlan } from "@/lib/mock/plans";
 import { TIMELINE_END_HOUR, TIMELINE_START_HOUR } from "@/lib/mock/vehicle-timeline";
@@ -91,6 +92,7 @@ export function WeekTimeline({ value, orders, days, compact = false, onSelectDat
   const locale = useLocale();
   const copy = adminCopy(locale);
   const plans = useOpsStore((state) => state.plans);
+  const channels = useOpsStore((state) => state.settings.channels);
   const byDate = useMemo(() => {
     const map = new Map<string, LaidOut[]>();
     for (const iso of days) {
@@ -220,7 +222,7 @@ export function WeekTimeline({ value, orders, days, compact = false, onSelectDat
             {tip.order.time} · {copy.calendar.minutes(tip.duration)} · {adminPlanName(locale, plans.find((item) => item.slug === tip.order.planSlug), tip.order.planName)}
           </p>
           <p>
-            {adminChannel(locale, tip.order.channel)} · {formatYenShort(tip.order.totalJpy)} · {tip.order.id}
+            {labelChannel(locale, tip.order.channel, channels)} · {formatYenShort(tip.order.totalJpy)} · {tip.order.id}
           </p>
         </div>
       ) : null}

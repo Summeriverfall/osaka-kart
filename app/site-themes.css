@@ -2864,6 +2864,19 @@ html {
 .gw-shot {
   position: absolute;
   inset: 0;
+  background: #12121a;
+}
+
+.gw-neon .gw-shot {
+  background: #1a1016;
+}
+
+.gw-acid .gw-shot {
+  background: #16120a;
+}
+
+.gw-oni .gw-shot {
+  background: #1a0808;
 }
 
 .gw-shot img {
@@ -4726,6 +4739,8 @@ html {
 }
 
 .shop-gallery-video video,
+.shop-gallery-video iframe,
+.shop-gallery-video .shop-xp-hit,
 .shop-gallery-grid img {
   display: block;
   width: 100%;
@@ -4733,9 +4748,18 @@ html {
   object-fit: cover;
 }
 
-.shop-gallery-video video {
+.shop-gallery-video video,
+.shop-gallery-video iframe,
+.shop-gallery-video .shop-xp-hit {
   aspect-ratio: 16 / 9;
+  height: auto;
   background: #000;
+}
+
+.shop-gallery-video .shop-xp-hit img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .shop-gallery-grid {

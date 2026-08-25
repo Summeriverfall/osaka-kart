@@ -5,7 +5,7 @@ import { Calendar, Menu, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useAppPathname } from "@/lib/use-app-pathname";
-import { BrandMark } from "@/components/site/brand-mark";
+import { LiveBrandMark } from "@/components/site/live-brand-mark";
 import { ContactTicker, NavBookingContact } from "@/components/site/contact-ticker";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import { siteHome, withSlash } from "@/lib/paths";
@@ -57,7 +57,7 @@ export function SiteNav({ look }: SiteNavProps) {
       )}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
-        <BrandMark look={currentLook} />
+        <LiveBrandMark look={currentLook} />
         <div className="site-bar-contact">
           <ContactTicker />
         </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { BrandMark } from "@/components/site/brand-mark";
+import { LiveBrandMark } from "@/components/site/live-brand-mark";
 import { ContactTicker, NavBookingContact } from "@/components/site/contact-ticker";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import type { SiteTheme } from "@/lib/visual-theme";
@@ -56,7 +56,7 @@ export function SiteNav({ theme, experience, plans, faq, calendar }: SiteNavProp
         scrolled && "is-scrolled",
       )}
     >
-      <BrandMark className="site-bar-logo" look={theme} />
+      <LiveBrandMark className="site-bar-logo" look={theme} />
       <div className="site-bar-contact">
         <ContactTicker />
       </div>

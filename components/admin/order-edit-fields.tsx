@@ -1,8 +1,10 @@
 "use client";
 
-import { adminChannel, adminCopy, adminNation, adminPlanName } from "@/lib/admin/copy";
-import { type MockOrder, type OrderChannel, type OrderStatus } from "@/lib/mock/orders";
+import { adminCopy, adminNation, adminPlanName } from "@/lib/admin/copy";
+import { labelChannel } from "@/lib/channel-options";
+import { type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import { type MockPlan } from "@/lib/mock/plans";
+import { useOpsStore } from "@/stores/ops-store";
 
 const STATUSES: OrderStatus[] = ["pending", "confirmed", "completed", "cancelled"];
 
@@ -15,11 +17,12 @@ export function OrderEditFields({
 }: {
   order: MockOrder;
   plans: MockPlan[];
-  channelOptions: OrderChannel[];
+  channelOptions: string[];
   locale: string;
   onChange: (next: MockOrder) => void;
 }) {
   const copy = adminCopy(locale);
+  const channels = useOpsStore((state) => state.settings.channels);
   const nationKeys = Object.keys(copy.nation);
   const nations = nationKeys.includes(order.nationality) ? nationKeys : [order.nationality, ...nationKeys];
 
@@ -48,10 +51,10 @@ export function OrderEditFields({
       </label>
       <label className="admin-field">
         {copy.orders.channel}
-        <select className="admin-input" value={order.channel} onChange={(event) => set({ channel: event.target.value as OrderChannel })}>
+        <select className="admin-input" value={order.channel} onChange={(event) => set({ channel: event.target.value })}>
           {channelOptions.map((item) => (
             <option key={item} value={item}>
-              {adminChannel(locale, item)}
+              {labelChannel(locale, item, channels)}
             </option>
           ))}
         </select>

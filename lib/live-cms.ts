@@ -22,13 +22,13 @@ export type ResolvedCmsVideo =
 export function resolveCmsVideo(video: CmsVideo | undefined, fallback?: string): ResolvedCmsVideo | null {
   if (!video) {
     if (!fallback) return null;
-    return { kind: "file", src: asset(fallback), poster: asset("/images/hero/poster.jpg") };
+    return { kind: "file", src: asset(fallback), poster: asset("/images/hero/poster.webp") };
   }
   const poster = video.poster
     ? video.poster.startsWith("data:") || video.poster.startsWith("blob:") || video.poster.startsWith("http")
       ? video.poster
       : asset(video.poster)
-    : asset("/images/hero/poster.jpg");
+    : asset("/images/hero/poster.webp");
 
   if (video.source === "youtube" && video.youtubeId) {
     return { kind: "youtube", id: video.youtubeId, poster };

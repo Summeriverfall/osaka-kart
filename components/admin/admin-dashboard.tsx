@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useLocale } from "next-intl";
 import { CalendarDays, ClipboardList, Plus, Wallet, Warehouse } from "lucide-react";
 import { CountUp } from "@/components/admin/count-up";
@@ -37,7 +37,6 @@ export function AdminDashboardView() {
   const { orders, vehicles, stores, storeId, setStoreId, canSwitch, store } = useStoreData();
   const showingAll = canSwitch && isAllStores(storeId);
   const todayIso = todayIsoDate();
-  const [picked, setPicked] = useState(todayIso);
 
   useEffect(() => {
     if (canSwitch) setStoreId(ALL_STORES_ID);
@@ -49,9 +48,9 @@ export function AdminDashboardView() {
     () => Array.from({ length: 7 }, (_, index) => addDaysIso(todayIso, index - 6)),
     [todayIso],
   );
-  const prevIso = addDaysIso(picked, -1);
-  const dayOrders = orders.filter((item) => item.date === picked).sort((a, b) => a.time.localeCompare(b.time));
-  const prevOrders = orders.filter((item) => item.date === prevIso);
+  const yesterdayIso = addDaysIso(todayIso, -1);
+  const dayOrders = orders.filter((item) => item.date === todayIso).sort((a, b) => a.time.localeCompare(b.time));
+  const prevOrders = orders.filter((item) => item.date === yesterdayIso);
   const pending = dayOrders.filter((item) => item.status === "pending").length;
   const todayRevenue = dayOrders.reduce((sum, item) => sum + item.totalJpy, 0);
   const prevRevenue = prevOrders.reduce((sum, item) => sum + item.totalJpy, 0);
@@ -65,7 +64,7 @@ export function AdminDashboardView() {
   const branches = stores.map((item) => {
     const storeOrders = ordersAll.filter((order) => storeIdOf(order.storeId) === item.id);
     const storeVehicles = vehiclesAll.filter((vehicle) => storeIdOf(vehicle.storeId) === item.id);
-    const storeToday = storeOrders.filter((order) => order.date === picked);
+    const storeToday = storeOrders.filter((order) => order.date === todayIso);
     return {
       id: item.id,
       name: adminStoreName(locale, item.id, item.name),
@@ -91,7 +90,7 @@ export function AdminDashboardView() {
       value: todayRevenue,
       icon: Wallet,
       trend: prevRevenue
-        ? `${todayRevenue >= prevRevenue ? "↑" : "↓"} ${picked === todayIso ? copy.dashboard.vsYesterday : copy.dashboard.vsPrev}`
+        ? `${todayRevenue >= prevRevenue ? "↑" : "↓"} ${copy.dashboard.vsYesterday}`
         : showingAll
           ? copy.dashboard.allSum
           : copy.dashboard.storeRevenue,
@@ -124,9 +123,8 @@ export function AdminDashboardView() {
     { id: "staff", label: copy.dashboard.staff, href: role === "admin" ? "/admin/staff" : "/admin/orders" },
   ];
 
-  function openDay(iso: string, tab: "/admin/orders" | "/admin/calendar" = "/admin/orders") {
-    setPicked(iso);
-    setAdminFocusDate(iso);
+  function openToday(tab: "/admin/orders" | "/admin/calendar" = "/admin/orders") {
+    setAdminFocusDate(todayIso);
     go(tab);
   }
 
@@ -151,34 +149,13 @@ export function AdminDashboardView() {
         </div>
       ) : null}
 
-      <div className="flex flex-wrap gap-2">
-        {weekDays.map((iso) => (
-          <button
-            key={iso}
-            type="button"
-            onClick={() => {
-              setPicked(iso);
-              setAdminFocusDate(iso);
-            }}
-            className={`rounded-full border px-3 py-1.5 text-xs transition ${
-              picked === iso
-                ? "border-blue-600 bg-blue-50 font-semibold text-blue-700"
-                : "border-slate-200 text-slate-600 hover:border-blue-400"
-            }`}
-          >
-            {iso === todayIso ? copy.orders.today : iso.slice(5)}
-          </button>
-        ))}
-      </div>
-      <p className="text-xs text-slate-500">{copy.dashboard.pickHint}</p>
-
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => (
           <button
             key={card.label}
             type="button"
             onClick={() => {
-              setAdminFocusDate(picked);
+              setAdminFocusDate(todayIso);
               go(card.href === "/admin/inventory" ? "/admin/inventory" : "/admin/orders");
             }}
             className="rounded-2xl border border-slate-200 bg-white p-6 text-left transition hover:border-blue-400"
@@ -229,7 +206,7 @@ export function AdminDashboardView() {
         <section className="rounded-2xl border border-slate-200 bg-white p-5">
           <div className="flex items-center justify-between gap-3">
             <h2 className="font-black">{copy.dashboard.timeline}</h2>
-            <button type="button" className="text-xs text-blue-600" onClick={() => openDay(picked, "/admin/calendar")}>
+            <button type="button" className="text-xs text-blue-600" onClick={() => openToday("/admin/calendar")}>
               {copy.nav["/admin/calendar"]}
             </button>
           </div>
@@ -249,7 +226,10 @@ export function AdminDashboardView() {
                 <li key={order.id}>
                   <button
                     type="button"
-                    onClick={() => openDay(order.date, "/admin/calendar")}
+                    onClick={() => {
+                      setAdminFocusDate(order.date);
+                      go("/admin/calendar");
+                    }}
                     className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-3 py-3 text-left hover:border-blue-400"
                   >
                     <div>
@@ -287,7 +267,7 @@ export function AdminDashboardView() {
                     return;
                   }
                   if (item.id === "order") {
-                    openDay(picked, "/admin/orders");
+                    openToday("/admin/orders");
                     return;
                   }
                   go(item.href);

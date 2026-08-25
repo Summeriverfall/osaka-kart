@@ -31,7 +31,7 @@ export function HeroMedia({ theme }: HeroMediaProps) {
         <HeroVideo
           src={hero.resolved?.kind === "file" ? hero.resolved.src : asset(clip.src)}
           startAt={hero.startAt}
-          poster={hero.resolved?.poster ?? asset("/images/hero/poster.jpg")}
+          poster={hero.resolved?.poster ?? asset("/images/hero/poster.webp")}
           preload="none"
           className="absolute inset-0 z-0 h-full w-full object-cover"
         />

@@ -26,7 +26,9 @@ export type AnalyticsDelta = {
 const CHANNEL_FILL: Record<string, string> = {
   Klook: "#38BDF8",
   官网: "#34D399",
-  Viator: "#A855F7",
+  Instagram: "#E1306C",
+  TikTok: "#69C9D0",
+  携程: "#287DFA",
   微信: "#F59E0B",
   WhatsApp: "#9CA3AF",
   线下: "#FF2E93",

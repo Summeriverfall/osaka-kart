@@ -8,7 +8,16 @@ type HeroVideoProps = {
   poster?: string;
   className?: string;
   preload?: "none" | "metadata" | "auto";
+  eager?: boolean;
 };
+
+function skipHeavyVideo() {
+  if (typeof navigator === "undefined") return false;
+  const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+  if (conn?.saveData) return true;
+  if (conn?.effectiveType === "slow-2g" || conn?.effectiveType === "2g") return true;
+  return Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
+}
 
 export function HeroVideo({
   src,
@@ -16,24 +25,31 @@ export function HeroVideo({
   poster,
   className,
   preload = "none",
+  eager = false,
 }: HeroVideoProps) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [active, setActive] = useState(false);
+  const [active, setActive] = useState(eager);
 
   useEffect(() => {
+    if (eager) return;
     const video = ref.current;
     if (!video) return;
+    let timer = 0;
     const io = new IntersectionObserver(
       ([entry]) => {
         if (!entry?.isIntersecting) return;
-        setActive(true);
         io.disconnect();
+        if (skipHeavyVideo()) return;
+        timer = window.setTimeout(() => setActive(true), 700);
       },
-      { rootMargin: "80px" },
+      { rootMargin: "0px", threshold: 0.2 },
     );
     io.observe(video);
-    return () => io.disconnect();
-  }, []);
+    return () => {
+      io.disconnect();
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [eager]);
 
   useEffect(() => {
     const video = ref.current;

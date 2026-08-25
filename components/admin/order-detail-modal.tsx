@@ -8,8 +8,9 @@ import { OrderEditFields } from "@/components/admin/order-edit-fields";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Modal } from "@/components/ui/modal";
 import { adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
+import { liveChannelIds } from "@/lib/channel-options";
 import { formatYenShort } from "@/lib/format";
-import { CHANNELS, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
+import { type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import { sendStatusMail } from "@/lib/ops-notify";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
@@ -38,11 +39,10 @@ export function OrderDetailModal({
     setDraft(null);
   }, [orderId]);
 
-  const channelOptions = useMemo(() => {
-    const enabled = new Set((settings.channels ?? []).filter((item) => item.enabled).map((item) => item.id));
-    if (!enabled.size) return CHANNELS;
-    return CHANNELS.filter((item) => enabled.has(item) || item === (draft?.channel ?? order?.channel));
-  }, [settings.channels, draft?.channel, order?.channel]);
+  const channelOptions = useMemo(
+    () => liveChannelIds(settings.channels, draft?.channel ?? order?.channel),
+    [settings.channels, draft?.channel, order?.channel],
+  );
 
   function save(next: MockOrder, fromId: string) {
     const id = next.id.trim() || fromId;

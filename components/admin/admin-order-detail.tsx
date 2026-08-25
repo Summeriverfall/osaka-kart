@@ -6,9 +6,10 @@ import { OrderDocs } from "@/components/admin/order-docs";
 import { OrderEditFields } from "@/components/admin/order-edit-fields";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Modal } from "@/components/ui/modal";
-import { adminChannel, adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
+import { adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
+import { labelChannel, liveChannelIds } from "@/lib/channel-options";
 import { formatYenShort } from "@/lib/format";
-import { CHANNELS, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
+import { type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import { sendStatusMail } from "@/lib/ops-notify";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { useOpsStore } from "@/stores/ops-store";
@@ -32,11 +33,10 @@ export function AdminOrderDetailView({ id }: { id: string }) {
   const notify = useToastStore((state) => state.notify);
   const [draft, setDraft] = useState<MockOrder | null>(null);
 
-  const channelOptions = useMemo(() => {
-    const enabled = new Set((settings.channels ?? []).filter((item) => item.enabled).map((item) => item.id));
-    if (!enabled.size) return CHANNELS;
-    return CHANNELS.filter((item) => enabled.has(item) || item === (draft?.channel ?? order?.channel));
-  }, [settings.channels, draft?.channel, order?.channel]);
+  const channelOptions = useMemo(
+    () => liveChannelIds(settings.channels, draft?.channel ?? order?.channel),
+    [settings.channels, draft?.channel, order?.channel],
+  );
 
   if (!order) {
     return <p className="text-sm text-slate-500">{copy.orders.empty}</p>;
@@ -94,7 +94,7 @@ export function AdminOrderDetailView({ id }: { id: string }) {
           </div>
           <div>{copy.orders.passport}：{order.passport}</div>
           <div>{copy.orders.riders}：{order.riders}{copy.orders.mf(order.male, order.female)}</div>
-          <div>{copy.orders.channel}：{adminChannel(locale, order.channel)}</div>
+          <div>{copy.orders.channel}：{labelChannel(locale, order.channel, settings.channels)}</div>
           <div>{copy.orders.amount}：{formatYenShort(order.totalJpy)} · {order.paid ? copy.common.paid : copy.common.unpaid}</div>
           <div className="sm:col-span-2">{copy.orders.addons}：{order.addons.join("、") || copy.common.none}</div>
           <div className="sm:col-span-2">{copy.orders.note}：{order.note || "—"}</div>
