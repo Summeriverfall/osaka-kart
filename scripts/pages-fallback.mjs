@@ -30,8 +30,8 @@ const portal = `<!doctype html>
   <body>
     <div class="box">
       <p>Furture Kart Osaka</p>
-      <a class="front" href="./zh-TW/">打开前台</a>
-      <a class="admin" href="./zh-TW/admin/login/">打开后台</a>
+      <a class="front" href="./zh-TW/index.html">打开前台</a>
+      <a class="admin" href="./zh-TW/admin/login/index.html">打开后台</a>
     </div>
   </body>
 </html>
@@ -41,12 +41,12 @@ const adminRedirect = `<!doctype html>
 <html lang="zh-TW">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="refresh" content="0;url=../zh-TW/admin/login/" />
-    <link rel="canonical" href="../zh-TW/admin/login/" />
+    <meta http-equiv="refresh" content="0;url=../zh-TW/admin/login/index.html" />
+    <link rel="canonical" href="../zh-TW/admin/login/index.html" />
     <title>Furture Kart Admin</title>
   </head>
   <body>
-    <a href="../zh-TW/admin/login/">打开后台</a>
+    <a href="../zh-TW/admin/login/index.html">打开后台</a>
   </body>
 </html>
 `;
@@ -55,12 +55,12 @@ const zhHansRedirect = `<!doctype html>
 <html lang="zh-TW">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="refresh" content="0;url=../zh-TW/" />
-    <link rel="canonical" href="../zh-TW/" />
+    <meta http-equiv="refresh" content="0;url=../zh-TW/index.html" />
+    <link rel="canonical" href="../zh-TW/index.html" />
     <title>Furture Kart Osaka</title>
   </head>
   <body>
-    <a href="../zh-TW/">繁體中文</a>
+    <a href="../zh-TW/index.html">繁體中文</a>
   </body>
 </html>
 `;

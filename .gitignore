@@ -40,3 +40,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local working notes
+/notes/
+更改清单.txt
+后台需求整理.txt

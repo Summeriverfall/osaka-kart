@@ -3,6 +3,78 @@ import path from "node:path";
 
 const out = path.resolve("out");
 
+function paletteBootScript() {
+  return `<script data-palette-boot>(function(){var k="fk-acid-palette-v2";var d="pace";try{localStorage.setItem(k,d)}catch(e){}var path=location.pathname.replace(/\\\\/g,"/");var onAcid=/\\/acid(\\/|$)/.test(path)||/\\/acid\\/index\\.html$/i.test(path);if(!onAcid){try{onAcid=localStorage.getItem("furture-kart-look")==="acid"}catch(e){}}if(!onAcid)return;document.documentElement.setAttribute("data-acid-palette",d)})();</script>`;
+}
+
+function writePortal() {
+  const html = `<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Furture Kart · 本地入口</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #09090c;
+        color: #f1f1f5;
+        font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      }
+      .wrap { max-width: 920px; margin: 0 auto; padding: 2.2rem 1.2rem 3rem; }
+      .kicker { margin: 0; font-size: .72rem; letter-spacing: .18em; color: #9aa0b3; text-transform: uppercase; }
+      h1 { margin: .35rem 0 0; font-size: 1.55rem; font-weight: 650; letter-spacing: .04em; }
+      .lead { margin: .55rem 0 0; color: #b7bccd; font-size: .92rem; line-height: 1.55; }
+      .row { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 1.2rem; }
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        padding: .72rem 1.15rem; border-radius: 999px; text-decoration: none; font-weight: 650; font-size: .92rem;
+      }
+      .front { background: #ff2d95; color: #fff; }
+      .admin { border: 1px solid #ffffff33; color: #f1f1f5; }
+      h2 { margin: 2rem 0 .7rem; font-size: .8rem; letter-spacing: .16em; text-transform: uppercase; color: #9aa0b3; font-weight: 650; }
+      .looks { display: grid; gap: .75rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .look {
+        display: grid; gap: .45rem; padding: .9rem .95rem 1rem;
+        border-radius: 16px; text-decoration: none; color: inherit;
+        border: 1px solid #ffffff18; min-height: 96px;
+      }
+      .look:hover { border-color: #ffffff44; transform: translateY(-1px); }
+      .look small { font-style: normal; font-size: .78rem; line-height: 1.4; opacity: .78; }
+      .look strong { font-size: 1.02rem; }
+      .ln { background: linear-gradient(160deg, #1a0b16, #0d0d14); }
+      .la { background: linear-gradient(160deg, #0c0f14, #161010); }
+      .lo { background: linear-gradient(160deg, #140e0a, #1a1210); }
+      @media (max-width: 640px) {
+        .looks { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <p class="kicker">Local preview</p>
+      <h1>Furture Kart Osaka</h1>
+      <p class="lead">双击这一页选入口。酸街已定稿为「节奏」配色，从预约 / 语言切回去也还是这一套，不会跳到旧的酒红或青苔。</p>
+      <div class="row">
+        <a class="btn front" href="out/zh-TW/index.html">打开前台</a>
+        <a class="btn admin" href="out/zh-TW/admin/login/index.html">打开后台</a>
+      </div>
+      <h2>外观</h2>
+      <div class="looks">
+        <a class="look ln" href="out/zh-TW/neon/index.html"><strong>霓虹</strong><small>粉紫夜街</small></a>
+        <a class="look la" href="out/zh-TW/acid/index.html?palette=pace"><strong>酸街</strong><small>发车格 · 节奏</small></a>
+        <a class="look lo" href="out/zh-TW/oni/index.html"><strong>鬼街</strong><small>裂帛和风</small></a>
+      </div>
+    </div>
+  </body>
+</html>
+`;
+  fs.writeFileSync(path.resolve("打开网站.html"), html);
+}
+
 function walk(dir, acc = []) {
   if (!fs.existsSync(dir)) return acc;
   for (const name of fs.readdirSync(dir)) {
@@ -102,6 +174,9 @@ function rewriteHtml(content, prefix) {
         return `${start}${prefix}${page}index.html${query}${hash}${end}`;
       },
     );
+  if (!html.includes("data-palette-boot")) {
+    html = html.replace(/<head[^>]*>/i, (m) => `${m}${paletteBootScript()}`);
+  }
   if (!html.includes("data-file-boot")) {
     html = html.replace(/<head[^>]*>/i, (m) => `${m}${FILE_BOOT}`);
   }
@@ -165,32 +240,48 @@ for (const file of files) {
 
 writeLauncher(path.join(out, "打开后台.html"), "打开 Furture Kart 后台", "zh-TW/admin/login/index.html");
 writeLauncher(path.join(out, "打开前台.html"), "打开 Furture Kart 前台", "zh-TW/index.html");
-writeLauncher(path.resolve("打开后台.html"), "打开 Furture Kart 后台", "out/zh-TW/admin/login/index.html");
-writeLauncher(path.resolve("打开前台.html"), "打开 Furture Kart 前台", "out/zh-TW/index.html");
 
-const portal = `<!doctype html>
-<html lang="zh-TW">
-  <head>
-    <meta charset="utf-8" />
-    <title>Furture Kart Osaka</title>
-    <style>
-      body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0A0A0F;color:#F1F1F5;font-family:sans-serif}
-      .box{display:grid;gap:1rem;text-align:center}
-      a{display:block;padding:.9rem 1.4rem;border-radius:999px;text-decoration:none;font-weight:600}
-      .front{background:#FF2D95;color:#fff}
-      .admin{border:1px solid #ffffff33;color:#F1F1F5}
-    </style>
-  </head>
-  <body>
-    <div class="box">
-      <p>Furture Kart Osaka</p>
-      <a class="front" href="out/zh-TW/index.html">打开前台</a>
-      <a class="admin" href="out/zh-TW/admin/login/index.html">打开后台</a>
-    </div>
-  </body>
-</html>
-`;
-fs.writeFileSync(path.resolve("打开网站.html"), portal);
+function copyReadableStyles() {
+  const frontSrc = path.resolve("src/styles/front");
+  const adminSrc = path.resolve("src/styles/admin");
+  const frontDest = path.join(out, "styles", "front");
+  const adminDest = path.join(out, "styles", "admin");
+  fs.mkdirSync(frontDest, { recursive: true });
+  fs.mkdirSync(adminDest, { recursive: true });
+  for (const name of ["shared.css", "neon.css", "acid.css", "oni.css", "legacy.css", "index.css"]) {
+    fs.copyFileSync(path.join(frontSrc, name), path.join(frontDest, name));
+  }
+  fs.copyFileSync(path.join(adminSrc, "admin.css"), path.join(adminDest, "admin.css"));
+  fs.copyFileSync(path.join(adminSrc, "inventory.css"), path.join(adminDest, "inventory.css"));
+  fs.writeFileSync(
+    path.join(out, "说明.txt"),
+    `这个 out 是生成好的网站。不要手改 html / _next。
+
+前台（给客人看）
+  zh-TW / en / ja / ko
+  外观文件夹：neon 霓虹、acid 酸街、oni 鬼街
+  快捷入口：打开前台.html
+  可读样式：styles/front/
+    shared.css  三套外观共用
+    neon.css    霓虹
+    acid.css    酸街
+    oni.css     鬼街
+
+后台（给店员用）
+  zh-TW/admin/ （登录在 admin/login）
+  快捷入口：打开后台.html
+  可读样式：styles/admin/
+    admin.css       操作台
+    inventory.css   库存表
+
+页面真正加载的打包样式在 _next/static/css，改外观请改 src/styles 再 npm run build。
+`,
+  );
+}
+
+copyReadableStyles();
+
+writePortal();
 
 console.log(`已改成可双击打开：HTML ${htmlCount}，CSS ${cssCount}，JS ${jsCount}`);
-console.log("入口：打开前台.html / 打开后台.html / 打开网站.html");
+console.log("入口：打开网站.html");

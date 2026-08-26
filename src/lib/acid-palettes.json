@@ -1,0 +1,146 @@
+[
+  {
+    "id": "pace",
+    "name": "节奏",
+    "blurb": "沥青 · 号牌白 · 信号黄 · 刹车红（版面按发车格重做）",
+    "vars": {
+      "ink": "#f6f3ec",
+      "dark": "#101114",
+      "panel": "#191b21",
+      "gold": "#f0c400",
+      "rose": "#e11d2e",
+      "roseDeep": "#8b1520",
+      "paper": "#f3efe4",
+      "paperInk": "#141414",
+      "foam": "#fffdf6"
+    }
+  },
+  {
+    "id": "wine",
+    "name": "酒红",
+    "blurb": "暖酒红 · 暗金 · 玫棕，好读偏静",
+    "vars": {
+      "ink": "#f4eee6",
+      "dark": "#1a1014",
+      "panel": "#23151c",
+      "gold": "#d8c89a",
+      "rose": "#c45a86",
+      "roseDeep": "#8d4a66",
+      "paper": "#ead9a8",
+      "paperInk": "#1c1410",
+      "foam": "#fff8f4"
+    }
+  },
+  {
+    "id": "moss",
+    "name": "青苔",
+    "blurb": "冷青底 · 苔绿 · 陶土，最不刺眼",
+    "vars": {
+      "ink": "#e7efe8",
+      "dark": "#0f1613",
+      "panel": "#18241e",
+      "gold": "#b4c9a4",
+      "rose": "#c26a4e",
+      "roseDeep": "#3e5a4c",
+      "paper": "#c9d6c4",
+      "paperInk": "#152019",
+      "foam": "#f3f7f2"
+    }
+  },
+  {
+    "id": "circuit",
+    "name": "赛道",
+    "blurb": "沥青 · 赛车红 · 琥珀黄",
+    "vars": {
+      "ink": "#f3efe6",
+      "dark": "#0c0f14",
+      "panel": "#161b24",
+      "gold": "#e4c04a",
+      "rose": "#e23b3b",
+      "roseDeep": "#7a2430",
+      "paper": "#ece6d4",
+      "paperInk": "#14171c",
+      "foam": "#f6f3ec"
+    }
+  },
+  {
+    "id": "night",
+    "name": "夜赛",
+    "blurb": "夜航蓝 · 车灯青，湿路夜跑",
+    "vars": {
+      "ink": "#e8f2ff",
+      "dark": "#070b16",
+      "panel": "#10182a",
+      "gold": "#8ec8e8",
+      "rose": "#3d7cff",
+      "roseDeep": "#1e3a7a",
+      "paper": "#d4e0f0",
+      "paperInk": "#0c1220",
+      "foam": "#f0f5fc"
+    }
+  },
+  {
+    "id": "ember",
+    "name": "余烬",
+    "blurb": "焦黑 · 火焰橙，日落赛段",
+    "vars": {
+      "ink": "#f6eadc",
+      "dark": "#160e09",
+      "panel": "#24160e",
+      "gold": "#f0a33a",
+      "rose": "#e24a1c",
+      "roseDeep": "#8a2c12",
+      "paper": "#f0d8b8",
+      "paperInk": "#1a1008",
+      "foam": "#fff4e8"
+    }
+  },
+  {
+    "id": "cobalt",
+    "name": "钴电",
+    "blurb": "靛蓝电光，偏夜店卡丁",
+    "vars": {
+      "ink": "#eceeff",
+      "dark": "#0a0c1a",
+      "panel": "#14162c",
+      "gold": "#9aa3ff",
+      "rose": "#5b4dff",
+      "roseDeep": "#3228a0",
+      "paper": "#d8daf8",
+      "paperInk": "#101018",
+      "foam": "#f2f2ff"
+    }
+  },
+  {
+    "id": "ice",
+    "name": "冰轨",
+    "blurb": "银灰金属，冷色车身",
+    "vars": {
+      "ink": "#eef3f6",
+      "dark": "#0e1418",
+      "panel": "#172026",
+      "gold": "#7ec9c0",
+      "rose": "#3d9bb0",
+      "roseDeep": "#1e4e5c",
+      "paper": "#d5e2e6",
+      "paperInk": "#10181c",
+      "foam": "#f3f7f8"
+    }
+  },
+  {
+    "id": "volt",
+    "name": "电压",
+    "blurb": "赛道黄 + 电蓝，卡丁车劲最足",
+    "vars": {
+      "ink": "#f4f2e6",
+      "dark": "#0e100c",
+      "panel": "#171c14",
+      "gold": "#e6d12a",
+      "rose": "#2b6bff",
+      "roseDeep": "#1a3d8f",
+      "paper": "#ece6c4",
+      "paperInk": "#14160e",
+      "foam": "#f7f5e8"
+    }
+  }
+]

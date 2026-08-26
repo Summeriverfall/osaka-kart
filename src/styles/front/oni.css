@@ -1,0 +1,1253 @@
+/* 前台 · 鬼街 Oni：裂帛和风 */
+
+/* ---- Oni: vertical shrine / alley editorial ---- */
+.oni-shell {
+  display: grid;
+  min-height: 100dvh;
+  background: #0a0000;
+  color: #fff4e8;
+}
+
+.oni-spine {
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .oni-shell {
+    grid-template-columns: 72px 1fr;
+  }
+
+  .oni-spine {
+    display: flex;
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 0;
+    writing-mode: vertical-rl;
+    letter-spacing: 0.4em;
+    font-weight: 800;
+    color: #f5c518;
+    background: linear-gradient(#1a0000, #3a0505);
+    border-right: 1px solid #f5c518;
+  }
+
+  .oni-spine span:first-child {
+    font-size: 2rem;
+    color: #ff1a1a;
+    letter-spacing: 0;
+  }
+}
+
+.oni-main {
+  min-width: 0;
+}
+
+.oni-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 0.85rem 1.25rem;
+  background: #1a0000;
+  border-bottom: 1px solid #f5c518;
+}
+
+.oni-tabs-mark {
+  font-size: 1.6rem;
+  color: #ff1a1a;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.oni-tabs nav {
+  display: flex;
+  gap: 1.1rem;
+}
+
+.oni-tabs nav a,
+.oni-tabs-end a {
+  color: #f5c518;
+  text-decoration: none;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+}
+
+.oni-tabs-end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.oni-tabs .rounded-full {
+  border-radius: 0.12rem;
+}
+
+.oni-hero {
+  display: grid;
+  min-height: calc(100dvh - 4rem);
+}
+
+@media (min-width: 900px) {
+  .oni-hero {
+    grid-template-columns: 0.9fr 1.1fr;
+  }
+}
+
+.oni-hero-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.oni-stamp {
+  width: fit-content;
+  padding: 0.35rem 0.7rem;
+  border: 2px solid #ff1a1a;
+  color: #ff1a1a;
+  letter-spacing: 0.28em;
+}
+
+.oni-hero-copy h1 {
+  margin: 1rem 0;
+  font-size: clamp(2.6rem, 8vw, 5.5rem);
+  line-height: 0.9;
+}
+
+.oni-hero-copy em {
+  display: block;
+  margin-top: 0.2rem;
+  font-style: normal;
+  color: #f5c518;
+}
+
+.oni-hero-screen {
+  position: relative;
+  min-height: 52vh;
+}
+
+@media (min-width: 900px) {
+  .oni-hero-screen {
+    min-height: 100%;
+  }
+}
+
+.oni-hero-mark {
+  position: absolute;
+  right: 8%;
+  bottom: 6%;
+  z-index: 3;
+  margin: 0;
+  font-size: 8rem;
+  color: rgb(255 26 26 / 22%);
+  pointer-events: none;
+}
+
+.oni-ofuda-row,
+.oni-lanterns,
+.oni-frames,
+.oni-ema-wall,
+.oni-faq,
+.oni-gate {
+  padding: 4rem 1.25rem;
+}
+
+.oni-ofuda-row {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 800px) {
+  .oni-ofuda-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.oni-ofuda {
+  padding: 1.4rem 1rem 2rem;
+  background: #fff8e8;
+  color: #1a0000;
+  box-shadow: 8px 8px 0 #ff1a1a;
+}
+
+.oni-ofuda b {
+  color: #ff1a1a;
+}
+
+.oni-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0 1.25rem 3rem;
+  display: grid;
+  gap: 0;
+}
+
+.oni-steps li {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  gap: 1rem;
+  padding: 1.1rem 0;
+  border-top: 1px solid rgb(245 197 24 / 35%);
+}
+
+.oni-steps span {
+  color: #ff1a1a;
+  font-size: 1.4rem;
+}
+
+.oni-lantern-track,
+.oni-frames > div,
+.oni-ema-wall > div {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 800px) {
+  .oni-lantern-track,
+  .oni-frames > div,
+  .oni-ema-wall > div {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.oni-lantern-track article,
+.oni-frames figure {
+  overflow: hidden;
+  border: 1px solid #f5c518;
+}
+
+.oni-lantern-track img,
+.oni-frames img {
+  width: 100%;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+}
+
+.oni-lantern-track div,
+.oni-frames figcaption {
+  padding: 1rem;
+}
+
+.oni-ema-wall blockquote {
+  background: #5a2a10;
+  padding: 1.2rem;
+  transform: rotate(-1.5deg);
+}
+
+.oni-ema-wall blockquote:nth-child(2) {
+  transform: rotate(1.8deg);
+}
+
+.oni-faq details {
+  border-bottom: 1px solid rgb(245 197 24 / 35%);
+  padding: 0.9rem 0;
+}
+
+.oni-gate {
+  background: linear-gradient(#3a0000, #0a0000);
+  text-align: center;
+}
+
+.oni-foot {
+  padding: 2rem;
+  text-align: center;
+  opacity: 0.6;
+}
+
+/* Oni reset: shrine night, readable, no spine */
+.oni-root {
+  background: #120808;
+  color: #f7f0e4;
+}
+
+.oni-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 0.9rem 1.25rem;
+  background: rgb(18 8 8 / 92%);
+  border-bottom: 1px solid rgb(224 192 112 / 35%);
+}
+
+.oni-bar-logo {
+  font-family: var(--font-oni), serif;
+  font-weight: 700;
+  color: #e0c070;
+  text-decoration: none;
+}
+
+.oni-bar nav,
+.oni-bar-end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem 1.1rem;
+}
+
+.oni-bar nav a,
+.oni-bar-end a {
+  color: #f7f0e4;
+  text-decoration: none;
+}
+
+.oni-hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: flex-end;
+  padding: 7rem 1.25rem 5rem;
+}
+
+.oni-hero-panel {
+  position: relative;
+  z-index: 5;
+  max-width: 40rem;
+  padding: 1.7rem 1.6rem;
+  background: rgb(12 6 6 / 78%);
+  border-left: 4px solid #c43c3c;
+  border-radius: 0 0.8rem 0.8rem 0;
+}
+
+.oni-kicker {
+  margin: 0;
+  color: #e0c070;
+  font-size: 1rem;
+  letter-spacing: 0.18em;
+}
+
+.oni-hero-panel h1 {
+  margin: 0.55rem 0 0;
+  font-size: clamp(2.4rem, 7vw, 4.8rem);
+  line-height: 1.05;
+  color: #fff8ea;
+}
+
+.oni-hero-panel h1 .oni-title-rest {
+  color: #e0c070;
+}
+
+.oni-hero-panel p {
+  margin-top: 1rem;
+  font-size: 1.15rem;
+  line-height: 1.65;
+  color: #f3e6d4;
+}
+
+.oni-hero-panel .cta-btn {
+  margin-top: 1.4rem;
+}
+
+.oni-section {
+  padding: 4.5rem 1.25rem;
+}
+
+.oni-wrap {
+  max-width: min(92rem, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.oni-wrap > h2,
+.oni-flow-band h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  color: #e0c070;
+}
+
+.oni-lead {
+  margin-top: 0.7rem;
+  font-size: 1.05rem;
+  color: rgb(247 240 228 / 82%);
+}
+
+.oni-features,
+.oni-videos {
+  display: grid;
+  gap: 1.1rem;
+  margin-top: 1.8rem;
+}
+
+@media (min-width: 800px) {
+  .oni-features,
+  .oni-videos,
+  .oni-flow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .oni-flow {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.oni-features article,
+.oni-videos figure {
+  margin: 0;
+  padding: 1.35rem 1.25rem;
+  background: #1c1010;
+  border: 1px solid rgb(224 192 112 / 22%);
+  border-radius: 0.75rem;
+}
+
+.oni-features article {
+  overflow: hidden;
+}
+
+.oni-features .feature-shot {
+  margin: -1.35rem -1.25rem 0.9rem;
+  width: calc(100% + 2.5rem);
+  max-width: none;
+  max-height: 160px;
+  border-radius: 0;
+}
+
+.oni-features span {
+  color: #c43c3c;
+  font-weight: 800;
+}
+
+.oni-features h3 {
+  margin: 0.45rem 0 0;
+  font-size: 1.25rem;
+}
+
+.oni-features p,
+.oni-flow p,
+.oni-videos figcaption {
+  margin-top: 0.55rem;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: #f3e6d4;
+}
+
+.oni-flow {
+  display: grid;
+  gap: 1rem;
+  margin: 1.8rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.oni-flow li {
+  padding: 1.2rem;
+  background: #1c1010;
+  border-radius: 0.75rem;
+}
+
+.oni-flow span {
+  color: #c43c3c;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.oni-videos img {
+  width: 100%;
+  aspect-ratio: 16/10;
+  object-fit: cover;
+  border-radius: 0.45rem;
+}
+
+.oni-foot {
+  padding: 1.4rem;
+  text-align: center;
+  color: #e0c070;
+  font-size: 0.98rem;
+}
+
+.oni-root .neon-plan-card,
+.oni-root .neon-plan-detail,
+.glitch-shell .neon-plan-card,
+.glitch-shell .neon-plan-detail {
+  background: var(--card-surface);
+}
+
+/* Oni: shrine alley, vermillion + gold */
+.oni-ink {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 12% 88%, rgb(196 60 60 / 18%), transparent 28%),
+    radial-gradient(circle at 90% 10%, rgb(224 192 112 / 10%), transparent 24%);
+}
+
+.oni-torii {
+  pointer-events: none;
+  position: absolute;
+  inset: 5.5rem 1rem 1.2rem;
+  z-index: 2;
+  border: 2px solid rgb(224 192 112 / 35%);
+  border-top-width: 10px;
+  border-color: #c43c3c rgb(224 192 112 / 35%) rgb(224 192 112 / 22%);
+}
+
+.oni-root .shop-block,
+.oni-root .shop-book,
+.oni-root .shop-visit,
+.oni-root .shop-plan-chip,
+.oni-root .shop-cal-card,
+.oni-root .shop-review,
+.oni-root .shop-faq details,
+.oni-root .shop-news article,
+.oni-root .shop-contact {
+  background: #1a0e0e;
+  border-color: rgb(224 192 112 / 22%);
+}
+
+.oni-root .shop-kicker,
+.oni-root .oni-wrap > h2,
+.oni-root .shop-wrap > h2,
+.oni-root .shop-book-copy > h2 {
+  color: #e0c070;
+}
+
+.oni-root .cta-btn-solid,
+.oni-root .cal-go {
+  background: #c43c3c !important;
+  background-image: none !important;
+  box-shadow: 0 10px 24px rgb(196 60 60 / 35%) !important;
+}
+
+.oni-know {
+  background:
+    linear-gradient(180deg, rgb(196 60 60 / 10%), transparent 40%),
+    #120808;
+}
+
+/* Oni street: different IA from neon, not a recolor */
+.oni-street {
+  display: grid;
+  min-width: 0;
+}
+
+@media (min-width: 1080px) {
+  .oni-street {
+    grid-template-columns: 3.4rem minmax(0, 1fr);
+  }
+}
+
+.oni-rail {
+  display: none;
+}
+
+@media (min-width: 1080px) {
+  .oni-rail {
+    display: flex;
+    position: sticky;
+    top: 4.6rem;
+    height: calc(100dvh - 4.6rem);
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.4rem 0;
+    writing-mode: vertical-rl;
+    letter-spacing: 0.38em;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #e0c070;
+    background: linear-gradient(#2a0c0c, #120808);
+    border-right: 1px solid rgb(224 192 112 / 35%);
+  }
+}
+
+.oni-street-main {
+  min-width: 0;
+  padding-top: 4.4rem;
+}
+
+.oni-split {
+  display: grid;
+  min-height: calc(100dvh - 4.4rem);
+  background: #0e0606;
+}
+
+@media (min-width: 900px) {
+  .oni-split {
+    grid-template-columns: minmax(17rem, 0.82fr) minmax(0, 1.18fr);
+  }
+}
+
+.oni-split-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.1rem;
+  padding: 2.4rem 1.4rem 2.6rem;
+  border-bottom: 8px solid #c43c3c;
+}
+
+@media (min-width: 900px) {
+  .oni-split-copy {
+    border-bottom: 0;
+    border-right: 8px solid #c43c3c;
+    padding: 2.5rem 2rem;
+  }
+}
+
+.oni-hash {
+  margin: 0;
+  font-size: 0.82rem;
+  letter-spacing: 0.16em;
+  color: #e0c070;
+}
+
+.oni-split-copy h1 {
+  margin: 0;
+  font-size: clamp(2.1rem, 6.4vw, 4.4rem);
+  line-height: 1.12;
+  color: #fff8ea;
+}
+
+.oni-split-lead {
+  margin: 0;
+  max-width: 28rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgb(247 240 228 / 86%);
+}
+
+.oni-split-copy .cta-btn {
+  width: fit-content;
+}
+
+.oni-split-screen {
+  position: relative;
+  min-height: 48vh;
+  overflow: hidden;
+  background: #000;
+}
+
+@media (min-width: 900px) {
+  .oni-split-screen {
+    min-height: 100%;
+  }
+}
+
+.oni-split-screen video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.oni-plaque {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: fit-content;
+  min-height: 3rem;
+  padding: 0.7rem 1.35rem;
+  border: 0;
+  background: #c43c3c;
+  color: #fff8ea;
+  font-size: 1rem;
+  font-weight: 800;
+  text-decoration: none;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  cursor: pointer;
+}
+
+.oni-plaque.is-ghost {
+  background: transparent;
+  color: #e0c070;
+  box-shadow: inset 0 0 0 2px #e0c070;
+}
+
+.oni-path {
+  display: grid;
+  gap: 0;
+  background: #1a0c0c;
+  border-block: 1px solid rgb(224 192 112 / 22%);
+}
+
+@media (min-width: 800px) {
+  .oni-path {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+  }
+}
+
+.oni-path-mark {
+  min-height: 4.5rem;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #c43c3c 0 12px,
+      #e0c070 12px 24px,
+      #1a0c0c 24px 36px
+    );
+}
+
+@media (min-width: 800px) {
+  .oni-path-mark {
+    min-height: 100%;
+    background:
+      repeating-linear-gradient(
+        180deg,
+        #c43c3c 0 14px,
+        #e0c070 14px 28px,
+        #1a0c0c 28px 42px
+      );
+  }
+}
+
+.oni-path-copy {
+  padding: 2.4rem 1.35rem 2.6rem;
+}
+
+.oni-path-copy h2,
+.oni-stalls-head h2,
+.oni-way h2,
+.oni-film h2,
+.oni-ema h2,
+.oni-charms h2,
+.oni-fold-head h2,
+.oni-exit-signs h2 {
+  margin: 0;
+  font-size: clamp(1.7rem, 3.6vw, 2.5rem);
+  line-height: 1.2;
+  color: #e0c070;
+}
+
+.oni-path-copy p,
+.oni-stalls-head p,
+.oni-film > p,
+.oni-fold-head p {
+  margin: 0.7rem 0 0;
+  max-width: 36rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgb(247 240 228 / 82%);
+}
+
+.oni-path-copy ol {
+  list-style: none;
+  margin: 1.3rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+
+.oni-path-copy li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.95rem 0;
+  border-top: 1px solid rgb(224 192 112 / 22%);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.oni-stalls-head {
+  padding: 3.2rem 1.35rem 0.4rem;
+  max-width: 42rem;
+}
+
+.oni-stall {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid rgb(224 192 112 / 22%);
+}
+
+@media (min-width: 860px) {
+  .oni-stall {
+    grid-template-columns: 1.05fr 0.95fr;
+  }
+
+  .oni-stall.is-flip {
+    grid-template-columns: 0.95fr 1.05fr;
+  }
+
+  .oni-stall.is-flip .oni-stall-media {
+    order: 2;
+  }
+}
+
+.oni-stall.is-on {
+  background: rgb(196 60 60 / 10%);
+}
+
+.oni-stall-media {
+  display: grid;
+  grid-template-rows: 1.2fr 0.8fr;
+}
+
+.oni-stall-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  min-height: 12rem;
+}
+
+.oni-stall-route {
+  background: #efe6d8;
+  object-fit: contain;
+  object-position: center;
+}
+
+.oni-stall-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1.6rem 1.35rem 1.8rem;
+}
+
+.oni-stall-time {
+  margin: 0;
+  letter-spacing: 0.12em;
+  color: #c43c3c;
+  font-weight: 800;
+}
+
+.oni-stall-copy h3 {
+  margin: 0;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.3;
+}
+
+.oni-stall-price {
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 800;
+}
+
+.oni-stall-price span {
+  margin-left: 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.oni-stall-desc {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  color: rgb(247 240 228 / 84%);
+}
+
+.oni-stall-copy ul {
+  margin: 0.2rem 0 0.4rem;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.oni-stall-copy li {
+  padding-left: 1rem;
+  position: relative;
+  line-height: 1.5;
+}
+
+.oni-stall-copy li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.42rem;
+  height: 0.42rem;
+  background: #c43c3c;
+}
+
+.oni-way {
+  padding: 3.4rem 1.35rem 3.8rem;
+  background: #0e0606;
+}
+
+.oni-way ol {
+  list-style: none;
+  margin: 1.6rem 0 0;
+  padding: 0;
+}
+
+@media (min-width: 900px) {
+  .oni-way ol {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  .oni-way li {
+    margin-left: 0;
+    border-left: 0;
+    border-top: 3px solid #c43c3c;
+    grid-template-columns: 1fr;
+    padding: 1.15rem 0 0;
+  }
+}
+
+.oni-way li {
+  display: grid;
+  grid-template-columns: 3.2rem minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1.15rem 0 1.25rem;
+  border-left: 2px solid rgb(196 60 60 / 55%);
+  margin-left: 1.1rem;
+  padding-left: 1.2rem;
+}
+
+.oni-way b {
+  color: #c43c3c;
+  font-size: 1.15rem;
+}
+
+.oni-way strong {
+  display: block;
+  font-size: 1.15rem;
+}
+
+.oni-way p {
+  margin: 0.4rem 0 0;
+  line-height: 1.65;
+  color: rgb(247 240 228 / 80%);
+}
+
+.oni-film {
+  padding: 3.2rem 0 3.6rem;
+  background: #1a0c0c;
+}
+
+.oni-film h2,
+.oni-film > p {
+  padding-inline: 1.35rem;
+}
+
+.oni-film-row {
+  display: flex;
+  gap: 0.85rem;
+  overflow-x: auto;
+  padding: 1.4rem 1.35rem 0.4rem;
+  scroll-snap-type: x mandatory;
+}
+
+.oni-film-row figure {
+  flex: 0 0 min(78vw, 22rem);
+  scroll-snap-align: start;
+  margin: 0;
+  background: #120808;
+  border: 1px solid rgb(224 192 112 / 28%);
+}
+
+.oni-film-row figure.is-play {
+  flex-basis: min(88vw, 32rem);
+}
+
+.oni-film-row img,
+.oni-film-row video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.oni-film-row figcaption {
+  padding: 0.75rem 0.9rem 0.9rem;
+  font-size: 0.92rem;
+}
+
+.oni-ema,
+.oni-charms,
+.oni-papers {
+  padding: 3.2rem 1.35rem;
+}
+
+.oni-ema {
+  background: #1a0c0c;
+}
+
+.oni-ema-hang {
+  display: grid;
+  gap: 1.1rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 800px) {
+  .oni-ema-hang {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+.oni-ema-hang blockquote {
+  margin: 0;
+  padding: 1.2rem 1.1rem 1.3rem;
+  background: #5a2a10;
+  color: #fff4e4;
+  box-shadow: 6px 6px 0 #c43c3c;
+}
+
+.oni-ema-hang .tilt-0 {
+  transform: rotate(-1.6deg);
+}
+
+.oni-ema-hang .tilt-1 {
+  transform: rotate(1.8deg);
+  margin-top: 1.4rem;
+}
+
+.oni-ema-hang .tilt-2 {
+  transform: rotate(-0.8deg);
+}
+
+.oni-ema-stars {
+  display: flex;
+  gap: 0.15rem;
+  color: #e0c070;
+}
+
+.oni-ema-hang p {
+  margin: 0.7rem 0 0;
+  line-height: 1.6;
+}
+
+.oni-ema-hang footer {
+  margin-top: 0.85rem;
+  font-size: 0.88rem;
+  opacity: 0.8;
+}
+
+.oni-ema-hang footer span {
+  display: block;
+}
+
+.oni-charm-row {
+  display: grid;
+  gap: 0;
+  margin-top: 1.4rem;
+}
+
+.oni-charm-row article {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-top: 1px solid rgb(224 192 112 / 22%);
+}
+
+.oni-charm-row img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.oni-charm-row h3 {
+  margin: 0;
+  font-size: 1.12rem;
+}
+
+.oni-charm-row h3 span {
+  display: block;
+  margin-bottom: 0.28rem;
+  color: #c43c3c;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+}
+
+@media (min-width: 800px) {
+  .oni-charm-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  .oni-charm-row article {
+    grid-template-columns: 1fr;
+    align-items: start;
+    padding: 0;
+    border-top: 0;
+  }
+
+  .oni-charm-row img {
+    aspect-ratio: 4 / 5;
+  }
+}
+
+.oni-fold-head .shop-text-link {
+  display: inline-block;
+  margin-top: 1rem;
+  color: #e0c070;
+}
+
+.oni-papers h2 {
+  margin: 0.35rem 0 1.3rem;
+  color: #e0c070;
+}
+
+.oni-visit {
+  background: #120808;
+}
+
+.oni-visit-copy ol {
+  list-style: none;
+  margin: 1.2rem 0 0;
+  padding: 0;
+}
+
+.oni-visit-copy li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.9rem 0;
+  border-top: 1px solid rgb(224 192 112 / 22%);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.oni-root .site-foot {
+  background: #0a0404;
+  border-top: 8px solid #c43c3c;
+}
+
+.oni-root .site-foot-company,
+.oni-root .site-foot-follow {
+  color: #e0c070;
+}
+
+.oni-root .social-links a {
+  border-color: rgb(224 192 112 / 45%);
+  color: #fff8ea;
+}
+
+.oni-charm-row p {
+  margin: 0.35rem 0 0;
+  line-height: 1.6;
+  color: rgb(247 240 228 / 80%);
+}
+
+.oni-fold {
+  display: grid;
+  background: #0e0606;
+  border-block: 1px solid rgb(224 192 112 / 22%);
+}
+
+@media (min-width: 860px) {
+  .oni-fold {
+    grid-template-columns: 0.7fr 1.3fr;
+  }
+}
+
+.oni-fold-head {
+  padding: 2.4rem 1.35rem;
+  background: #c43c3c;
+  color: #fff8ea;
+}
+
+.oni-fold-head h2,
+.oni-fold-head p {
+  color: #fff8ea;
+}
+
+.oni-fold-list {
+  padding: 0.4rem 1.35rem 1.4rem;
+}
+
+.oni-fold-list details {
+  border-bottom: 1px solid rgb(224 192 112 / 22%);
+  padding: 0.95rem 0;
+}
+
+.oni-fold-list summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.oni-fold-list p {
+  margin: 0.65rem 0 0;
+  line-height: 1.65;
+  color: rgb(247 240 228 / 82%);
+}
+
+.oni-papers .ride-notes {
+  margin-bottom: 1.8rem;
+}
+
+.oni-clip {
+  display: grid;
+  gap: 0.9rem;
+}
+
+@media (min-width: 800px) {
+  .oni-clip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.oni-clip article {
+  background: #fff8e8;
+  color: #1a0000;
+  padding: 0.7rem;
+  box-shadow: 6px 6px 0 #c43c3c;
+}
+
+.oni-clip img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.oni-clip p {
+  margin: 0.55rem 0 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.oni-clip h3 {
+  margin: 0.3rem 0 0;
+  font-size: 0.98rem;
+  line-height: 1.4;
+}
+
+.oni-exit {
+  padding: 3rem 1.35rem 4rem;
+  background: linear-gradient(#3a0000, #0a0000);
+  text-align: center;
+}
+
+.oni-exit-signs {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+.oni-exit-signs .oni-plaque,
+.oni-exit-signs .cta-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.oni-exit-note {
+  margin: 1.4rem auto 0;
+  max-width: 32rem;
+  line-height: 1.65;
+  color: rgb(247 240 228 / 78%);
+}
+
+@media (max-width: 899px) {
+  .oni-stall-copy h3 {
+    line-height: 1.4;
+    word-break: normal;
+  }
+
+  .oni-ema-hang .tilt-0,
+  .oni-ema-hang .tilt-1,
+  .oni-ema-hang .tilt-2 {
+    transform: none;
+    margin-top: 0;
+  }
+}

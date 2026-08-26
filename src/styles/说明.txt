@@ -1,0 +1,15 @@
+样式按功能拆开：
+
+前台  styles/front/
+  shared.css   三套外观共用（导航、预约、结账）
+  neon.css     霓虹
+  acid.css     酸街
+  oni.css      鬼街
+  legacy.css   已下线的 HUD / Glitch
+  index.css    前台入口，按顺序引入上面的文件
+
+后台  styles/admin/
+  admin.css        后台操作台
+  inventory.css    库存表
+
+不要改 out 里打包后的 CSS；改上面这些源文件，再 npm run build。
