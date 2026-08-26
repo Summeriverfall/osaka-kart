@@ -65,7 +65,7 @@ export function toFileHref(href: string, locale?: string) {
 }
 
 export function appPageHref(appPath: string, locale = "zh-TW") {
-  if (typeof window !== "undefined") {
+  if (typeof window !== "undefined" && isFileProtocol()) {
     return toFileHref(appPath, locale);
   }
   const normalized = withSlash(appPath.startsWith("/") ? appPath : `/${appPath}`);
