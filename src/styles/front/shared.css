@@ -1828,6 +1828,97 @@ html:not(:has(.admin-app)) .float-book {
   color: inherit;
 }
 
+.site-bar-contact {
+  display: none;
+  grid-column: 2;
+  position: relative;
+  align-self: stretch;
+  min-width: 0;
+  min-height: 2.4rem;
+  overflow: hidden;
+  isolation: isolate;
+  contain: paint;
+}
+
+.site-bar-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.site-bar-contact-list a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: inherit;
+  text-decoration: none;
+  font-size: 1.22rem;
+  font-weight: 700;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+.contact-ticker {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  min-width: 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.contact-ticker-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: contact-ticker var(--ticker-duration, 28s) linear infinite;
+}
+
+.contact-ticker-group {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2.75rem;
+  padding-inline-end: 2.75rem;
+}
+
+.contact-ticker-unit {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2.75rem;
+}
+
+.contact-ticker-track a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: inherit;
+  text-decoration: none;
+  font-size: 1.22rem;
+  font-weight: 700;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+.contact-ticker:hover .contact-ticker-track {
+  animation-play-state: paused;
+}
+
+@keyframes contact-ticker {
+  to {
+    transform: translateX(calc(-1 * var(--ticker-shift, 50%)));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-ticker-track {
+    animation: none;
+  }
+}
+
 .site-bar-nav {
   display: none;
   gap: 1.25rem;
@@ -1835,11 +1926,15 @@ html:not(:has(.admin-app)) .float-book {
 
 .site-bar-end {
   grid-column: 3;
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
   gap: 0.4rem;
   flex: none;
   margin-left: 0;
+  padding-left: 0.55rem;
+  background: inherit;
 }
 
 .site-bar-cta {
@@ -1861,6 +1956,10 @@ html:not(:has(.admin-app)) .float-book {
 }
 
 @media (min-width: 860px) {
+  .site-bar-contact {
+    display: block;
+  }
+
   .site-bar-nav {
     display: flex;
   }

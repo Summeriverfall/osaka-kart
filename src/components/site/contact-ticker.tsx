@@ -35,7 +35,7 @@ export function ContactTicker({ className, onNavigate }: ContactTickerProps) {
   const book = useBookingContact();
   const viewportRef = useRef<HTMLDivElement>(null);
   const groupRef = useRef<HTMLDivElement>(null);
-  const [repeat, setRepeat] = useState(10);
+  const [repeat, setRepeat] = useState(2);
   const [shift, setShift] = useState(0);
 
   useLayoutEffect(() => {
