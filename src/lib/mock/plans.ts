@@ -25,6 +25,9 @@ export type MockPlan = {
   highlightsEn?: string[];
   highlightsJa?: string[];
   highlightsKo?: string[];
+  includesEn?: string[];
+  includesJa?: string[];
+  includesKo?: string[];
 };
 
 const ALL_ADDONS = MOCK_ADDONS.map((item) => item.id);
@@ -36,18 +39,25 @@ export const MOCK_PLANS: MockPlan[] = [
     id: "plan-sunset",
     slug: "sunset",
     name: "黄昏湾岸 45 分钟",
-    nameEn: "Sunset bay 45 min",
-    nameJa: "黄昏ベイ45分",
+    nameEn: "Twilight Bay 45 min",
+    nameJa: "トワイライトベイ45分",
+    nameKo: "트와일라이트 베이 45분",
     durationMinutes: 45,
     distanceKm: 6,
     priceJpy: 5000,
     active: true,
     maxRiders: 4,
     includes: ["头盔", "基础赛车服", "保险", "向导"],
+    includesJa: ["ヘルメット", "ベーシックレーシングスーツ", "保険", "ガイド"],
+    includesEn: ["Helmet", "Basic racing suit", "Insurance", "Guide"],
     allowedAddonIds: CORE_ONLY,
     storeIds: ["namba"],
     description: "黄昏时分沿湾岸走一圈，路线短、好上手，适合想先试车的人。",
+    descriptionEn: "A short twilight run along the bay. Easy to start with if you want to try a kart first.",
+    descriptionJa: "夕暮れ時の湾岸を走る、短時間で気軽に楽しめるコース。まずはカートを体験してみたい方におすすめです。",
     highlights: ["湾岸黄昏", "短途好上手", "适合试车"],
+    highlightsEn: ["Bay at dusk", "Short and easy", "Good first ride"],
+    highlightsJa: ["湾岸の夕景", "短時間で気軽に体験", "初めての方にもおすすめ"],
   },
   {
     id: "plan-standard",
@@ -62,6 +72,8 @@ export const MOCK_PLANS: MockPlan[] = [
     active: true,
     maxRiders: 4,
     includes: ["头盔", "赛车服", "保险", "向导"],
+    includesJa: ["ヘルメット", "レーシングスーツ", "保険", "ガイド"],
+    includesEn: ["Helmet", "Racing suit", "Insurance", "Guide"],
     allowedAddonIds: ALL_ADDONS,
     description:
       "在大阪市中心的难波，体验 60 分钟的街景骑行。一边看热闹景点，一边感受速度。路线专为新手设计，第一次来也能放心玩。",
@@ -89,6 +101,8 @@ export const MOCK_PLANS: MockPlan[] = [
     active: true,
     maxRiders: 4,
     includes: ["头盔", "赛车服", "保险", "向导"],
+    includesJa: ["ヘルメット", "レーシングスーツ", "保険", "ガイド"],
+    includesEn: ["Helmet", "Racing suit", "Insurance", "Guide"],
     allowedAddonIds: ALL_ADDONS,
     description:
       "以大阪地标通天阁为中心，体验 90 分钟行程。地道街巷和著名景点更多，路线更长，可以慢慢把城市看一遍。",
@@ -116,6 +130,8 @@ export const MOCK_PLANS: MockPlan[] = [
     active: true,
     maxRiders: 4,
     includes: ["头盔", "赛车服", "保险", "向导", "路线讲解"],
+    includesJa: ["ヘルメット", "レーシングスーツ", "保険", "ガイド", "ルート案内"],
+    includesEn: ["Helmet", "Racing suit", "Insurance", "Guide", "Route briefing"],
     allowedAddonIds: ALL_ADDONS,
     description:
       "以大阪城为背景的 120 分钟行程。历史街区和现代街景串在一条路上，适合想把代表性景点慢慢看完的人。",
@@ -142,9 +158,15 @@ export const MOCK_PLANS: MockPlan[] = [
     active: true,
     maxRiders: 4,
     includes: ["头盔", "赛车服", "保险", "向导", "夜拍点"],
+    includesJa: ["ヘルメット", "レーシングスーツ", "保険", "ガイド", "夜景撮影スポット"],
+    includesEn: ["Helmet", "Racing suit", "Insurance", "Guide", "Night photo spots"],
     allowedAddonIds: NO_PHOTOS,
     storeIds: ["namba"],
     description: "夜间霓虹路线，灯火和街景更密，适合想拍夜景的人。",
+    descriptionEn: "A neon night course through lit streets. Good if you want night photos.",
+    descriptionJa: "ネオンが輝く夜の街を走るコース。光と街並みを楽しみながら、夜景を撮影したい方にもおすすめです。",
     highlights: ["夜间霓虹", "夜景更好拍", "90 分钟"],
+    highlightsEn: ["Night neon", "Night photos", "90-minute night course"],
+    highlightsJa: ["夜のネオン", "夜景撮影におすすめ", "90分のナイトコース"],
   },
 ];

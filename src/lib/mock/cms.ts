@@ -144,15 +144,15 @@ function video(
 
 export const MOCK_CMS: CmsState = {
   labels: {
-    videosTitle: L("現場畫面", "On the street", "現場の映像", "현장 영상"),
-    videosLead: L("真實街道，不是封閉賽道。", "Public roads, not a closed track.", "クローズドコースではなく、公道です。", "폐쇄 코스가 아닌 실제 도로입니다."),
+    videosTitle: L("現場畫面", "On the street", "実際の走行風景", "현장 영상"),
+    videosLead: L("真實街道，不是封閉賽道。", "Public roads, not a closed track.", "クローズドコースではなく、実際の公道を走行します。", "폐쇄 코스가 아닌 실제 도로입니다."),
     experienceTitle: L("體驗影片", "Experience videos", "体験動画", "체험 영상"),
     experienceLead: L("上路之後是什麼感覺，先看一段。", "See the streets before you ride.", "走る前に、公道の雰囲気を見てください。", "타기 전에 거리를 먼저 보세요."),
     reviewsTitle: L("用戶評價", "Guest reviews", "お客さまの声", "이용 후기"),
-    reviewsLead: L("客人帶走的感受。", "What guests take away.", "乗った人の感想。", "이용하신 분들의 이야기."),
+    reviewsLead: L("客人帶走的感受。", "What guests take away.", "実際に体験したお客さまからのコメント。", "이용하신 분들의 이야기."),
     faqTitle: L("常見問題", "Frequently Asked Questions", "よくある質問", "자주 묻는 질문"),
-    faqLead: L("上路前最常被問到的事。駕照規定因國家而異。", "The questions people ask before they ride. License rules differ by country.", "走る前にいちばん聞かれること。免許の扱いは国によって違います。", "타기 전에 가장 많이 묻는 질문. 면허 규정은 나라마다 다릅니다."),
-    pressTitle: L("新聞報道", "In the news", "ニュース報道", "뉴스 보도"),
+    faqLead: L("上路前最常被問到的事。駕照規定因國家而異。", "The questions people ask before they ride. License rules differ by country.", "走行前によくある質問。免許の条件は国によって異なります。", "타기 전에 가장 많이 묻는 질문. 면허 규정은 나라마다 다릅니다."),
+    pressTitle: L("新聞報道", "In the news", "メディア掲載", "뉴스 보도"),
   },
   videos: [
     video("hero-main", "hero", L("首頁循環背景", "Hero loop", "ヒーロー映像", "히어로 영상"), "", 0, {
@@ -218,7 +218,7 @@ export const MOCK_CMS: CmsState = {
       quote: L(
         "從卡丁車上看出去，這座城完全不一樣。大阪最棒的一晚。",
         "The streets look completely different from a kart. Best night in Osaka.",
-        "カートから見る街は別物。大阪で一番の夜だった。",
+        "カートから見ると、街がまったく違って見えました。大阪で過ごした最高の夜です。",
         "카트에서 보는 도시는 완전히 달랐다. 오사카에서 가장 좋은 밤.",
       ),
       photo: "/images/reviews/r1.webp",
@@ -232,7 +232,7 @@ export const MOCK_CMS: CmsState = {
       quote: L(
         "說明清楚，嚮導友善，照片值得留。",
         "Clear briefing, friendly guide, and photos we actually want to keep.",
-        "説明が明確で、ガイドも親切。残したい写真が撮れた。",
+        "説明がわかりやすく、ガイドも親切でした。思い出に残る写真が撮れました。",
         "설명이 분명하고 가이드가 친절했다. 남기고 싶은 사진이 나왔다.",
       ),
       photo: "/images/reviews/r2.webp",
@@ -246,7 +246,7 @@ export const MOCK_CMS: CmsState = {
       quote: L(
         "街上的速度也很穩。霓虹這一趟就是整趟旅行。",
         "Felt safe at street speed. The neon run is the whole trip.",
-        "公道でも安心できた。ネオンの走行が旅の全部。",
+        "公道での走行も安心して楽しめました。ネオンの街を走った夜が、旅のハイライトです。",
         "도로 속도에서도 안정적이었다. 네온 주행이 여행의 전부였다.",
       ),
       photo: "/images/reviews/r3.webp",
@@ -260,11 +260,11 @@ export const MOCK_CMS: CmsState = {
       home: true,
       active: true,
       sort: 1,
-      q: L("需要駕照嗎？", "Do I need a license?", "免許は必要？", "면허가 필요한가요?"),
+      q: L("需要駕照嗎？", "Do I need a license?", "免許は必要ですか？", "면허가 필요한가요?"),
       a: L(
         "需要。請攜帶有效駕照，或 1949 年日內瓦公約國際駕駛許可。沒有駕照不能上路。",
         "Yes. Bring a valid license or a 1949 Geneva International Driving Permit. No license, no ride.",
-        "必要です。有効な免許、または1949年ジュネーブ条約の国際免許を持参。免許なしは走行不可。",
+        "有効な運転免許証、または1949年ジュネーブ条約に基づく国際運転免許証をご持参ください。免許証をお持ちでない方は走行できません。",
         "필요합니다. 유효 면허 또는 1949년 제네바 협약 국제운전면허를 지참하세요. 면허 없이는 주행할 수 없습니다.",
       ),
     },
@@ -273,11 +273,11 @@ export const MOCK_CMS: CmsState = {
       home: true,
       active: true,
       sort: 2,
-      q: L("服裝包含嗎？", "Are costumes included?", "衣装は含まれる？", "의상이 포함되나요?"),
+      q: L("服裝包含嗎？", "Are costumes included?", "衣装は含まれていますか？", "의상이 포함되나요?"),
       a: L(
         "含賽車服和頭盔。高級角色服裝可在預約時加購。",
         "A racing suit and helmet are included. Premium character costumes can be added at booking.",
-        "レーシングスーツとヘルメット込み。プレミアムキャラ衣装は予約時に追加できます。",
+        "レーシングスーツとヘルメットが含まれています。プレミアムキャラクター衣装は、ご予約時に追加できます。",
         "레이싱 슈트와 헬멧이 포함됩니다. 프리미엄 캐릭터 의상은 예약 시 추가할 수 있습니다.",
       ),
     },
@@ -286,11 +286,11 @@ export const MOCK_CMS: CmsState = {
       home: true,
       active: true,
       sort: 3,
-      q: L("在哪裡集合？", "Where do we meet?", "集合場所は？", "어디서 모이나요?"),
+      q: L("在哪裡集合？", "Where do we meet?", "集合場所はどこですか？", "어디서 모이나요?"),
       a: L(
         "集合在難波・道頓堀，おおきに道頓堀ビル。從難波站步行約 5 分鐘。",
         "We meet at おおきに道頓堀ビル in Kozu, near Namba / Dotonbori. About 5 min walk from Namba Station.",
-        "集合は難波・道頓堀の「おおきに道頓堀ビル」。難波駅から徒歩約5分。",
+        "大阪・難波周辺です。正確な集合場所は、ご予約後にお送りします。",
         "집합은 난바·도톤보리의 おおきに道頓堀ビル. 난바역에서 도보 약 5분.",
       ),
     },
@@ -299,11 +299,11 @@ export const MOCK_CMS: CmsState = {
       home: true,
       active: true,
       sort: 4,
-      q: L("下雨怎麼辦？", "What if it rains?", "雨の場合は？", "비가 오면요?"),
+      q: L("下雨怎麼辦？", "What if it rains?", "雨の場合はどうなりますか？", "비가 오면요?"),
       a: L(
         "小雨提供雨衣、通常照常出發。暴雨或颱風：免費改期或全額退款。",
         "Light rain: ponchos, we usually go. Storms or typhoons: free reschedule or full refund.",
-        "小雨はレインコートを用意し、通常実施。大雨・台風は無料振替または全額返金。",
+        "小雨の場合はレインコートをご用意し、通常どおり実施します。大雨や台風の場合は、無料での日程変更または全額返金に対応します。",
         "가랑비는 우의를 제공하고 보통 진행합니다. 폭우/태풍은 무료 일정 변경 또는 전액 환불.",
       ),
     },
@@ -312,11 +312,11 @@ export const MOCK_CMS: CmsState = {
       home: true,
       active: true,
       sort: 5,
-      q: L("年齡要求？", "Age requirement?", "年齢制限は？", "나이 제한이 있나요?"),
+      q: L("年齡要求？", "Age requirement?", "年齢制限はありますか？", "나이 제한이 있나요?"),
       a: L(
         "駕駛員須年滿 18 歲並持有有效駕照。兒童可作為乘客搭乘，請先確認空位。",
         "Drivers must be 18+ with a valid license. Children may ride as passengers if a seat is available.",
-        "運転者は18歳以上で有効な免許が必要。お子さまは同乗できる場合があります。",
+        "運転者は18歳以上で、有効な運転免許証が必要です。お子さまが同乗できる場合もありますので、事前に空き状況をご確認ください。",
         "운전자는 만 18세 이상이며 유효 면허가 있어야 합니다. 어린이는 동승할 수 있습니다.",
       ),
     },
@@ -422,7 +422,7 @@ export const MOCK_CMS: CmsState = {
       title: L(
         "服裝、車隊、鏡頭——遊客最先拍下來的一趟。",
         "Costume, convoy, camera — the ride tourists film first.",
-        "コスチューム、隊列、カメラ。旅人が最初に撮る走行。",
+        "コスチューム、隊列、カメラ。旅の思い出を彩るストリート体験。",
         "의상, 대열, 카메라. 여행객이 가장 먼저 찍는 주행.",
       ),
     },
@@ -461,7 +461,7 @@ export const MOCK_CMS: CmsState = {
     address: L(
       "〒542-0072 大阪市中央區高津2丁目4-21 おおきに道頓堀ビル",
       "〒542-0072 Osaka, Chuo Ward, Kozu, 2 Chome−4−21 おおきに道頓堀ビル",
-      "〒542-0072 大阪府大阪市中央区高津2丁目4-21 おおきに道頓堀ビル",
+      "大阪・難波周辺",
       "〒542-0072 오사카시 주오구 고즈 2초메 4-21 おおきに道頓堀ビル",
     ),
     station: L("難波站", "Namba Station", "難波駅", "난바역"),
@@ -469,7 +469,7 @@ export const MOCK_CMS: CmsState = {
     lead: L(
       "集合在難波・道頓堀。大樓門口見。",
       "Meet in Namba / Dotonbori, at the building entrance.",
-      "集合は難波・道頓堀。ビル入口で待ち合わせ。",
+      "集合場所は難波周辺です。正確な集合場所はご予約後にお送りします。",
       "집합은 난바·도톤보리. 건물 입구에서 만납니다.",
     ),
     mapsUrl: "https://www.google.com/maps/search/?api=1&query=%E3%80%92542-0072%20Osaka%20Chuo%20Kozu%202-4-21%20%E3%81%8A%E3%81%8A%E3%81%8D%E3%81%AB%E9%81%93%E9%A0%93%E5%A0%80%E3%83%93%E3%83%AB",
@@ -570,30 +570,29 @@ export function isCustomCmsVideo(item: CmsVideo) {
   return false;
 }
 
-function isDemoExperience(item: CmsVideo) {
-  if (item.slot !== "experience") return false;
-  if (item.source === "file" && item.file && (item.startAt ?? 0) > 0) return false;
-  return item.source === "youtube" && (!item.file || item.youtubeId === "aqz-KE-bpKQ");
-}
-
 function mergeVideos(seed: CmsVideo[], extra?: CmsVideo[]) {
   if (!Array.isArray(extra) || extra.length === 0) return seed;
   const rest = extra.filter((item) => item.slot !== "experience");
   const xpExtra = extra.filter((item) => item.slot === "experience");
-  const xpSeed = seed.filter((item) => item.slot === "experience");
-  const useSeedXp = xpExtra.length < 6 || xpExtra.every(isDemoExperience);
-  return [...(rest.length ? rest : seed.filter((item) => item.slot !== "experience")), ...(useSeedXp ? xpSeed : xpExtra)];
+  const seedRest = seed.filter((item) => item.slot !== "experience");
+  return [...(rest.length ? rest : seedRest), ...xpExtra];
 }
 
 export function refreshBundledVideos(seed: CmsVideo[], extra?: CmsVideo[]) {
-  const extraById = new Map((extra ?? []).map((item) => [item.id, item]));
+  if (!Array.isArray(extra) || extra.length === 0) return seed;
+  const extraById = new Map(extra.map((item) => [item.id, item]));
   const seedIds = new Set(seed.map((item) => item.id));
-  const merged = seed.map((seedItem) => {
-    const extraItem = extraById.get(seedItem.id);
-    if (extraItem && isCustomCmsVideo(extraItem)) return { ...seedItem, ...extraItem };
-    return seedItem;
-  });
-  const customExtra = (extra ?? []).filter((item) => !seedIds.has(item.id) && isCustomCmsVideo(item));
+  const extraXpIds = new Set(extra.filter((item) => item.slot === "experience").map((item) => item.id));
+  const merged = seed
+    .filter((seedItem) => seedItem.slot !== "experience" || extraXpIds.has(seedItem.id))
+    .map((seedItem) => {
+      const extraItem = extraById.get(seedItem.id);
+      if (extraItem && isCustomCmsVideo(extraItem)) return { ...seedItem, ...extraItem };
+      return extraItem ?? seedItem;
+    });
+  const customExtra = extra.filter(
+    (item) => !seedIds.has(item.id) && (item.slot === "experience" || isCustomCmsVideo(item)),
+  );
   return [...merged, ...customExtra];
 }
 

@@ -3,7 +3,7 @@ export const SITE_CONTACT = {
   tel: "tel:+81677710100",
   email: "book@osakakart.jp",
   mailto: "mailto:book@osakakart.jp?subject=Future%20Kart%20Osaka%20Booking",
-  hours: "10:00–19:00",
+  hours: "10:00～21:00",
   whatsapp: "https://wa.me/81677710100",
   instagram: "https://instagram.com/",
   youtube: "https://youtube.com/",

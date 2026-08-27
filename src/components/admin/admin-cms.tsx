@@ -6,7 +6,7 @@ import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import { adminCopy } from "@/lib/admin/copy";
 import { LocaleField } from "@/components/admin/locale-field";
-import { parseYoutubeId, readLocalVideo, type LocaleText } from "@/lib/cms-text";
+import { parseYoutubeId, readLocalVideo, localeText, type LocaleText } from "@/lib/cms-text";
 import { CMS_IMAGE_LIMIT, readCmsImage, readLocalLogo } from "@/lib/read-local-image";
 import {
   MOCK_CMS,
@@ -14,7 +14,6 @@ import {
   blankPress,
   blankReview,
   blankVideo,
-  cmsBySlot,
   type CmsFaq,
   type CmsHowToBook,
   type CmsMeetup,
@@ -37,8 +36,8 @@ function replaceById<T extends { id: string }>(list: T[], item: T) {
   return next;
 }
 
-function localeTextSafe(value: LocaleText) {
-  return value.zh || value.en || value.ja || value.ko || "";
+function localeTextSafe(value: LocaleText, locale: string) {
+  return localeText(value, locale) || value.zh || value.en || value.ja || value.ko || "";
 }
 
 function mediaSrc(value?: string) {
@@ -87,6 +86,7 @@ function VideoPositionCard({
   onChange,
   onSave,
   onError,
+  onRemove,
 }: {
   copy: ReturnType<typeof adminCopy>;
   locale: string;
@@ -96,6 +96,7 @@ function VideoPositionCard({
   onChange: (next: CmsVideo) => void;
   onSave: (video: CmsVideo) => void;
   onError: (message: string) => void;
+  onRemove?: () => void;
 }) {
   const youtube = parseYoutubeId(video.youtubeId);
   const fileSrc = video.file ? mediaSrc(video.file) : "";
@@ -170,6 +171,9 @@ function VideoPositionCard({
         />
       </label>
       <button type="button" className="cta-btn mt-4 px-4 py-2 text-sm" onClick={() => onSave(video)}>{copy.common.save}</button>
+      {onRemove ? (
+        <button type="button" className="mt-2 block text-xs text-slate-500" onClick={onRemove}>{copy.cms.remove}</button>
+      ) : null}
     </article>
   );
 }
@@ -393,13 +397,8 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
     const list = editingVideos;
     const hero = list.find((item) => item.slot === "hero") ?? MOCK_CMS.videos.find((item) => item.slot === "hero") ?? { ...blankVideo(), id: "hero-main", slot: "hero" as const, sort: 0 };
     const gallery = list.find((item) => item.slot === "gallery") ?? MOCK_CMS.videos.find((item) => item.slot === "gallery") ?? { ...blankVideo(), id: "gallery-main", slot: "gallery" as const, sort: 1 };
-    const listedXp = cmsBySlot(list, "experience");
-    const experience = ["xp-1", "xp-2", "xp-3", "xp-4", "xp-5", "xp-6"].map((id, index) => {
-      const found = list.find((item) => item.id === id) ?? listedXp[index] ?? MOCK_CMS.videos.find((item) => item.id === id);
-      return found
-        ? { ...found, id, slot: "experience" as const, sort: 10 + index }
-        : { ...blankVideo(), id, slot: "experience" as const, sort: 10 + index };
-    });
+    const listedXp = list.filter((item) => item.slot === "experience").slice().sort((a, b) => a.sort - b.sort || a.id.localeCompare(b.id));
+    const experience = listedXp;
 
     function writeVideo(next: CmsVideo) {
       if (next.source === "youtube") {
@@ -466,6 +465,20 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
               </div>
             </div>
             <p className="text-sm text-slate-500">{copy.cms.groupHint}</p>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                className="cta-btn px-5 py-2.5"
+                onClick={() => {
+                  const next = { ...blankVideo(), slot: "experience" as const, sort: experience.length + 1 };
+                  const merged = replaceById(list, next);
+                  setEditingVideos(merged);
+                  saveList("videos", merged);
+                }}
+              >
+                {copy.cms.addVideo}
+              </button>
+            </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {experience.map((item, index) => (
                 <VideoPositionCard
@@ -473,14 +486,22 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
                   copy={copy}
                   locale={locale}
                   heading={`${copy.cms.tabGroup} ${index + 1}`}
-                  hint={localeTextSafe(item.title)}
+                  hint={localeTextSafe(item.title, locale)}
                   video={item}
                   onChange={(next) => setEditingVideos((current) => replaceById(current, { ...next, slot: "experience" }))}
                   onSave={(next) => writeVideo({ ...next, slot: "experience" })}
                   onError={notify}
+                  onRemove={() => setRemoveId(item.id)}
                 />
               ))}
             </div>
+            <RemoveModal copy={copy} open={Boolean(removeId)} onClose={() => setRemoveId(null)} onConfirm={() => {
+              if (!removeId) return;
+              const next = list.filter((item) => item.id !== removeId);
+              saveList("videos", next);
+              setEditingVideos(next);
+              setRemoveId(null);
+            }} />
           </>
         )}
       </div>
@@ -575,7 +596,7 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
           rows={rows.map((item) => ({
             id: item.id,
             dim: !item.active,
-            cells: [item.q.zh || item.q.en || item.id, item.home ? copy.cms.on : "—", item.active ? copy.cms.on : copy.cms.off],
+            cells: [localeTextSafe(item.q, locale) || item.id, item.home ? copy.cms.on : "—", item.active ? copy.cms.on : copy.cms.off],
             onEdit: () => setFaq(item),
             onRemove: () => setRemoveId(item.id),
           }))}
@@ -632,7 +653,7 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
         rows={rows.map((item) => ({
           id: item.id,
           dim: !item.active,
-          cells: [item.source.zh || item.source.en, item.title.zh || item.title.en, item.active ? copy.cms.on : copy.cms.off],
+          cells: [localeTextSafe(item.source, locale), localeTextSafe(item.title, locale), item.active ? copy.cms.on : copy.cms.off],
           onEdit: () => setPress(item),
           onRemove: () => setRemoveId(item.id),
         }))}

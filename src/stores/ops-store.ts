@@ -407,7 +407,7 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 12,
+      version: 13,
       skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
@@ -488,6 +488,73 @@ export const useOpsStore = create<OpsState>()(
               : store,
           );
         }
+        if (version < 13) {
+          const cms = mergeCms(MOCK_CMS, state.cms);
+          const prevFaqs = cms.faqs ?? [];
+          const seedFaqIds = new Set(MOCK_CMS.faqs.map((item) => item.id));
+          state.cms = {
+            ...cms,
+            site: { ...cms.site, hours: MOCK_CMS.site.hours },
+            meetup: {
+              ...cms.meetup,
+              title: { ...cms.meetup.title, ja: MOCK_CMS.meetup.title.ja },
+              lead: { ...cms.meetup.lead, ja: MOCK_CMS.meetup.lead.ja },
+              address: { ...cms.meetup.address, ja: MOCK_CMS.meetup.address.ja },
+              station: { ...cms.meetup.station, ja: MOCK_CMS.meetup.station.ja },
+              walk: { ...cms.meetup.walk, ja: MOCK_CMS.meetup.walk.ja },
+            },
+            labels: {
+              ...cms.labels,
+              faqLead: { ...cms.labels.faqLead, ja: MOCK_CMS.labels.faqLead.ja },
+              reviewsLead: { ...cms.labels.reviewsLead, ja: MOCK_CMS.labels.reviewsLead.ja },
+              reviewsTitle: { ...cms.labels.reviewsTitle, ja: MOCK_CMS.labels.reviewsTitle.ja },
+              videosTitle: { ...cms.labels.videosTitle, ja: MOCK_CMS.labels.videosTitle.ja },
+              videosLead: { ...cms.labels.videosLead, ja: MOCK_CMS.labels.videosLead.ja },
+              experienceTitle: { ...cms.labels.experienceTitle, ja: MOCK_CMS.labels.experienceTitle.ja },
+              experienceLead: { ...cms.labels.experienceLead, ja: MOCK_CMS.labels.experienceLead.ja },
+              faqTitle: { ...cms.labels.faqTitle, ja: MOCK_CMS.labels.faqTitle.ja },
+              pressTitle: { ...cms.labels.pressTitle, ja: MOCK_CMS.labels.pressTitle.ja },
+            },
+            faqs: [
+              ...MOCK_CMS.faqs.map((seed) => {
+                const prev = prevFaqs.find((item) => item.id === seed.id);
+                return prev ? { ...prev, q: { ...prev.q, ja: seed.q.ja }, a: { ...prev.a, ja: seed.a.ja } } : seed;
+              }),
+              ...prevFaqs.filter((item) => !seedFaqIds.has(item.id)),
+            ],
+            reviews: MOCK_CMS.reviews.map((seed) => {
+              const prev = (cms.reviews ?? []).find((item) => item.id === seed.id);
+              return prev ? { ...prev, quote: { ...prev.quote, ja: seed.quote.ja } } : seed;
+            }),
+            press: (cms.press ?? []).map((item) => {
+              const seed = MOCK_CMS.press.find((row) => row.id === item.id);
+              return seed
+                ? { ...item, title: { ...item.title, ja: seed.title.ja }, source: { ...item.source, ja: seed.source.ja } }
+                : item;
+            }),
+          };
+          state.plans = (state.plans ?? MOCK_PLANS).map((row) => {
+            const seed =
+              MOCK_PLANS.find((item) => item.id === row.id) ?? MOCK_PLANS.find((item) => item.slug === row.slug);
+            if (!seed) return row;
+            return {
+              ...row,
+              nameJa: seed.nameJa,
+              descriptionJa: seed.descriptionJa,
+              highlightsJa: seed.highlightsJa,
+              includesJa: seed.includesJa,
+            };
+          });
+          state.addons = (state.addons ?? MOCK_ADDONS).map((row) => {
+            const seed =
+              MOCK_ADDONS.find((item) => item.id === row.id) ?? MOCK_ADDONS.find((item) => item.slug === row.slug);
+            if (!seed) return row;
+            return { ...row, nameJa: seed.nameJa, descriptionJa: seed.descriptionJa };
+          });
+          state.stores = (state.stores ?? MOCK_STORES).map((store) =>
+            store.id === "namba" ? { ...store, hours: MOCK_STORES[0].hours } : store,
+          );
+        }
         delete state.vehicleSlots;
         return state as OpsState;
       },
@@ -525,15 +592,27 @@ export const useOpsStore = create<OpsState>()(
               detailImage: row.detailImage,
               description: row.description,
               descriptionEn: row.descriptionEn,
-              descriptionJa: row.descriptionJa,
+              descriptionJa: row.descriptionJa || seed.descriptionJa,
               descriptionKo: row.descriptionKo,
               highlights: row.highlights,
               highlightsEn: row.highlightsEn,
-              highlightsJa: row.highlightsJa,
+              highlightsJa: row.highlightsJa?.length ? row.highlightsJa : seed.highlightsJa,
               highlightsKo: row.highlightsKo,
+              includesJa: row.includesJa?.length ? row.includesJa : seed.includesJa,
+              includesEn: row.includesEn?.length ? row.includesEn : seed.includesEn,
             };
           }),
-          addons: extra.addons ?? current.addons,
+          addons: (extra.addons ?? current.addons).map((row) => {
+            const seed = MOCK_ADDONS.find((item) => item.id === row.id) ?? MOCK_ADDONS.find((item) => item.slug === row.slug);
+            if (!seed) return row;
+            return {
+              ...seed,
+              ...row,
+              descriptionJa: row.descriptionJa || seed.descriptionJa,
+              descriptionEn: row.descriptionEn || seed.descriptionEn,
+              nameJa: row.nameJa || seed.nameJa,
+            };
+          }),
           orders: mergeFreshDemoOrders(
             (extra.orders ?? current.orders).map((order) =>
               order.channel === "Viator" ? { ...order, channel: "Instagram" } : order,

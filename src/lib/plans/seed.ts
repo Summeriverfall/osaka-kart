@@ -242,7 +242,7 @@ const addonTranslations = {
     },
     ja: {
       name: "GoProレンタル",
-      description: "防水ハウジング付きの高画質アクションカメラ。",
+      description: "高画質アクションカメラのレンタル。防水ケース付き。",
     },
     ko: {
       name: "GoPro 대여",
@@ -264,7 +264,7 @@ const addonTranslations = {
     },
     ja: {
       name: "レーシングスーツアップグレード",
-      description: "防火レーシングスーツ。カラー複数。",
+      description: "本格的なレーシングスーツ。複数カラーから選択できます。",
     },
     ko: {
       name: "레이싱 슈트 업그레이드",
@@ -286,7 +286,7 @@ const addonTranslations = {
     },
     ja: {
       name: "プロフォト同行",
-      description: "カメラマンが走行を撮影。レタッチ原版5枚付き。",
+      description: "プロカメラマンによる走行中の撮影。高画質写真5枚付き。",
     },
     ko: {
       name: "프로 사진 동행",
@@ -308,7 +308,7 @@ const addonTranslations = {
     },
     ja: {
       name: "追加保険",
-      description: "基本保険に加えて傷害保険を上乗せ。",
+      description: "基本保険に加えて、搭乗中の傷害補償を追加できます。",
     },
     ko: {
       name: "추가 보험",

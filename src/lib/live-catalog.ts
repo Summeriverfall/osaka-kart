@@ -60,11 +60,25 @@ function localePlanHighlights(plan: MockPlan, locale: string, fallback: string[]
   return fallback;
 }
 
+function localePlanIncludes(plan: MockPlan, locale: string, fallback: string[]) {
+  if (locale.startsWith("ja") && plan.includesJa?.some((item) => item.trim())) return plan.includesJa;
+  if (locale.startsWith("en") && plan.includesEn?.some((item) => item.trim())) return plan.includesEn;
+  if (locale.startsWith("ko") && plan.includesKo?.some((item) => item.trim())) return plan.includesKo;
+  return fallback;
+}
+
 function localeAddonName(addon: MockAddon, locale: string, fallback: string) {
   if (locale.startsWith("ja") && addon.nameJa) return addon.nameJa;
   if (locale.startsWith("en") && addon.nameEn) return addon.nameEn;
   if (locale.startsWith("ko") && addon.nameEn) return addon.nameEn;
   return addon.name || fallback;
+}
+
+function localeAddonDescription(addon: MockAddon, locale: string, fallback: string) {
+  if (locale.startsWith("ja") && addon.descriptionJa?.trim()) return addon.descriptionJa;
+  if (locale.startsWith("en") && addon.descriptionEn?.trim()) return addon.descriptionEn;
+  if (locale.startsWith("ko") && addon.descriptionKo?.trim()) return addon.descriptionKo;
+  return addon.description || fallback;
 }
 
 function mockPlanToPublic(plan: MockPlan, locale: string): PlanWithTranslation {
@@ -86,7 +100,7 @@ function mockPlanToPublic(plan: MockPlan, locale: string): PlanWithTranslation {
       description: localePlanDescription(plan, locale, plan.includes.join(" · ")),
       highlights: localePlanHighlights(plan, locale, plan.includes.slice(0, 3)),
       route_summary: "",
-      includes: plan.includes,
+      includes: localePlanIncludes(plan, locale, plan.includes),
       requirements: [],
     },
   };
@@ -113,7 +127,9 @@ export function overlayPlan(
       name: localePlanName(live, locale, seed.translation.name),
       description: localePlanDescription(live, locale, seed.translation.description),
       highlights: localePlanHighlights(live, locale, seed.translation.highlights),
-      includes: live.includes.length ? live.includes : seed.translation.includes,
+      includes: live.includes.length
+        ? localePlanIncludes(live, locale, live.includes)
+        : seed.translation.includes,
     },
   };
 }
@@ -161,7 +177,7 @@ export function overlayAddons(
             translation: {
               ...addon.translation,
               name: localeAddonName(live, locale, addon.translation.name),
-              description: live.description || addon.translation.description,
+              description: localeAddonDescription(live, locale, addon.translation.description),
             },
           }
         : addon,
@@ -179,7 +195,7 @@ export function overlayAddons(
       translation: {
         locale,
         name: localeAddonName(live, locale, live.name),
-        description: live.description,
+        description: localeAddonDescription(live, locale, live.description),
       },
     });
   }

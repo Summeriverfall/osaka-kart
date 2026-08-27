@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Calendar, Menu, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useAppPathname } from "@/lib/use-app-pathname";
 import { LiveBrandMark } from "@/components/site/live-brand-mark";
 import { ContactTicker, NavBookingContact } from "@/components/site/contact-ticker";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import { siteHome, withSlash } from "@/lib/paths";
+import { appPageHref, isFileProtocol, navigateToHref } from "@/lib/file-href";
 import { useSiteLook } from "@/lib/site-look";
 import { isSiteTheme, type SiteTheme } from "@/lib/visual-theme";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,7 @@ type SiteNavProps = {
 
 export function SiteNav({ look }: SiteNavProps) {
   const t = useTranslations("Nav");
+  const locale = useLocale();
   const pathname = useAppPathname();
   const currentLook = useSiteLook(look);
   const home = siteHome(currentLook);
@@ -32,8 +33,16 @@ export function SiteNav({ look }: SiteNavProps) {
     { hash: "#top", href: home, key: "home" as const },
     { hash: "#plans", href: siteHome(currentLook, "plans"), key: "plans" as const },
     { hash: "#faq", href: withSlash("/faq"), key: "faq" as const },
-    { hash: "#videos", href: siteHome(currentLook, "videos"), key: "videos" as const },
+    { hash: "#experience", href: siteHome(currentLook, "experience"), key: "videos" as const },
   ];
+
+  function go(href: string) {
+    if (isFileProtocol()) {
+      navigateToHref(href, locale);
+      return;
+    }
+    window.location.href = appPageHref(href, locale);
+  }
 
   useEffect(() => {
     function onScroll() {
@@ -73,13 +82,19 @@ export function SiteNav({ look }: SiteNavProps) {
                   {t(item.key)}
                 </a>
               ) : (
-                <Link
+                <a
                   key={item.key}
-                  href={item.href}
+                  href={appPageHref(item.href, locale)}
                   className="text-[1.05rem] font-semibold text-[#F1F1F5] hover:text-neon-pink"
+                  suppressHydrationWarning
+                  onClick={(event) => {
+                    if (!isFileProtocol()) return;
+                    event.preventDefault();
+                    go(item.href);
+                  }}
                 >
                   {t(item.key)}
-                </Link>
+                </a>
               ),
             )}
           </nav>
@@ -110,14 +125,20 @@ export function SiteNav({ look }: SiteNavProps) {
                   {t(item.key)}
                 </a>
               ) : (
-                <Link
+                <a
                   key={item.key}
-                  href={item.href}
+                  href={appPageHref(item.href, locale)}
                   className="py-2 text-[#F1F1F5]"
-                  onClick={() => setOpen(false)}
+                  suppressHydrationWarning
+                  onClick={(event) => {
+                    setOpen(false);
+                    if (!isFileProtocol()) return;
+                    event.preventDefault();
+                    go(item.href);
+                  }}
                 >
                   {t(item.key)}
-                </Link>
+                </a>
               ),
             )}
             {contact}
@@ -132,13 +153,20 @@ export function SiteNav({ look }: SiteNavProps) {
 
 export function FloatBook() {
   const t = useTranslations("Nav");
+  const locale = useLocale();
   return (
-    <Link
-      href={withSlash("/booking")}
+    <a
+      href={appPageHref(withSlash("/booking"), locale)}
       className="fixed right-4 bottom-4 z-[80] inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-pink to-neon-purple px-5 py-3 text-sm font-semibold text-white shadow-[0_0_28px_rgba(255,46,147,0.55)]"
+      suppressHydrationWarning
+      onClick={(event) => {
+        if (!isFileProtocol()) return;
+        event.preventDefault();
+        navigateToHref(withSlash("/booking"), locale);
+      }}
     >
       <Calendar className="size-4" />
       {t("booking")}
-    </Link>
+    </a>
   );
 }

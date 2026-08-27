@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatJpy } from "@/lib/format";
 import { siteHome, withSlash } from "@/lib/paths";
+import { appPageHref } from "@/lib/file-href";
 import { useSiteLook } from "@/lib/site-look";
 import {
   BOOKING_RESULT_KEY,
@@ -68,12 +69,13 @@ export function SuccessView({ locale }: SuccessViewProps) {
               {t("pay")}
             </Link>
           ) : null}
-          <Link
-            href={siteHome(look)}
+          <a
+            href={appPageHref(siteHome(look), locale)}
             className={result && !result.paid ? "cta-btn cta-btn-ghost inline-flex px-6 py-3" : "cta-btn mt-8 inline-flex px-6 py-3"}
+            suppressHydrationWarning
           >
             {t("back")}
-          </Link>
+          </a>
         </div>
       </main>
       <SiteFooter />

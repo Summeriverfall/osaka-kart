@@ -3,7 +3,6 @@
 import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { ChevronLeft, MapPin, Play, Star } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { RideNoteChecks, allNotesChecked, emptyNoteChecks, type NoteKey } from "@/components/notes/ride-notes";
 import { BookingExtras, bookingTotal } from "@/components/booking/booking-extras";
@@ -18,10 +17,11 @@ import { formatJpy } from "@/lib/format";
 import { parseIsoDate } from "@/lib/calendar";
 import { useLiveCatalog, useLiveInventory } from "@/lib/live-catalog";
 import { cmsBySlot, cmsMediaSrc, localeText, localizedList, resolveCmsVideo, useBookingContact, useLiveCms } from "@/lib/live-cms";
-import { MOCK_CMS, type CmsVideo } from "@/lib/mock/cms";
+import { type CmsVideo } from "@/lib/mock/cms";
 import { BOOKING_SLOTS } from "@/lib/booking/slots";
 import { DEFAULT_STORE_ID } from "@/lib/store-id";
 import { withSlash } from "@/lib/paths";
+import { appPageHref, isFileProtocol, navigateToHref } from "@/lib/file-href";
 import {
   BOOKING_RESULT_KEY,
   useBookingStore,
@@ -505,9 +505,18 @@ export function LandingFaq({ copy, theme }: { copy: LandingCopy; theme: SiteThem
           <div className="acid-faq-copy">
             <h2 className="acid-h2">{title}</h2>
             <p className="acid-lead">{lead}</p>
-            <Link href={withSlash("/faq")} className="acid-text-link">
+            <a
+              href={appPageHref(withSlash("/help"), locale)}
+              className="acid-text-link"
+              suppressHydrationWarning
+              onClick={(event) => {
+                if (!isFileProtocol()) return;
+                event.preventDefault();
+                navigateToHref(withSlash("/help"), locale);
+              }}
+            >
               {shop("moreHelp")}
-            </Link>
+            </a>
             <div className="acid-faq">
               {items.map((item) => (
                 <details key={item.q} open>
@@ -529,9 +538,18 @@ export function LandingFaq({ copy, theme }: { copy: LandingCopy; theme: SiteThem
           <p className="shop-kicker">FAQ</p>
           <h2>{title}</h2>
           <p>{lead}</p>
-          <Link href={withSlash("/faq")} className="shop-text-link">
+          <a
+            href={appPageHref(withSlash("/help"), locale)}
+            className="shop-text-link"
+            suppressHydrationWarning
+            onClick={(event) => {
+              if (!isFileProtocol()) return;
+              event.preventDefault();
+              navigateToHref(withSlash("/help"), locale);
+            }}
+          >
             {shop("moreHelp")}
-          </Link>
+          </a>
         </div>
         <div className="oni-fold-list">
           {items.map((item) => (
@@ -552,9 +570,18 @@ export function LandingFaq({ copy, theme }: { copy: LandingCopy; theme: SiteThem
           <p className="shop-kicker">FAQ</p>
           <h2>{title}</h2>
           <p className="shop-lead">{lead}</p>
-          <Link href={withSlash("/faq")} className="shop-text-link">
+          <a
+            href={appPageHref(withSlash("/help"), locale)}
+            className="shop-text-link"
+            suppressHydrationWarning
+            onClick={(event) => {
+              if (!isFileProtocol()) return;
+              event.preventDefault();
+              navigateToHref(withSlash("/help"), locale);
+            }}
+          >
             {shop("moreHelp")}
-          </Link>
+          </a>
         </div>
         <div className="shop-faq">
           {items.map((item) => (
@@ -573,13 +600,7 @@ export function LandingExperience({ theme }: { theme: SiteTheme }) {
   const locale = useLocale();
   const cms = useLiveCms();
   const listed = cmsBySlot(cms.videos, "experience");
-  const seeded = cmsBySlot(MOCK_CMS.videos, "experience");
-  const videos = [...listed];
-  for (const clip of seeded) {
-    if (videos.length >= 6) break;
-    if (videos.some((item) => item.id === clip.id)) continue;
-    videos.push(clip);
-  }
+  const videos = listed;
   if (!videos.length) return null;
   const title = localeText(cms.labels.experienceTitle, locale);
   const lead = localeText(cms.labels.experienceLead, locale);

@@ -347,13 +347,13 @@ export function AdminOrdersView() {
           <thead>
             <tr>
               <th>{copy.orders.id}</th>
+              <th>{copy.orders.customer}</th>
               <th>{copy.orders.channel}</th>
               <th>
                 <button type="button" className="inline-flex items-center gap-1 font-semibold" onClick={() => toggleSort("time")}>
                   {copy.orders.time} {sortMark("time")}
                 </button>
               </th>
-              <th>{copy.orders.customer}</th>
               <th>{copy.orders.plan}</th>
               <th>{copy.orders.riders}</th>
               <th>
@@ -369,14 +369,14 @@ export function AdminOrdersView() {
             {rows.map((order) => (
               <tr key={order.id}>
                 <td className="font-mono text-xs">{order.id}</td>
+                <td>
+                  {order.customer}
+                  <span className="block text-xs text-slate-500">{adminNation(locale, order.nationality)}</span>
+                </td>
                 <td><ChannelBadge channel={order.channel} /></td>
                 <td>
                   {order.date}
                   <span className="block text-xs text-slate-500">{order.time}</span>
-                </td>
-                <td>
-                  {order.customer}
-                  <span className="block text-xs text-slate-500">{adminNation(locale, order.nationality)}</span>
                 </td>
                 <td>{planLabel(order)}</td>
                 <td className="u-mix">{order.riders}{copy.orders.mf(order.male, order.female)}</td>

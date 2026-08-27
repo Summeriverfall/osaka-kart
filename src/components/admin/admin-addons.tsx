@@ -71,7 +71,9 @@ export function AdminAddonsView() {
               </div>
               <h3 className="text-lg font-black text-slate-900">{locale.startsWith("ja") && addon.nameJa ? addon.nameJa : addon.name}</h3>
               <p className="mt-1 text-xs text-slate-500">{addon.nameEn} · {addon.nameJa}</p>
-              <p className="mt-3 min-h-12 text-sm text-slate-500">{addon.description}</p>
+              <p className="mt-3 min-h-12 text-sm text-slate-500">
+                {locale.startsWith("ja") && addon.descriptionJa ? addon.descriptionJa : addon.description}
+              </p>
               <p className="mt-4 text-2xl font-black text-blue-600">
                 {formatYenShort(addon.priceJpy)}
                 <span className="ml-1 text-sm font-medium text-slate-500">{addon.unitLabel}</span>

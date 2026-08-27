@@ -30,11 +30,16 @@ export function AdminVehiclesView() {
   const [editing, setEditing] = useState<MockVehicle | null>(null);
   const [logs, setLogs] = useState<MockVehicle | null>(null);
   const repair = vehicles.filter((item) => item.status === "repair").length;
+  const available = vehicles.filter((item) => item.status === "available").length;
+  const [logDraft, setLogDraft] = useState("");
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-amber-800">{copy.vehicles.repairNote(repair)}</p>
+        <div className="space-y-1 text-sm text-amber-800">
+          <p>{copy.vehicles.availNote(available)}</p>
+          <p>{copy.vehicles.repairNote(repair)}</p>
+        </div>
         <button type="button" className="cta-btn" onClick={() => setEditing({ ...BLANK, id: `v-${Date.now()}`, storeId })}>{copy.vehicles.add}</button>
       </div>
       <div className="hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white md:block">
@@ -59,7 +64,7 @@ export function AdminVehiclesView() {
                 <td>{item.note || "—"}</td>
                 <td className="space-x-2">
                   <button type="button" className="text-xs text-blue-600" onClick={() => setEditing(item)}>{copy.common.edit}</button>
-                  <button type="button" className="text-xs text-sky-600" onClick={() => setLogs(item)}>{copy.vehicles.logs}</button>
+                  <button type="button" className="text-xs text-sky-600" onClick={() => { setLogs(item); setLogDraft(""); }}>{copy.vehicles.logs}</button>
                 </td>
               </tr>
             ))}
@@ -74,7 +79,7 @@ export function AdminVehiclesView() {
             <p className="text-sm text-slate-500">{adminVehicleStatus(locale, item.status)} · {item.lastService}</p>
             <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1">
               <button type="button" className="text-xs text-blue-600" onClick={() => setEditing(item)}>{copy.common.edit}</button>
-              <button type="button" className="text-xs text-sky-600" onClick={() => setLogs(item)}>{copy.vehicles.logs}</button>
+              <button type="button" className="text-xs text-sky-600" onClick={() => { setLogs(item); setLogDraft(""); }}>{copy.vehicles.logs}</button>
             </div>
           </article>
         ))}
@@ -123,10 +128,68 @@ export function AdminVehiclesView() {
         ) : null}
       </Modal>
 
-      <Modal open={Boolean(logs)} title={logs ? copy.vehicles.logsTitle(logs.code) : ""} onClose={() => setLogs(null)} footer={<button type="button" className="cta-btn px-5 py-2.5" onClick={() => setLogs(null)}>{copy.common.close}</button>}>
-        <ul className="space-y-2 text-sm text-slate-500">
-          {(logs?.logs ?? []).map((item) => <li key={item} className="rounded-xl border border-slate-200 px-3 py-2">{item}</li>)}
+      <Modal
+        open={Boolean(logs)}
+        title={logs ? copy.vehicles.logsTitle(logs.code) : ""}
+        onClose={() => { setLogs(null); setLogDraft(""); }}
+        footer={
+          <button
+            type="button"
+            className="cta-btn px-5 py-2.5"
+            onClick={() => {
+              if (!logs) return;
+              upsertVehicle({ ...logs, storeId: logs.storeId || storeId });
+              setLogs(null);
+              setLogDraft("");
+              notify(copy.vehicles.saved);
+            }}
+          >
+            {copy.common.save}
+          </button>
+        }
+      >
+        <ul className="space-y-2 text-sm text-slate-600">
+          {(logs?.logs ?? []).length ? (logs?.logs ?? []).map((item, index) => (
+            <li key={`${item}-${index}`} className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2">
+              <span>{item}</span>
+              <button
+                type="button"
+                className="shrink-0 text-xs text-rose-600"
+                onClick={() => setLogs((current) => current ? { ...current, logs: current.logs.filter((_, i) => i !== index) } : current)}
+              >
+                {copy.cms.remove}
+              </button>
+            </li>
+          )) : <li className="text-slate-400">{copy.vehicles.logEmpty}</li>}
         </ul>
+        <div className="mt-3 flex gap-2">
+          <input
+            className="admin-input flex-1"
+            value={logDraft}
+            placeholder={copy.vehicles.logPh}
+            onChange={(event) => setLogDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter") return;
+              event.preventDefault();
+              const text = logDraft.trim();
+              if (!text || !logs) return;
+              setLogs({ ...logs, logs: [...logs.logs, text] });
+              setLogDraft("");
+            }}
+          />
+          <button
+            type="button"
+            className="rounded-full border border-slate-200 px-3 py-2 text-sm"
+            onClick={() => {
+              const text = logDraft.trim();
+              if (!text || !logs) return;
+              setLogs({ ...logs, logs: [...logs.logs, text] });
+              setLogDraft("");
+            }}
+          >
+            {copy.vehicles.logAdd}
+          </button>
+        </div>
       </Modal>
     </div>
   );

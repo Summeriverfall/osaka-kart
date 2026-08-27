@@ -8,8 +8,8 @@ import {
   RefreshCw,
   Shirt,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { appPageHref, isFileProtocol, navigateToHref } from "@/lib/file-href";
 import { withSlash } from "@/lib/paths";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +45,8 @@ type RideNotesProps = {
 
 export function RideNotes({ compact = false }: RideNotesProps) {
   const t = useTranslations("Notes");
+  const locale = useLocale();
+  const help = withSlash("/help");
 
   return (
     <div className={cn("ride-notes", compact && "is-compact")}>
@@ -62,9 +64,18 @@ export function RideNotes({ compact = false }: RideNotesProps) {
               {more ? (
                 <>
                   {" "}
-                  <Link href={withSlash("/faq")} className="ride-notes-more">
+                  <a
+                    href={appPageHref(help, locale)}
+                    className="ride-notes-more"
+                    suppressHydrationWarning
+                    onClick={(event) => {
+                      if (!isFileProtocol()) return;
+                      event.preventDefault();
+                      navigateToHref(help, locale);
+                    }}
+                  >
                     {t("more")}
-                  </Link>
+                  </a>
                 </>
               ) : null}
             </p>
@@ -89,7 +100,9 @@ export function RideNoteChecks({
   title = true,
 }: RideNoteChecksProps) {
   const t = useTranslations("Notes");
+  const locale = useLocale();
   const items = NOTE_ITEMS.filter((item) => keys.includes(item.key));
+  const help = withSlash("/help");
 
   return (
     <div className={cn("ride-notes is-checks", !title && "is-flush")}>
@@ -117,13 +130,19 @@ export function RideNoteChecks({
                 {more ? (
                   <>
                     {" "}
-                    <Link
-                      href={withSlash("/faq")}
+                    <a
+                      href={appPageHref(help, locale)}
                       className="ride-notes-more"
-                      onClick={(event) => event.stopPropagation()}
+                      suppressHydrationWarning
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        if (!isFileProtocol()) return;
+                        event.preventDefault();
+                        navigateToHref(help, locale);
+                      }}
                     >
                       {t("more")}
-                    </Link>
+                    </a>
                   </>
                 ) : null}
               </p>
