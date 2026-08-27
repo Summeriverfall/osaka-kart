@@ -2,7 +2,8 @@
 
 /* ---------- Neon Night: cinematic, centered, rain/glow ---------- */
 .neon-root {
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: visible;
   background:
     radial-gradient(ellipse 90% 55% at 50% -10%, rgb(255 77 157 / 28%), transparent 58%),
     linear-gradient(#07060b, #160814 42%, #07060b);

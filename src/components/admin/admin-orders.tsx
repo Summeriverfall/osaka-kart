@@ -101,13 +101,37 @@ function OrderOps({
   );
 }
 
+function orderDateMeta(
+  from: string,
+  to: string,
+  count: number,
+  copy: ReturnType<typeof adminCopy>["orders"],
+) {
+  const start = from && to && from > to ? to : from;
+  const end = from && to && from > to ? from : to;
+  if (!start && !end) return copy.allDatesCount(count);
+  if (start && end && start === end) return copy.filtering(start, count);
+  if (start && end) return copy.filteringRange(start, end, count);
+  if (start) return copy.filteringFrom(start, count);
+  return copy.filteringTo(end, count);
+}
+
+function orderDateInRange(date: string, from: string, to: string) {
+  const start = from && to && from > to ? to : from;
+  const end = from && to && from > to ? from : to;
+  if (start && date < start) return false;
+  if (end && date > end) return false;
+  return true;
+}
+
 export function AdminOrdersView() {
   const locale = useLocale();
   const copy = adminCopy(locale);
   const { upsertOrder, patchOrder, setOrderStatus, templates, settings } = useOpsStore();
   const { orders: storeOrders, storeId, plans } = useStoreData();
   const notify = useToastStore((state) => state.notify);
-  const [picked, setPicked] = useState(() => readAdminFocusDate());
+  const [from, setFrom] = useState(() => readAdminFocusDate());
+  const [to, setTo] = useState(() => readAdminFocusDate());
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<OrderStatus | "all">("all");
   const [channel, setChannel] = useState<string>("all");
@@ -121,7 +145,7 @@ export function AdminOrdersView() {
 
   const rows = useMemo(() => {
     const filtered = storeOrders.filter((item) => {
-      if (picked && item.date !== picked) return false;
+      if (!orderDateInRange(item.date, from, to)) return false;
       if (status !== "all" && item.status !== status) return false;
       if (channel !== "all" && item.channel !== channel) return false;
       const q = query.trim().toLowerCase();
@@ -136,20 +160,25 @@ export function AdminOrdersView() {
       return left.localeCompare(right) * dir;
     });
     return sorted;
-  }, [storeOrders, picked, status, channel, query, sortKey, sortDir]);
+  }, [storeOrders, from, to, status, channel, query, sortKey, sortDir]);
 
   const listedChannels = useMemo(
     () => collectChannelIds(settings.channels, storeOrders.map((item) => item.channel)),
     [settings.channels, storeOrders],
   );
 
+  const datedOrders = useMemo(
+    () => storeOrders.filter((item) => orderDateInRange(item.date, from, to)),
+    [storeOrders, from, to],
+  );
+
   const channelCounts = useMemo(() => {
     const map = new Map<string, number>();
-    map.set("all", storeOrders.length);
+    map.set("all", datedOrders.length);
     for (const id of listedChannels) map.set(id, 0);
-    for (const order of storeOrders) map.set(order.channel, (map.get(order.channel) ?? 0) + 1);
+    for (const order of datedOrders) map.set(order.channel, (map.get(order.channel) ?? 0) + 1);
     return map;
-  }, [storeOrders, listedChannels]);
+  }, [datedOrders, listedChannels]);
 
   const channelOptions = useMemo(
     () => liveChannelIds(settings.channels, editing?.channel),
@@ -172,7 +201,7 @@ export function AdminOrdersView() {
 
   function openAdd() {
     setEditingFromId("");
-    setEditing({ ...EMPTY, date: picked || today, storeId });
+    setEditing({ ...EMPTY, date: to || from || today, storeId });
   }
 
   function save(order: MockOrder) {
@@ -242,21 +271,36 @@ export function AdminOrdersView() {
           <div className="order-toolbar-dates">
             <input
               type="date"
-              aria-label={copy.orders.date}
-              value={picked}
-              onChange={(event) => setPicked(event.target.value)}
+              aria-label={copy.orders.dateFrom}
+              value={from}
+              onChange={(event) => setFrom(event.target.value)}
+            />
+            <span className="order-toolbar-range-mark" aria-hidden>
+              –
+            </span>
+            <input
+              type="date"
+              aria-label={copy.orders.dateTo}
+              value={to}
+              onChange={(event) => setTo(event.target.value)}
             />
             <button
               type="button"
-              className={cn(picked === today && "is-on")}
-              onClick={() => setPicked(today)}
+              className={cn(from === today && to === today && "is-on")}
+              onClick={() => {
+                setFrom(today);
+                setTo(today);
+              }}
             >
               {copy.orders.today}
             </button>
             <button
               type="button"
-              className={cn(!picked && "is-on")}
-              onClick={() => setPicked("")}
+              className={cn(!from && !to && "is-on")}
+              onClick={() => {
+                setFrom("");
+                setTo("");
+              }}
             >
               {copy.orders.allDates}
             </button>
@@ -293,7 +337,7 @@ export function AdminOrdersView() {
             </button>
           ))}
           <p className="order-toolbar-meta">
-            {picked ? copy.orders.filtering(picked, rows.length) : copy.orders.allDatesCount(rows.length)}
+            {orderDateMeta(from, to, rows.length, copy.orders)}
           </p>
         </div>
       </section>

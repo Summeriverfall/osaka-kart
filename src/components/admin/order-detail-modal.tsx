@@ -85,7 +85,6 @@ export function OrderDetailModal({
         onClose();
       }}
       wide
-      top
       footer={
         draft && order ? (
           <>

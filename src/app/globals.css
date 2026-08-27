@@ -525,7 +525,6 @@ html[lang="ja"] .gateway-main h1 {
 }
 
 .contact-ticker {
-  container-type: inline-size;
   overflow: hidden;
   min-width: 0;
   width: 100%;
@@ -536,18 +535,35 @@ html[lang="ja"] .gateway-main h1 {
   display: flex;
   align-items: center;
   width: max-content;
-  animation: contact-ticker 28s linear infinite;
+  animation: contact-ticker var(--ticker-duration, 28s) linear infinite;
+  will-change: transform;
 }
 
-.contact-ticker-track .site-bar-contact-list {
+.contact-ticker-group {
+  display: flex;
   flex: 0 0 auto;
-  width: max-content;
-  flex-direction: row;
   align-items: center;
-  justify-content: flex-start;
   gap: 2.75rem;
-  box-sizing: border-box;
-  padding: 0 2.75rem;
+  padding-inline-end: 2.75rem;
+}
+
+.contact-ticker-unit {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2.75rem;
+}
+
+.contact-ticker-track a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: inherit;
+  text-decoration: none;
+  font-size: 1.22rem;
+  font-weight: 700;
+  word-break: keep-all;
+  white-space: nowrap;
 }
 
 .contact-ticker:hover .contact-ticker-track {
@@ -556,7 +572,7 @@ html[lang="ja"] .gateway-main h1 {
 
 @keyframes contact-ticker {
   to {
-    transform: translateX(-50%);
+    transform: translate3d(calc(-1 * var(--ticker-shift, 50%)), 0, 0);
   }
 }
 
@@ -838,7 +854,11 @@ html[lang="ja"] .gateway-main h1 {
   to { opacity: 1; transform: none; }
 }
 
-.landing-root,
+/* clip 不会变成滚动容器；hidden 会让 overflow-y 变成 auto，sticky 顶栏就跟不住。 */
+.landing-root {
+  overflow-x: clip;
+}
+
 .admin-app {
   overflow-x: hidden;
 }

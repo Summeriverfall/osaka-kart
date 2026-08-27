@@ -107,7 +107,8 @@ html {
 
 .landing-root {
   min-height: 100dvh;
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: visible;
   color: var(--foreground);
   background: var(--background);
 }
@@ -1820,7 +1821,7 @@ html:not(:has(.admin-app)) .float-book {
 }
 
 .site-bar-logo {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
   text-decoration: none;
   color: inherit;

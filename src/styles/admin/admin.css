@@ -519,6 +519,7 @@ html:has(.admin-app) body {
 }
 
 .admin-app .fixed.inset-0.z-\[90\] {
+  align-items: center;
   background-color: rgb(15 23 42 / 40%) !important;
 }
 
@@ -622,7 +623,9 @@ html:has(.admin-app) body {
   display: inline-flex;
   align-items: stretch;
   flex: 0 0 auto;
-  height: 2.5rem;
+  flex-wrap: wrap;
+  min-height: 2.5rem;
+  height: auto;
   padding: 3px;
   gap: 2px;
   border: 1px solid #e2e8f0;
@@ -636,11 +639,11 @@ html:has(.admin-app) body {
 }
 
 .admin-app .order-toolbar-dates input[type="date"] {
-  width: 9.5rem;
-  flex: 0 0 9.5rem;
+  width: 8.6rem;
+  flex: 0 0 8.6rem;
   height: auto;
   margin: 0;
-  padding: 0 0.35rem;
+  padding: 0 0.3rem;
   border: none;
   border-radius: 0.45rem;
   background: transparent;
@@ -648,6 +651,15 @@ html:has(.admin-app) body {
   font-size: 0.8125rem;
   box-shadow: none;
   color-scheme: light;
+}
+
+.admin-app .order-toolbar-range-mark {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.05rem;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .admin-app .order-toolbar-dates input[type="date"]:focus {

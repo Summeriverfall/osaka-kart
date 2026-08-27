@@ -300,12 +300,17 @@ export type AdminCopy = {
   };
   orders: {
     date: string;
+    dateFrom: string;
+    dateTo: string;
     today: string;
     allDates: string;
     search: string;
     allStatus: string;
     add: string;
     filtering: (date: string, n: number) => string;
+    filteringFrom: (from: string, n: number) => string;
+    filteringTo: (to: string, n: number) => string;
+    filteringRange: (from: string, to: string, n: number) => string;
     allDatesCount: (n: number) => string;
     allChannels: string;
     id: string;
@@ -1009,12 +1014,17 @@ const zh: AdminCopy = {
   },
   orders: {
     date: "日期",
+    dateFrom: "开始日期",
+    dateTo: "结束日期",
     today: "今天",
     allDates: "全部日期",
     search: "搜索订单号/客户姓名/套餐",
     allStatus: "全部状态",
     add: "添加订单",
     filtering: (date, n) => `正在筛选 ${date} · ${n} 笔`,
+    filteringFrom: (from, n) => `从 ${from} 起 · ${n} 笔`,
+    filteringTo: (to, n) => `截至 ${to} · ${n} 笔`,
+    filteringRange: (from, to, n) => `${from} – ${to} · ${n} 笔`,
     allDatesCount: (n) => `全部日期 · ${n} 笔`,
     allChannels: "全部渠道",
     id: "订单号",
@@ -1725,12 +1735,17 @@ const en: AdminCopy = {
   },
   orders: {
     date: "Date",
+    dateFrom: "From",
+    dateTo: "To",
     today: "Today",
     allDates: "All dates",
     search: "Search ID / guest / plan",
     allStatus: "All statuses",
     add: "Add order",
     filtering: (date, n) => `Filtering ${date} · ${n}`,
+    filteringFrom: (from, n) => `From ${from} · ${n}`,
+    filteringTo: (to, n) => `Through ${to} · ${n}`,
+    filteringRange: (from, to, n) => `${from} – ${to} · ${n}`,
     allDatesCount: (n) => `All dates · ${n}`,
     allChannels: "All channels",
     id: "Order ID",
@@ -2441,12 +2456,17 @@ const ja: AdminCopy = {
   },
   orders: {
     date: "日付",
+    dateFrom: "開始日",
+    dateTo: "終了日",
     today: "今日",
     allDates: "全日付",
     search: "予約番号／氏名／コース",
     allStatus: "全ステータス",
     add: "予約を追加",
     filtering: (date, n) => `${date}を表示・${n}件`,
+    filteringFrom: (from, n) => `${from}以降・${n}件`,
+    filteringTo: (to, n) => `${to}まで・${n}件`,
+    filteringRange: (from, to, n) => `${from}〜${to}・${n}件`,
     allDatesCount: (n) => `全日付・${n}件`,
     allChannels: "全流入元",
     id: "予約番号",
