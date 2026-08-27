@@ -510,7 +510,7 @@ export function LandingFaq({ copy, theme }: { copy: LandingCopy; theme: SiteThem
             </Link>
             <div className="acid-faq">
               {items.map((item) => (
-                <details key={item.q}>
+                <details key={item.q} open>
                   <summary>{item.q}</summary>
                   <p>{item.a}</p>
                 </details>
@@ -535,7 +535,7 @@ export function LandingFaq({ copy, theme }: { copy: LandingCopy; theme: SiteThem
         </div>
         <div className="oni-fold-list">
           {items.map((item) => (
-            <details key={item.q}>
+            <details key={item.q} open>
               <summary>{item.q}</summary>
               <p>{item.a}</p>
             </details>
@@ -558,7 +558,7 @@ export function LandingFaq({ copy, theme }: { copy: LandingCopy; theme: SiteThem
         </div>
         <div className="shop-faq">
           {items.map((item) => (
-            <details key={item.q}>
+            <details key={item.q} open>
               <summary>{item.q}</summary>
               <p>{item.a}</p>
             </details>

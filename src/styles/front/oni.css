@@ -1,4 +1,4 @@
-/* 前台 · 鬼街 Oni：裂帛和风 */
+/* 前台 · 街道 Oni：裂帛和风 */
 
 /* ---- Oni: vertical shrine / alley editorial ---- */
 .oni-shell {
@@ -46,6 +46,9 @@
 }
 
 .oni-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 80;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -614,6 +617,11 @@
   font-size: 1.05rem;
   line-height: 1.7;
   color: rgb(247 240 228 / 86%);
+}
+
+.oni-split-copy .hero-trust {
+  justify-content: flex-start;
+  margin-top: 1rem;
 }
 
 .oni-split-copy .cta-btn {

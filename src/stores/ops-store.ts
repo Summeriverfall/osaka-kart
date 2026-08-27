@@ -2,7 +2,8 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { MOCK_ADDONS, type MockAddon } from "@/lib/mock/addons";
 import { MOCK_LOGS, type LogType, type MockLog } from "@/lib/mock/logs";
-import { MOCK_ORDERS, buildWeekDemoOrders, isWebsiteLiveOrder, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
+import { MOCK_ORDERS, buildWeekDemoOrders, isWebsiteLiveOrder, mergeFreshDemoOrders, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
+import { MOCK_AFFILIATES, type MockAffiliate } from "@/lib/mock/affiliates";
 import { MOCK_PLANS, type MockPlan } from "@/lib/mock/plans";
 import { MOCK_SPECIAL_DATES, type MockSpecialDate } from "@/lib/mock/inventory";
 import {
@@ -45,6 +46,7 @@ type OpsState = {
   settings: MockSettings;
   vehicles: MockVehicle[];
   staff: MockStaff[];
+  affiliates: MockAffiliate[];
   templates: MockEmailTemplate[];
   stores: MockStore[];
   logs: MockLog[];
@@ -67,6 +69,8 @@ type OpsState = {
   patchVehicle: (id: string, patch: Partial<MockVehicle>) => void;
   upsertStaff: (row: MockStaff) => void;
   patchStaff: (id: string, patch: Partial<MockStaff>) => void;
+  upsertAffiliate: (row: MockAffiliate) => void;
+  patchAffiliate: (id: string, patch: Partial<MockAffiliate>) => void;
   patchTemplate: (id: string, patch: Partial<MockEmailTemplate>) => void;
   upsertStore: (store: MockStore) => void;
   addSpecialDate: (row: MockSpecialDate) => void;
@@ -74,6 +78,7 @@ type OpsState = {
   commitWebsiteBooking: (input: WebsiteBookingInput) => { ok: boolean; already: boolean; order: MockOrder | null };
   patchCms: (patch: Partial<CmsState>) => void;
   ensureInventory: () => void;
+  ensureDemoOrders: () => void;
 };
 
 function readSlots(state: { vehicleSlots: VehicleSlotCell[]; vehicles: MockVehicle[]; orders: MockOrder[] }, buildIfMissing: boolean) {
@@ -161,6 +166,7 @@ export const useOpsStore = create<OpsState>()(
       settings: MOCK_SETTINGS,
       vehicles: MOCK_VEHICLES,
       staff: MOCK_STAFF,
+      affiliates: MOCK_AFFILIATES,
       templates: MOCK_EMAIL_TEMPLATES,
       stores: MOCK_STORES,
       logs: MOCK_LOGS,
@@ -331,6 +337,16 @@ export const useOpsStore = create<OpsState>()(
           staff: state.staff.map((item) => (item.id === id ? { ...item, ...patch } : item)),
           logs: [makeLog("员工变更", `更新员工 ${id}`), ...state.logs],
         })),
+      upsertAffiliate: (row) =>
+        set((state) => ({
+          affiliates: replaceById(state.affiliates, row),
+          logs: [makeLog("员工变更", `保存推广代理 ${row.name || row.code}`), ...state.logs],
+        })),
+      patchAffiliate: (id, patch) =>
+        set((state) => ({
+          affiliates: state.affiliates.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+          logs: [makeLog("员工变更", `更新推广代理 ${id}`), ...state.logs],
+        })),
       patchTemplate: (id, patch) =>
         set((state) => ({
           templates: state.templates.map((item) => (item.id === id ? { ...item, ...patch } : item)),
@@ -384,10 +400,14 @@ export const useOpsStore = create<OpsState>()(
           if (state.vehicleSlots.length) return state;
           return { vehicleSlots: readSlots(state, true) };
         }),
+      ensureDemoOrders: () =>
+        set((state) => ({
+          orders: mergeFreshDemoOrders(state.orders),
+        })),
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 11,
+      version: 12,
       skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
@@ -445,6 +465,29 @@ export const useOpsStore = create<OpsState>()(
         if (version < 11 && Array.isArray(state.vehicleSlots) && state.vehicleSlots.length) {
           savePersistedSlots(state.vehicleSlots);
         }
+        if (version < 12) {
+          const cms = mergeCms(MOCK_CMS, state.cms);
+          state.cms = {
+            ...cms,
+            meetup: MOCK_CMS.meetup,
+            site: {
+              ...cms.site,
+              brandName: MOCK_CMS.site.brandName,
+              brandShort: MOCK_CMS.site.brandShort,
+              footerCompany: MOCK_CMS.site.footerCompany,
+            },
+            faqs: (cms.faqs ?? []).map((item) =>
+              item.id === "f3" ? (MOCK_CMS.faqs.find((row) => row.id === "f3") ?? item) : item,
+            ),
+          };
+          state.orders = mergeFreshDemoOrders(state.orders ?? []);
+          state.affiliates = state.affiliates?.length ? state.affiliates : MOCK_AFFILIATES;
+          state.stores = (state.stores ?? MOCK_STORES).map((store) =>
+            store.id === "namba"
+              ? { ...store, address: MOCK_STORES[0].address, maps: MOCK_STORES[0].maps }
+              : store,
+          );
+        }
         delete state.vehicleSlots;
         return state as OpsState;
       },
@@ -456,6 +499,7 @@ export const useOpsStore = create<OpsState>()(
         settings: state.settings,
         vehicles: state.vehicles,
         staff: state.staff,
+        affiliates: state.affiliates,
         templates: state.templates,
         stores: state.stores,
         logs: state.logs.slice(0, 200),
@@ -490,9 +534,12 @@ export const useOpsStore = create<OpsState>()(
             };
           }),
           addons: extra.addons ?? current.addons,
-          orders: (extra.orders ?? current.orders).map((order) =>
-            order.channel === "Viator" ? { ...order, channel: "Instagram" } : order,
+          orders: mergeFreshDemoOrders(
+            (extra.orders ?? current.orders).map((order) =>
+              order.channel === "Viator" ? { ...order, channel: "Instagram" } : order,
+            ),
           ),
+          affiliates: extra.affiliates?.length ? extra.affiliates : current.affiliates,
           settings: {
             ...MOCK_SETTINGS,
             ...extra.settings,
@@ -514,9 +561,14 @@ let hydrateStarted = false;
 let hydrateScheduled = false;
 
 export function rehydrateOpsStore() {
-  if (hydrateStarted) return useOpsStore.persist.rehydrate();
+  const run = () => {
+    useOpsStore.getState().ensureDemoOrders();
+  };
+  if (hydrateStarted) {
+    return Promise.resolve(useOpsStore.persist.rehydrate()).then(run);
+  }
   hydrateStarted = true;
-  return useOpsStore.persist.rehydrate();
+  return Promise.resolve(useOpsStore.persist.rehydrate()).then(run);
 }
 
 export function scheduleOpsRehydrate(urgent = false) {

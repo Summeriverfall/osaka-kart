@@ -41,6 +41,7 @@ export function HomeFaq() {
         </h2>
         <Accordion
           multiple
+          defaultValue={list.map((item) => item.id)}
           className="divide-y divide-white/10 rounded-2xl border border-white/10 bg-[#12121A] px-5"
         >
           {list.map((item) => (

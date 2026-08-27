@@ -268,9 +268,6 @@ export function InventoryTimeline() {
         <button type="button" className={cn("ib-btn", view === "day" && "is-on")} onClick={() => setView("day")}>{copy.inventory.dayView}</button>
         <button type="button" className={cn("ib-btn", view === "week" && "is-on")} onClick={() => setView("week")}>{copy.inventory.weekView}</button>
         <button type="button" className={cn("ib-btn", view === "month" && "is-on")} onClick={() => setView("month")}>{copy.inventory.monthView}</button>
-        <button type="button" className={cn("ib-btn", picked === addIsoDays(today, -1) && "is-on")} onClick={() => { setPicked(addIsoDays(today, -1)); setView("day"); }}>{copy.inventory.yest}</button>
-        <button type="button" className={cn("ib-btn", picked === today && "is-on")} onClick={() => { setPicked(today); setView("day"); }}>{copy.inventory.today}</button>
-        <button type="button" className={cn("ib-btn", picked === addIsoDays(today, 1) && "is-on")} onClick={() => { setPicked(addIsoDays(today, 1)); setView("day"); }}>{copy.inventory.tom}</button>
         <input className="ib-input" type="date" value={picked} onChange={(event) => setPicked(event.target.value)} />
         <div className="ib-filter">
           <button
@@ -301,6 +298,9 @@ export function InventoryTimeline() {
           ) : null}
         </div>
         <span className="ib-toolbar-spacer" />
+        <button type="button" className={cn("ib-btn", picked === addIsoDays(today, -1) && "is-on")} onClick={() => { setPicked(addIsoDays(today, -1)); setView("day"); }}>{copy.inventory.yest}</button>
+        <button type="button" className={cn("ib-btn", picked === today && "is-on")} onClick={() => { setPicked(today); setView("day"); }}>{copy.inventory.today}</button>
+        <button type="button" className={cn("ib-btn", picked === addIsoDays(today, 1) && "is-on")} onClick={() => { setPicked(addIsoDays(today, 1)); setView("day"); }}>{copy.inventory.tom}</button>
         <button
           type="button"
           className="ib-btn"

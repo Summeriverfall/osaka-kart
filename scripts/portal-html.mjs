@@ -2,10 +2,10 @@
 export function portalHtml({ prefix = "out/", local = true } = {}) {
   const p = prefix.endsWith("/") ? prefix : `${prefix}/`;
   const kicker = local ? "Local preview" : "Choose a look";
-  const title = local ? "Furture Kart · 本地入口" : "Furture Kart Osaka";
+  const title = local ? "Future Kart · 本地入口" : "Future Kart Osaka";
   const lead = local
-    ? "双击这一页选入口。酸街已定稿为「节奏」配色，从预约 / 语言切回去也还是这一套，不会跳到旧的酒红或青苔。"
-    : "选一个入口进站。酸街已定稿为「节奏」配色，从预约 / 语言切回去也还是这一套。";
+    ? "双击这一页选入口。三套外观：霓虹、街道、竞速。竞速配色已定稿为「节奏」，从预约 / 语言切回去也还是这一套。"
+    : "选一个入口进站。三套外观：霓虹、街道、竞速。竞速配色已定稿为「节奏」。";
   const href = (path, query = "") =>
     local ? `${p}${path}/index.html${query}` : `${p}${path}/${query}`;
 
@@ -57,7 +57,7 @@ export function portalHtml({ prefix = "out/", local = true } = {}) {
   <body>
     <div class="wrap">
       <p class="kicker">${kicker}</p>
-      <h1>Furture Kart Osaka</h1>
+      <h1>Future Kart Osaka</h1>
       <p class="lead">${lead}</p>
       <div class="row">
         <a class="btn front" href="${href("zh-TW")}">打开前台</a>
@@ -66,8 +66,8 @@ export function portalHtml({ prefix = "out/", local = true } = {}) {
       <h2>外观</h2>
       <div class="looks">
         <a class="look ln" href="${href("zh-TW/neon")}"><strong>霓虹</strong><small>粉紫夜街</small></a>
-        <a class="look la" href="${href("zh-TW/acid", "?palette=pace")}"><strong>酸街</strong><small>发车格 · 节奏</small></a>
-        <a class="look lo" href="${href("zh-TW/oni")}"><strong>鬼街</strong><small>裂帛和风</small></a>
+        <a class="look la" href="${href("zh-TW/acid", "?palette=pace")}"><strong>竞速</strong><small>发车格 · 节奏</small></a>
+        <a class="look lo" href="${href("zh-TW/oni")}"><strong>街道</strong><small>难波街头</small></a>
       </div>
     </div>
   </body>

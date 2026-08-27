@@ -116,7 +116,7 @@ const LOCALES = ["zh-TW", "en", "ja"] as const;
 
 const EMAIL_BODIES: Record<(typeof TYPES)[number], Record<(typeof LOCALES)[number], string>> = {
   预订确认: {
-    "zh-TW": `主旨：Furture Kart Osaka 預訂確認 — {{booking_id}}
+    "zh-TW": `主旨：Future Kart Osaka 預訂確認 — {{booking_id}}
 
 {{customer_name}} 您好，
 
@@ -142,9 +142,9 @@ const EMAIL_BODIES: Record<(typeof TYPES)[number], Record<(typeof LOCALES)[numbe
 
 如需改期或取消，請直接回覆本信，或致電 +81 6-7771-0100。
 
-Furture Kart Osaka
+Future Kart Osaka
 book@osakakart.jp`,
-    en: `Subject: Furture Kart Osaka booking confirmed — {{booking_id}}
+    en: `Subject: Future Kart Osaka booking confirmed — {{booking_id}}
 
 Hi {{customer_name}},
 
@@ -165,9 +165,9 @@ Courses are Namba 60, Tsutenkaku 90, and Osaka Castle 120. Suit, helmet, and ins
 
 To change or cancel, reply to this email or call +81 6-7771-0100.
 
-Furture Kart Osaka
+Future Kart Osaka
 book@osakakart.jp`,
-    ja: `件名：Furture Kart Osaka 予約確定 — {{booking_id}}
+    ja: `件名：Future Kart Osaka 予約確定 — {{booking_id}}
 
 {{customer_name}} 様
 
@@ -192,7 +192,7 @@ book@osakakart.jp`,
 
 変更・キャンセルは本メールへの返信、または +81 6-7771-0100 までご連絡ください。
 
-Furture Kart Osaka
+Future Kart Osaka
 book@osakakart.jp`,
   },
   出发提醒: {
@@ -214,7 +214,7 @@ book@osakakart.jp`,
 
 集合點地圖與門牌請見本郵件／簡訊。如找不到集合點，請致電 +81 6-7771-0100。
 
-Furture Kart Osaka
+Future Kart Osaka
 book@osakakart.jp`,
     en: `Subject: Departure reminder — {{date}} {{time}} ({{booking_id}})
 
@@ -234,7 +234,7 @@ Bring your license or 1949 Geneva IDP. Light rain still goes; we provide rainwea
 
 If you cannot find the pin, call +81 6-7771-0100.
 
-Furture Kart Osaka
+Future Kart Osaka
 book@osakakart.jp`,
     ja: `件名：出発リマインド — {{date}} {{time}}（{{booking_id}}）
 
@@ -254,7 +254,7 @@ book@osakakart.jp`,
 
 集合場所が分からない場合は +81 6-7771-0100 までお電話ください。
 
-Furture Kart Osaka
+Future Kart Osaka
 book@osakakart.jp`,
   },
   退款通知: {
@@ -273,7 +273,7 @@ book@osakakart.jp`,
 
 如非您本人申請取消，請立即回覆本信。
 
-Furture Kart Osaka
+Future Kart Osaka
 book@osakakart.jp`,
     en: `Subject: Refund notice — {{booking_id}}
 
@@ -290,7 +290,7 @@ The refund goes back to the original payment method. Banks and platforms usually
 
 If you did not request this cancellation, reply to this email immediately.
 
-Furture Kart Osaka
+Future Kart Osaka
 book@osakakart.jp`,
     ja: `件名：返金のご案内 — {{booking_id}}
 
@@ -307,7 +307,7 @@ book@osakakart.jp`,
 
 ご本人以外のキャンセルと思われる場合は、すぐに本メールへご返信ください。
 
-Furture Kart Osaka
+Future Kart Osaka
 book@osakakart.jp`,
   },
   回访评价: {
@@ -315,38 +315,38 @@ book@osakakart.jp`,
 
 {{customer_name}} 您好，
 
-感謝您在 {{date}} {{time}} 參加 Furture Kart Osaka（{{plan_name}}，預約號 {{booking_id}}）。
+感謝您在 {{date}} {{time}} 參加 Future Kart Osaka（{{plan_name}}，預約號 {{booking_id}}）。
 
 如果行程順利，歡迎在 Google 或 TripAdvisor 留下短評，幫助下一位旅客。
 若有任何不愉快，也請直接回覆本信，我們會優先處理。
 
 期待下次在難波街頭再見。
 
-Furture Kart Osaka
+Future Kart Osaka
 book@osakakart.jp`,
     en: `Subject: Thanks for riding in Osaka — a short review helps
 
 Hi {{customer_name}},
 
-Thank you for joining Furture Kart Osaka on {{date}} {{time}} ({{plan_name}}, {{booking_id}}).
+Thank you for joining Future Kart Osaka on {{date}} {{time}} ({{plan_name}}, {{booking_id}}).
 
 If the run went well, a short Google or TripAdvisor review helps the next rider. If anything was off, reply to this email and we will follow up first.
 
 See you on the street.
 
-Furture Kart Osaka
+Future Kart Osaka
 book@osakakart.jp`,
     ja: `件名：大阪走行ありがとうございました — レビューのお願い
 
 {{customer_name}} 様
 
-{{date}} {{time}} の Furture Kart Osaka（{{plan_name}}／{{booking_id}}）にご参加いただきありがとうございました。
+{{date}} {{time}} の Future Kart Osaka（{{plan_name}}／{{booking_id}}）にご参加いただきありがとうございました。
 
 ご満足いただけましたら Google または TripAdvisor に短い感想を残していただけると助かります。ご不満な点があれば本メールへご返信ください。優先して対応します。
 
 また難波の街でお会いできることを楽しみにしています。
 
-Furture Kart Osaka
+Future Kart Osaka
 book@osakakart.jp`,
   },
 };
@@ -365,10 +365,10 @@ export const MOCK_STORES: MockStore[] = [
   {
     id: "namba",
     name: "难波本店",
-    address: "大阪市中央区难波",
+    address: "〒542-0072 大阪府大阪市中央区高津2丁目4-21 おおきに道頓堀ビル",
     phone: "+81-6-0000-0000",
     hours: "10:00 – 21:00",
-    maps: "https://maps.google.com/?q=Namba+Station+Osaka",
+    maps: "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%8A%E3%81%8D%E3%81%AB%E9%81%93%E9%A0%93%E5%A0%80%E3%83%93%E3%83%AB",
     status: "营业中",
     created: "2025-11-01",
   },
@@ -406,7 +406,7 @@ export const MOCK_SETTINGS: MockSettings = {
   appleMerchant: "merchant.jp.osakakart",
   googleMerchant: "",
   emailTemplate:
-    "主旨：Furture Kart Osaka 預訂確認 — {{booking_id}}\n\n{{customer_name}} 您好，您的預約已確認。{{date}} {{time}}，難波集合請提前 15 分鐘。",
+    "主旨：Future Kart Osaka 預訂確認 — {{booking_id}}\n\n{{customer_name}} 您好，您的預約已確認。{{date}} {{time}}，難波集合請提前 15 分鐘。",
   mailFrom: "",
   mailTo: "",
   mailPublicKey: "",

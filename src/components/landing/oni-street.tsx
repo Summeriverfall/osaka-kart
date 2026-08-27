@@ -1,6 +1,7 @@
 "use client";
 
 import { HeroTitle } from "@/components/landing/hero-title";
+import { HeroTrust } from "@/components/landing/hero-trust";
 import type { LandingCopy } from "@/components/landing/copy";
 import { asset } from "@/lib/asset";
 import { heroMediaOf, useLiveCms } from "@/lib/live-cms";
@@ -17,18 +18,18 @@ export function OniStreet({ copy }: OniStreetProps) {
   return (
     <div className="oni-street">
       <aside className="oni-rail" aria-hidden>
-        <span>FURTURE KART OSAKA</span>
+        <span>FUTURE KART OSAKA</span>
         <span>NAMBA · DOTONBORI</span>
       </aside>
       <div className="oni-street-main">
         <section className="oni-split">
           <div className="oni-split-copy">
-            <p className="oni-hash">{copy.hero.rating}</p>
             <HeroTitle
               title={copy.hero.title}
               titleRest={copy.hero.titleRest}
             />
             <p className="oni-split-lead">{copy.hero.subtitle}</p>
+            <HeroTrust />
             <a href="#plans" className="cta-btn cta-btn-solid">
               {copy.hero.cta}
             </a>

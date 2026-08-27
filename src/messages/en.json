@@ -1,6 +1,6 @@
 {
   "Metadata": {
-    "title": "Furture Kart Osaka",
+    "title": "Future Kart Osaka",
     "description": "Street-legal karting in Osaka"
   },
   "Nav": {
@@ -17,15 +17,18 @@
     "kicker": "Street-legal karting in Osaka",
     "title": "Tonight, the streets are yours.",
     "lead": "Same course, price, and meeting point. Pick a card to start, then choose a plan and a date.",
-    "what": "Licensed road plates. A guide leads you through Namba and Dotonbori.",
+    "what": "Roll out of Namba at night and follow the convoy into Dotonbori's lights.",
     "from": "From {price}, tax included",
     "need": "Valid license required · Age 18+",
-    "enter": "Enter"
+    "enter": "Enter",
+    "lookNeon": "Neon",
+    "lookAcid": "Racing",
+    "lookOni": "Street"
   },
   "Hero": {
     "title": "Tonight, into the neon",
     "titleRest": "Dotonbori under the wheels",
-    "subtitle": "Street-legal plates. A guide leads through Namba. Suit, helmet, and insurance included.",
+    "subtitle": "Roll out of Namba at night and follow the convoy into Dotonbori's lights. Helmet, suit, and insurance are already in the price — pick a plan and a date, and you're on the street tonight.",
     "cta": "See plans and prices",
     "rating": "4.9 (2,000+ reviews)",
     "scroll": "Scroll"
@@ -74,7 +77,7 @@
     "q2": "Are costumes included?",
     "a2": "A racing suit and helmet are included. Premium character costumes can be added at booking.",
     "q3": "Where do we meet?",
-    "a3": "Namba area, Osaka. The exact pin is sent after you book.",
+    "a3": "We meet at おおきに道頓堀ビル in Kozu, near Namba / Dotonbori. About 5 min walk from Namba Station.",
     "q4": "What if it rains?",
     "a4": "Light rain: raincoats provided, we usually still go. Heavy rain or typhoon: free reschedule or full refund.",
     "q5": "How old do I need to be?",
@@ -92,7 +95,7 @@
   },
   "Meet": {
     "title": "Meeting Point",
-    "address": "Namba, Chuo-ku, Osaka",
+    "address": "〒542-0072 Osaka, Chuo Ward, Kozu, 2 Chome−4−21 おおきに道頓堀ビル",
     "station": "Namba Station",
     "walk": "About 5 min walk from Namba Station."
   },
@@ -102,8 +105,8 @@
     "button": "BOOK YOUR RIDE"
   },
   "Footer": {
-    "copyright": "© 2026 Furture Kart Osaka. All rights reserved.",
-    "company": "Furture Kart Osaka · Osaka, Japan",
+    "copyright": "© 2026 Future Kart Osaka. All rights reserved.",
+    "company": "Future Kart Osaka · Osaka, Japan",
     "social": "Follow"
   },
   "Help": {
@@ -229,9 +232,10 @@
     "phoneHint": "A person usually replies faster"
   },
   "Shop": {
-    "legal": "Street legal",
-    "tax": "Tax included",
-    "license": "License needed",
+    "legal": "City streets, not a closed track",
+    "tax": "The coolest street outfits",
+    "license": "Lots of times and routes to pick",
+    "media": "Videos and photos — the most unique Japan street memory!",
     "age": "18+",
     "faqLead": "The questions people ask before they ride. License rules differ by country.",
     "moreHelp": "License notes by country",

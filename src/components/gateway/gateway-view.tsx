@@ -15,6 +15,12 @@ const PREVIEWS: Record<SiteTheme, string> = {
   oni: asset("/images/reviews/r2.webp"),
 };
 
+const LOOK_NAME: Record<SiteTheme, "lookNeon" | "lookAcid" | "lookOni"> = {
+  neon: "lookNeon",
+  acid: "lookAcid",
+  oni: "lookOni",
+};
+
 type GatewayViewProps = {
   fromPrice: number;
   locale: string;
@@ -67,6 +73,7 @@ export function GatewayView({ fromPrice, locale }: GatewayViewProps) {
                   />
                 </div>
                 <div className="gw-copy">
+                  <strong>{t(LOOK_NAME[look])}</strong>
                   <em>{t("enter")} →</em>
                 </div>
               </a>

@@ -4,7 +4,7 @@ export const ACID_PALETTE_META = palettes;
 export const ACID_PALETTE_IDS = palettes.map((item) => item.id);
 export type AcidPalette = (typeof palettes)[number]["id"];
 
-/** 酸街最终配色：节奏。不再跟 ?palette= 或本地旧记录走。 */
+/** 竞速最终配色：节奏。不再跟 ?palette= 或本地旧记录走。 */
 export const ACID_PALETTE: AcidPalette = "pace";
 
 export const ACID_PALETTE_KEY = "fk-acid-palette-v2";

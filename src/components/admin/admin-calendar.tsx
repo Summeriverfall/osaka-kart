@@ -56,7 +56,9 @@ export function AdminCalendarView() {
   }
 
   function openOrder(order: MockOrder) {
-    pickDate(order.date, order.id);
+    setPicked(order.date);
+    setFocusId(order.id);
+    setDetailId(order.id);
   }
 
   return (

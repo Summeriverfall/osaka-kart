@@ -1,4 +1,4 @@
-/* 前台 · 酸街 Acid：发车格 / 海报风 */
+/* 前台 · 竞速 Acid：发车格 / 海报风 */
 
 /* ---------- Acid Street: poster / zine ---------- */
 .acid-root {
@@ -48,7 +48,7 @@
 .acid-bar {
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 80;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -914,7 +914,7 @@
 
 /* ===== Acid street: independent layout (muted, not fluorescent) ===== */
 
-/* 酸街最终配色：节奏。写在 .acid-root 上，避免 html 还记着旧的酒红/青苔。 */
+/* 竞速最终配色：节奏。写在 .acid-root 上，避免 html 还记着旧的酒红/青苔。 */
 
 .acid-root,
 html[data-acid-palette="pace"] {
@@ -2033,13 +2033,16 @@ html:not(:has(.admin-app)) .acid-root .acid-dock {
 
 .acid-trust li {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.4rem;
   border-left: 0;
   padding-left: 0;
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.04em;
+  text-transform: none;
+  line-height: 1.4;
+  max-width: 100%;
 }
 
 .acid-trust i {

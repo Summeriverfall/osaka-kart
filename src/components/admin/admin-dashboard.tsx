@@ -34,15 +34,17 @@ export function AdminDashboardView() {
   const ordersAll = useOpsStore((state) => state.orders);
   const vehiclesAll = useOpsStore((state) => state.vehicles);
   const plans = useOpsStore((state) => state.plans);
+  const ensureDemoOrders = useOpsStore((state) => state.ensureDemoOrders);
   const { orders, vehicles, stores, storeId, setStoreId, canSwitch, store } = useStoreData();
   const showingAll = canSwitch && isAllStores(storeId);
   const todayIso = todayIsoDate();
 
   useEffect(() => {
+    ensureDemoOrders();
     if (canSwitch) setStoreId(ALL_STORES_ID);
     // 每次进入仪表盘，超管默认看全店合计
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canSwitch]);
+  }, [canSwitch, ensureDemoOrders]);
 
   const weekDays = useMemo(
     () => Array.from({ length: 7 }, (_, index) => addDaysIso(todayIso, index - 6)),

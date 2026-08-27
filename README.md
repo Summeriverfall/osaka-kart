@@ -1,4 +1,4 @@
-# Furture Kart Osaka
+# Future Kart Osaka
 
 大阪公道卡丁车独立站。四语：English / 日本語 / 繁體中文 / 한국어。
 

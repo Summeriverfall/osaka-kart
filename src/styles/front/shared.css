@@ -107,12 +107,13 @@ html {
 
 .landing-root {
   min-height: 100dvh;
+  overflow: visible;
   color: var(--foreground);
   background: var(--background);
 }
 
 .landing-nav {
-  position: fixed;
+  position: sticky;
   top: 0;
   left: 0;
   right: 0;
@@ -1801,7 +1802,7 @@ html:not(:has(.admin-app)) .float-book {
 /* ===== Module polish: nav, hero, plans, commerce ===== */
 
 .site-bar {
-  position: fixed;
+  position: sticky;
   top: 0;
   left: 0;
   right: 0;
@@ -1945,6 +1946,8 @@ html:not(:has(.admin-app)) .float-book {
   border: 1px solid rgb(255 255 255 / 16%);
   font-size: 0.92rem;
   font-weight: 600;
+  line-height: 1.35;
+  max-width: 100%;
 }
 
 .acid-hero-copy .hero-trust,
@@ -2390,7 +2393,8 @@ html:not(:has(.admin-app)) .float-book {
 .neon-hero {
   min-height: auto;
   height: auto;
-  padding: 5.5rem 1.25rem 4.5rem;
+  overflow: visible;
+  padding: 2.25rem 1.25rem 4.5rem;
 }
 
 @media (min-width: 800px) {

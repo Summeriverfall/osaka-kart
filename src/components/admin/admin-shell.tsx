@@ -110,7 +110,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         )}
       >
         <p className="px-3 pt-2 text-xs font-semibold tracking-[0.18em] text-blue-600 uppercase">
-          Furture Kart
+          Future Kart
         </p>
         <p className="px-3 pb-4 text-sm text-slate-500">{copy.brandSub}</p>
         <nav className="grid flex-1 gap-1 content-start">

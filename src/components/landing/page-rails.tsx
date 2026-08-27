@@ -1,6 +1,6 @@
 import type { SiteTheme } from "@/lib/visual-theme";
 
-const RAIL = "FURTURE KART OSAKA  ·  STREET KART  ·  ";
+const RAIL = "FUTURE KART OSAKA  ·  STREET KART  ·  ";
 
 export function PageRails({ theme }: { theme: SiteTheme }) {
   return (

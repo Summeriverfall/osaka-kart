@@ -51,7 +51,7 @@ export function AdminLoginForm() {
           </p>
           <AdminLangSwitch locale={locale} path="/admin/login" />
         </div>
-        <h1 className="mt-3 text-2xl font-black text-slate-900">Furture Kart Osaka</h1>
+        <h1 className="mt-3 text-2xl font-black text-slate-900">Future Kart Osaka</h1>
         <p className="mt-2 text-sm text-slate-500">{copy.loginLead}</p>
 
         <label className="mt-8 block text-sm text-slate-600">

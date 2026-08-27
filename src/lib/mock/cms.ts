@@ -288,10 +288,10 @@ export const MOCK_CMS: CmsState = {
       sort: 3,
       q: L("在哪裡集合？", "Where do we meet?", "集合場所は？", "어디서 모이나요?"),
       a: L(
-        "大阪難波一帶。確切地點會在預訂後發送。",
-        "Around Namba, Osaka. The exact pin is sent after you book.",
-        "大阪・難波周辺。正確なピンは予約後に送ります。",
-        "오사카 난바 일대. 정확한 위치는 예약 후 보내 드립니다.",
+        "集合在難波・道頓堀，おおきに道頓堀ビル。從難波站步行約 5 分鐘。",
+        "We meet at おおきに道頓堀ビル in Kozu, near Namba / Dotonbori. About 5 min walk from Namba Station.",
+        "集合は難波・道頓堀の「おおきに道頓堀ビル」。難波駅から徒歩約5分。",
+        "집합은 난바·도톤보리의 おおきに道頓堀ビル. 난바역에서 도보 약 5분.",
       ),
     },
     {
@@ -458,11 +458,21 @@ export const MOCK_CMS: CmsState = {
   ],
   meetup: {
     title: L("集合地點", "Meeting Point", "集合場所", "집합 장소"),
-    address: L("大阪市中央區難波", "Namba, Chuo-ku, Osaka", "大阪市中央区難波", "오사카시 주오구 난바"),
+    address: L(
+      "〒542-0072 大阪市中央區高津2丁目4-21 おおきに道頓堀ビル",
+      "〒542-0072 Osaka, Chuo Ward, Kozu, 2 Chome−4−21 おおきに道頓堀ビル",
+      "〒542-0072 大阪府大阪市中央区高津2丁目4-21 おおきに道頓堀ビル",
+      "〒542-0072 오사카시 주오구 고즈 2초메 4-21 おおきに道頓堀ビル",
+    ),
     station: L("難波站", "Namba Station", "難波駅", "난바역"),
     walk: L("從難波站步行約 5 分鐘。", "About 5 min walk from Namba Station.", "難波駅から徒歩約5分。", "난바역에서 도보 약 5분."),
-    lead: L("集合在難波。確切門牌預訂後發送。", "We meet in Namba. The exact pin is sent after you book.", "集合は難波。正確なピンは予約後にお送りします。", "집합은 난바. 정확한 주소는 예약 후 보내 드립니다."),
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Namba+Osaka",
+    lead: L(
+      "集合在難波・道頓堀。大樓門口見。",
+      "Meet in Namba / Dotonbori, at the building entrance.",
+      "集合は難波・道頓堀。ビル入口で待ち合わせ。",
+      "집합은 난바·도톤보리. 건물 입구에서 만납니다.",
+    ),
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=%E3%80%92542-0072%20Osaka%20Chuo%20Kozu%202-4-21%20%E3%81%8A%E3%81%8A%E3%81%8D%E3%81%AB%E9%81%93%E9%A0%93%E5%A0%80%E3%83%93%E3%83%AB",
   },
   howToBook: {
     title: L("怎麼預約", "How to book", "予約方法", "예약 방법"),
@@ -495,7 +505,7 @@ export const MOCK_CMS: CmsState = {
       tiktok: SITE_CONTACT.tiktok,
       line: SITE_CONTACT.line,
     },
-    footerCompany: L("Furture Kart Osaka · 大阪", "Furture Kart Osaka · Osaka, Japan", "Furture Kart Osaka · 大阪", "Furture Kart Osaka · 오사카"),
+    footerCompany: L("Future Kart Osaka · 大阪", "Future Kart Osaka · Osaka, Japan", "Future Kart Osaka · 大阪", "Future Kart Osaka · 오사카"),
   },
 };
 

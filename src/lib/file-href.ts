@@ -85,7 +85,12 @@ export function goToAppPath(appPath: string, locale?: string) {
 export function pushAppPath(appPath: string, locale?: string) {
   if (typeof window === "undefined") return;
   const href = appPageHref(appPath, localeOf(locale));
-  if (window.location.href !== href) window.location.href = href;
+  if (window.location.href === href) return;
+  if (isFileProtocol()) {
+    window.location.href = href;
+    return;
+  }
+  window.history.pushState({}, "", href);
 }
 
 export function navigateToHref(href: string, locale?: string) {

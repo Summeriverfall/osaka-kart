@@ -23,7 +23,6 @@ export function AcidMasthead({ copy }: AcidMastheadProps) {
           GO
         </span>
         <div className="acid-masthead-copy">
-          <p className="acid-pace-tag">{copy.hero.rating}</p>
           <HeroTitle
             className="acid-mega"
             title={copy.hero.title}
@@ -42,6 +41,10 @@ export function AcidMasthead({ copy }: AcidMastheadProps) {
             <li>
               <i aria-hidden />
               {shop("license")}
+            </li>
+            <li>
+              <i aria-hidden />
+              {shop("media")}
             </li>
           </ul>
           <div className="acid-masthead-actions">

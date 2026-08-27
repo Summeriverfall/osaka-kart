@@ -16,6 +16,7 @@ import { AdminSettingsView } from "@/components/admin/admin-settings";
 import { AdminStaffView } from "@/components/admin/admin-staff";
 import { AdminVehiclesView } from "@/components/admin/admin-vehicles";
 import { AdminCmsView } from "@/components/admin/admin-cms";
+import { AdminAffiliatesView } from "@/components/admin/admin-affiliates";
 import { ADMIN_PAGE_META, adminTabFromLocation, BOOKING_HOME, CONTENT_HOME, normalizeAdminTab, REPORT_HOME, SETTINGS_HOME } from "@/lib/admin/nav";
 import { adminCopy } from "@/lib/admin/copy";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
@@ -34,6 +35,9 @@ function metaFor(tab: string, locale: string) {
 function viewFor(tab: string) {
   if (tab.startsWith("/admin/orders/") && tab !== "/admin/orders") {
     return <AdminOrderDetailView id={tab.slice("/admin/orders/".length)} />;
+  }
+  if (tab.startsWith("/admin/affiliates/") && tab !== "/admin/affiliates") {
+    return <AdminAffiliatesView id={tab.slice("/admin/affiliates/".length)} />;
   }
   switch (tab) {
     case "/admin/orders":
@@ -57,6 +61,8 @@ function viewFor(tab: string) {
       return <AdminCmsView section="press" />;
     case "/admin/content/meetup":
       return <AdminCmsView section="meetup" />;
+    case "/admin/affiliates":
+      return <AdminAffiliatesView />;
     case "/admin/bookings/how":
     case "/admin/settings/booking":
       return (

@@ -175,8 +175,8 @@ for (const file of files) {
   }
 }
 
-writeLauncher(path.join(out, "打开后台.html"), "打开 Furture Kart 后台", "zh-TW/admin/login/index.html");
-writeLauncher(path.join(out, "打开前台.html"), "打开 Furture Kart 前台", "zh-TW/index.html");
+writeLauncher(path.join(out, "打开后台.html"), "打开 Future Kart 后台", "zh-TW/admin/login/index.html");
+writeLauncher(path.join(out, "打开前台.html"), "打开 Future Kart 前台", "zh-TW/index.html");
 
 function copyReadableStyles() {
   const frontSrc = path.resolve("src/styles/front");
@@ -196,13 +196,13 @@ function copyReadableStyles() {
 
 前台（给客人看）
   zh-TW / en / ja / ko
-  外观文件夹：neon 霓虹、acid 酸街、oni 鬼街
+  外观文件夹：neon 霓虹、acid 竞速、oni 街道
   快捷入口：打开前台.html
   可读样式：styles/front/
     shared.css  三套外观共用
     neon.css    霓虹
-    acid.css    酸街
-    oni.css     鬼街
+    acid.css    竞速
+    oni.css     街道
 
 后台（给店员用）
   zh-TW/admin/ （登录在 admin/login）

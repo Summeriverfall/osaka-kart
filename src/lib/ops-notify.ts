@@ -63,7 +63,7 @@ export async function sendStatusMail(
 
   const template = pickTemplate(templates, type, localeOfOrder(order));
   const filled = template ? fillBody(template.body, order) : "";
-  const subject = template ? subjectOf(filled) : `Furture Kart Osaka — ${label} ${order.id}`;
+  const subject = template ? subjectOf(filled) : `Future Kart Osaka — ${label} ${order.id}`;
   const body = template ? bodyWithoutSubject(filled) || filled : copy.notify.status(label);
 
   const shop = mailSettingsOf(settings).to;

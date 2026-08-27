@@ -1,2 +1,2 @@
-export const SITE_BRAND = "Furture Kart Osaka";
-export const SITE_BRAND_SHORT = "Furture Kart";
+export const SITE_BRAND = "Future Kart Osaka";
+export const SITE_BRAND_SHORT = "Future Kart";

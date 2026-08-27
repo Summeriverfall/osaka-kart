@@ -69,7 +69,7 @@ export function telHref(phone: string) {
   return `tel:${phone.replace(/[^\d+]/g, "")}`;
 }
 
-export function mailHref(email: string, subject = "Furture Kart Osaka Booking") {
+export function mailHref(email: string, subject = "Future Kart Osaka Booking") {
   return `mailto:${email}?subject=${encodeURIComponent(subject)}`;
 }
 

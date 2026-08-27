@@ -44,7 +44,7 @@ export async function sendMail(options: {
       template_params: {
         to_email: to,
         to_name: to,
-        from_name: "Furture Kart Osaka",
+        from_name: "Future Kart Osaka",
         from_email: mail.from,
         reply_to: mail.from,
         subject: options.subject,

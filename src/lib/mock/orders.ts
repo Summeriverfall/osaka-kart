@@ -141,3 +141,17 @@ export function buildWeekDemoOrders(today = todayIsoDate()): MockOrder[] {
 
 export const MOCK_ORDERS: MockOrder[] = buildWeekDemoOrders();
 export const MOCK_ORDER_IDS = MOCK_ORDERS.map((item) => item.id);
+
+const DEMO_ORDER_ID = /^(FK|SK|UM)-\d{6}-\d{3}$/;
+
+export function isRolledDemoOrder(order: MockOrder) {
+  return DEMO_ORDER_ID.test(order.id) && !isWebsiteLiveOrder(order);
+}
+
+/** Keep live / 手建订单，按今天重铺演示周，保证仪表盘一直有今日单量。 */
+export function mergeFreshDemoOrders(orders: MockOrder[], today = todayIsoDate()): MockOrder[] {
+  const keep = orders.filter((item) => !isRolledDemoOrder(item));
+  const kept = new Set(keep.map((item) => item.id));
+  const demo = buildWeekDemoOrders(today);
+  return [...keep, ...demo.filter((item) => !kept.has(item.id))];
+}

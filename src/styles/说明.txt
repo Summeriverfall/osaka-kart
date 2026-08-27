@@ -3,8 +3,8 @@
 前台  styles/front/
   shared.css   三套外观共用（导航、预约、结账）
   neon.css     霓虹
-  acid.css     酸街
-  oni.css      鬼街
+  acid.css     竞速
+  oni.css      街道
   legacy.css   已下线的 HUD / Glitch
   index.css    前台入口，按顺序引入上面的文件
 

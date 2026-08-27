@@ -25,7 +25,7 @@ const adminRedirect = `<!doctype html>
     <meta charset="utf-8" />
     <meta http-equiv="refresh" content="0;url=../zh-TW/admin/login/index.html" />
     <link rel="canonical" href="../zh-TW/admin/login/index.html" />
-    <title>Furture Kart Admin</title>
+    <title>Future Kart Admin</title>
   </head>
   <body>
     <a href="../zh-TW/admin/login/index.html">打开后台</a>
@@ -39,7 +39,7 @@ const zhHansRedirect = `<!doctype html>
     <meta charset="utf-8" />
     <meta http-equiv="refresh" content="0;url=../zh-TW/index.html" />
     <link rel="canonical" href="../zh-TW/index.html" />
-    <title>Furture Kart Osaka</title>
+    <title>Future Kart Osaka</title>
   </head>
   <body>
     <a href="../zh-TW/index.html">繁體中文</a>
