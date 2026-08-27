@@ -1809,11 +1809,11 @@ html:not(:has(.admin-app)) .float-book {
   right: 0;
   width: 100%;
   z-index: 80 !important;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.45rem 0.6rem;
+  column-gap: 0.6rem;
+  row-gap: 0.45rem;
   padding: max(0.55rem, env(safe-area-inset-top)) 0.85rem 0.55rem;
   background: rgb(10 8 12 / 88%);
   border-bottom: 1px solid rgb(255 255 255 / 10%);
@@ -1821,7 +1821,8 @@ html:not(:has(.admin-app)) .float-book {
 }
 
 .site-bar-logo {
-  flex: 0 0 auto;
+  grid-column: 1;
+  flex: none;
   min-width: 0;
   text-decoration: none;
   color: inherit;
@@ -1833,11 +1834,12 @@ html:not(:has(.admin-app)) .float-book {
 }
 
 .site-bar-end {
+  grid-column: 3;
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  flex: 0 0 auto;
-  margin-left: auto;
+  flex: none;
+  margin-left: 0;
 }
 
 .site-bar-cta {
@@ -1868,19 +1870,26 @@ html:not(:has(.admin-app)) .float-book {
   }
 
   .site-bar-menu {
-    width: 2.6rem;
-    height: 2.6rem;
+    display: none;
   }
 }
 
 @media (max-width: 859px) {
+  .site-bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .site-bar-end {
+    grid-column: 2;
+  }
+
   .site-bar .looks-link {
     display: none;
   }
 }
 
 .site-bar-sheet {
-  flex-basis: 100%;
+  grid-column: 1 / -1;
   display: grid;
   gap: 0.85rem;
   padding: 0.4rem 0 0.6rem;
@@ -1890,12 +1899,6 @@ html:not(:has(.admin-app)) .float-book {
   color: inherit;
   text-decoration: none;
   font-size: 1.05rem;
-}
-
-@media (min-width: 1100px) {
-  .site-bar {
-    flex-wrap: nowrap;
-  }
 }
 
 .site-bar-neon {

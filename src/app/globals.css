@@ -504,6 +504,9 @@ html[lang="ja"] .gateway-main h1 {
 
 .site-bar-contact {
   display: none;
+  grid-column: 2;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .site-bar-contact-list {
@@ -863,17 +866,13 @@ html[lang="ja"] .gateway-main h1 {
   overflow-x: hidden;
 }
 
-@media (min-width: 1100px) {
+@media (min-width: 860px) {
   .site-bar-contact {
     display: block;
-    flex: 1 1 0%;
-    min-width: 0;
-    overflow: hidden;
   }
 
   .site-bar-end {
     margin-left: 0;
-    flex: 0 0 auto;
     gap: 1rem;
   }
 
