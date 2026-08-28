@@ -3,6 +3,13 @@ import { todayIsoDate } from "@/lib/booking/slots";
 
 export type OrderStatus = "pending" | "confirmed" | "cancelled" | "completed";
 export type OrderChannel = string;
+export type OrderCancelKind = "voluntary" | "noshow";
+
+export type OrderRefund = {
+  time: string;
+  note: string;
+  actor?: string;
+};
 
 export type OrderLog = {
   time: string;
@@ -33,6 +40,9 @@ export type MockOrder = {
   note: string;
   logs: OrderLog[];
   storeId?: string;
+  affiliateId?: string;
+  cancelKind?: OrderCancelKind;
+  refunds?: OrderRefund[];
 };
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
@@ -131,8 +141,10 @@ export function buildWeekDemoOrders(today = todayIsoDate()): MockOrder[] {
             ? [log(`${date} 09:10`, "店长 佐藤", "确认订单")]
             : []),
           ...(status === "completed" ? [log(`${date} 18:40`, "店长 佐藤", "标记完成")] : []),
-          ...(status === "cancelled" ? [log(`${date} 08:02`, "店长 佐藤", "取消订单", "行程变更")] : []),
+          ...(status === "cancelled" ? [log(`${date} 08:02`, "店长 佐藤", "取消订单", index === 0 ? "No-show" : "行程变更")] : []),
         ],
+        cancelKind: status === "cancelled" ? (index === 0 ? "noshow" : "voluntary") : undefined,
+        affiliateId: index === 2 ? "af-yuki" : index === 3 ? "af-mei" : undefined,
       });
     }
   }

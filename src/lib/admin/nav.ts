@@ -7,30 +7,32 @@ export type AdminNavItem = {
 };
 
 export const ADMIN_NAV: AdminNavItem[] = [
-  { href: "/admin/dashboard", label: "仪表盘", roles: ["admin", "manager"] },
-  { href: "/admin/bookings", label: "预约管理", roles: ["admin", "manager"] },
-  { href: "/admin/inventory", label: "库存管理", roles: ["admin", "manager"] },
-  { href: "/admin/vehicles", label: "车辆管理", roles: ["admin", "manager"] },
-  { href: "/admin/plans", label: "套餐管理", roles: ["admin", "manager"] },
-  { href: "/admin/content", label: "内容管理", roles: ["admin", "manager"] },
-  { href: "/admin/affiliates", label: "推广代理", roles: ["admin", "manager"] },
+  { href: "/admin/dashboard", label: "仪表盘", roles: ["admin", "manager", "staff"] },
+  { href: "/admin/bookings", label: "预约管理", roles: ["admin", "manager", "staff"] },
+  { href: "/admin/inventory", label: "库存管理", roles: ["admin", "manager", "staff"] },
+  { href: "/admin/vehicles", label: "车辆管理", roles: ["admin", "manager", "staff"] },
+  { href: "/admin/plans", label: "套餐管理", roles: ["admin", "manager", "staff"] },
+  { href: "/admin/addons", label: "附加项管理", roles: ["admin", "manager", "staff"] },
+  { href: "/admin/content", label: "内容管理", roles: ["admin", "manager", "staff"] },
+  { href: "/admin/affiliates", label: "推广代理", roles: ["admin", "manager", "staff"] },
   { href: "/admin/reports", label: "财务报表", roles: ["admin"] },
   { href: "/admin/staff", label: "员工管理", roles: ["admin"] },
+  { href: "/admin/permissions", label: "权限配置", roles: ["admin", "manager"] },
   { href: "/admin/settings", label: "系统设置", roles: ["admin"] },
   { href: "/admin/site", label: "全站配置", roles: ["admin"] },
 ];
 
 export const ADMIN_BOOKING_NAV: AdminNavItem[] = [
-  { href: "/admin/orders", label: "订单列表", roles: ["admin", "manager"] },
-  { href: "/admin/calendar", label: "日历", roles: ["admin", "manager"] },
+  { href: "/admin/orders", label: "订单列表", roles: ["admin", "manager", "staff"] },
+  { href: "/admin/calendar", label: "日历", roles: ["admin", "manager", "staff"] },
 ];
 
 export const ADMIN_CONTENT_NAV: AdminNavItem[] = [
-  { href: "/admin/content/videos", label: "视频管理", roles: ["admin", "manager"] },
-  { href: "/admin/content/reviews", label: "用户评价", roles: ["admin", "manager"] },
-  { href: "/admin/content/faq", label: "FAQ", roles: ["admin", "manager"] },
-  { href: "/admin/content/press", label: "新闻报道", roles: ["admin", "manager"] },
-  { href: "/admin/content/meetup", label: "集合地点", roles: ["admin", "manager"] },
+  { href: "/admin/content/videos", label: "视频管理", roles: ["admin", "manager", "staff"] },
+  { href: "/admin/content/reviews", label: "用户评价", roles: ["admin", "manager", "staff"] },
+  { href: "/admin/content/faq", label: "FAQ", roles: ["admin", "manager", "staff"] },
+  { href: "/admin/content/press", label: "新闻报道", roles: ["admin", "manager", "staff"] },
+  { href: "/admin/content/meetup", label: "集合地点", roles: ["admin", "manager", "staff"] },
 ];
 
 export const ADMIN_REPORT_NAV: AdminNavItem[] = [
@@ -44,6 +46,7 @@ export const ADMIN_SETTINGS_NAV: AdminNavItem[] = [
   { href: "/admin/settings/booking", label: "预约开关设置", roles: ["admin"] },
   { href: "/admin/settings/stores", label: "门店管理", roles: ["admin"] },
   { href: "/admin/settings/email", label: "邮件设置", roles: ["admin"] },
+  { href: "/admin/settings/refund", label: "退款政策", roles: ["admin"] },
   { href: "/admin/settings/logs", label: "操作日志", roles: ["admin"] },
 ];
 
@@ -57,9 +60,10 @@ export const ADMIN_PAGE_META: Record<string, { title: string; lead: string }> = 
   "/admin/bookings": { title: "订单列表", lead: "列表处理订单。点状态可直接改，不必进详情。" },
   "/admin/orders": { title: "订单列表", lead: "列表处理订单。点状态可直接改，不必进详情。" },
   "/admin/calendar": { title: "日历", lead: "月 / 周 / 日看订单分布。点日期更新下方列表，点色块打开订单详情。" },
-  "/admin/inventory": { title: "库存管理", lead: "日 / 周 / 月看车辆库存。可指定起止日期批量设置。" },
+  "/admin/inventory": { title: "库存管理", lead: "按日期 × 时段查看可用车辆总数。" },
   "/admin/vehicles": { title: "车辆管理", lead: "10 辆车。维修中的会从当日库存扣除。" },
-  "/admin/plans": { title: "套餐管理", lead: "编辑前台卡片：标题图、说明图、介绍与亮点，以及价格、时长和附加项。" },
+  "/admin/plans": { title: "套餐管理", lead: "编辑前台卡片：标题图、说明图、介绍与亮点，以及价格、时长和内置附加项。" },
+  "/admin/addons": { title: "附加项管理", lead: "独立管理附加项：名称、价格、描述、数量上限和上下架。" },
   "/admin/content": { title: "视频管理", lead: "管理前台各处视频。可上传本地文件，或贴 YouTube 链接。" },
   "/admin/content/videos": { title: "视频管理", lead: "管理前台各处视频。可上传本地文件，或贴 YouTube 链接。" },
   "/admin/content/reviews": { title: "用户评价", lead: "对应前台「用户评价」。可改文案、姓名与照片。" },
@@ -74,11 +78,13 @@ export const ADMIN_PAGE_META: Record<string, { title: string; lead: string }> = 
   "/admin/reports/overview": { title: "营收报表", lead: "营收趋势与套餐销量。" },
   "/admin/reports/analytics": { title: "数据分析", lead: "本周对比上周、本月对比上月、本月对比去年同期。渠道分析、性别、国籍和时段一并统计。" },
   "/admin/staff": { title: "员工管理", lead: "超管可添加、改角色、重置密码和停用。" },
+  "/admin/permissions": { title: "权限配置", lead: "超管建角色并分配查看/编辑权限。店长可给本店员工调配权限。" },
   "/admin/settings": { title: "支付配置", lead: "开关支付方式。官网结账页只显示已开启的方式。" },
   "/admin/settings/pay": { title: "支付配置", lead: "开关支付方式。官网结账页只显示已开启的方式。" },
   "/admin/settings/channels": { title: "渠道设置", lead: "渠道只记在后台，前台不展示。OTA 抽成用于报表的门店实收。" },
   "/admin/settings/stores": { title: "门店管理", lead: "电话、地址和营业时间会同步到官网。" },
   "/admin/settings/email": { title: "邮件设置", lead: "绑定发信箱，并按客人语言编辑确认、提醒和退款文案。" },
+  "/admin/settings/refund": { title: "退款政策", lead: "填写退款说明文本。具体扣款逻辑稍后接入。" },
   "/admin/settings/send": { title: "邮件设置", lead: "绑定发信箱，并按客人语言编辑确认、提醒和退款文案。" },
   "/admin/settings/mail": { title: "邮件设置", lead: "绑定发信箱，并按客人语言编辑确认、提醒和退款文案。" },
   "/admin/settings/logs": { title: "操作日志", lead: "查看全部后台操作记录。" },

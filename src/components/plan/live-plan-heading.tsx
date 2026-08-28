@@ -13,7 +13,7 @@ export function LivePlanHeading({
   const { plan: live } = useLiveCatalog([plan], [], locale, plan.slug);
   const name = live?.translation.name || plan.translation.name;
   return (
-    <h1 className="neon-text max-w-3xl text-4xl font-black tracking-tight md:text-6xl">
+    <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
       {name}
     </h1>
   );

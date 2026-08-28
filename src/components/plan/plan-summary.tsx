@@ -5,10 +5,12 @@ import { Minus, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useFileRouter as useRouter } from "@/lib/use-file-router";
+import { IncludedAddonsList } from "@/components/addons/included-addons";
 import { formatJpy } from "@/lib/format";
 import { useLiveCatalog } from "@/lib/live-catalog";
 import { addonImage } from "@/lib/media";
 import { withSlash } from "@/lib/paths";
+import { cn } from "@/lib/utils";
 import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 import { useBookingStore } from "@/stores/booking-store";
 
@@ -22,7 +24,7 @@ export function PlanSummaryCard({ plan: seedPlan, addons: seedAddons, locale }: 
   const t = useTranslations("Plan");
   const router = useRouter();
   const store = useBookingStore();
-  const { addons, plan } = useLiveCatalog([seedPlan], seedAddons, locale, seedPlan.slug);
+  const { addons, includedAddons, plan } = useLiveCatalog([seedPlan], seedAddons, locale, seedPlan.slug);
   const current = plan ?? seedPlan;
 
   useEffect(() => {
@@ -91,14 +93,21 @@ export function PlanSummaryCard({ plan: seedPlan, addons: seedAddons, locale }: 
       ) : null}
 
       <div className="mt-6">
-        <p className="text-sm font-semibold text-[#F1F1F5]">{t("addons")}</p>
+        <IncludedAddonsList addons={includedAddons} />
+        <p className="mt-5 text-sm font-semibold text-[#1D1D1F]">{t("addons")}</p>
         <ul className="mt-3 space-y-3">
           {addons.map((addon) => {
             const qty = qtyOf(addon.id);
+            const selected = qty > 0;
             return (
               <li
                 key={addon.id}
-                className="flex items-center gap-3 rounded-xl border border-white/10 p-2"
+                className={cn(
+                  "flex items-center gap-3 rounded-xl border p-2",
+                  selected
+                    ? "border-[#1B365D] bg-[#EEF3F8]"
+                    : "border-[#ECECEF]",
+                )}
               >
                 <img
                   src={addonImage(addon.slug)}

@@ -8,7 +8,8 @@ import {
   type DayStatus,
 } from "@/lib/calendar";
 import type { MockAddon } from "@/lib/mock/addons";
-import type { MockPlan } from "@/lib/mock/plans";
+import { MOCK_ADDONS } from "@/lib/mock/addons";
+import { MOCK_PLANS, type MockPlan } from "@/lib/mock/plans";
 import type { MockSpecialDate } from "@/lib/mock/inventory";
 import type { MockSettings, MockStore } from "@/lib/mock/settings";
 import type { MockVehicle } from "@/lib/mock/vehicles";
@@ -94,6 +95,7 @@ function mockPlanToPublic(plan: MockPlan, locale: string): PlanWithTranslation {
     source: "seed",
     cover_image: plan.coverImage,
     detail_image: plan.detailImage,
+    includedAddonIds: plan.includedAddonIds,
     translation: {
       locale,
       name,
@@ -112,7 +114,11 @@ export function overlayPlan(
   locale: string,
 ): PlanWithTranslation {
   const live = opsPlans.find((item) => item.slug === seed.slug);
-  if (!live) return seed;
+  if (!live) {
+    const mock = MOCK_PLANS.find((item) => item.slug === seed.slug);
+    if (!mock?.includedAddonIds?.length) return seed;
+    return { ...seed, includedAddonIds: mock.includedAddonIds };
+  }
   return {
     ...seed,
     duration_minutes: live.durationMinutes,
@@ -122,6 +128,7 @@ export function overlayPlan(
     is_active: live.active,
     cover_image: live.coverImage?.trim() || seed.cover_image,
     detail_image: live.detailImage?.trim() || undefined,
+    includedAddonIds: live.includedAddonIds ?? seed.includedAddonIds,
     translation: {
       ...seed.translation,
       name: localePlanName(live, locale, seed.translation.name),
@@ -202,16 +209,33 @@ export function overlayAddons(
   return out;
 }
 
+function addonIdSet(ids: string[] | undefined, opsAddons: MockAddon[]) {
+  return new Set((ids ?? []).map((id) => opsAddons.find((item) => item.id === id)?.slug ?? id));
+}
+
+export function includedAddonsForPlan(
+  addons: AddonWithTranslation[],
+  opsPlan: MockPlan | undefined,
+  opsAddons: MockAddon[],
+) {
+  const slugs = addonIdSet(opsPlan?.includedAddonIds, opsAddons);
+  if (!slugs.size) return [];
+  return addons.filter((addon) => slugs.has(addon.slug) || (opsPlan?.includedAddonIds ?? []).includes(addon.id));
+}
+
 export function filterAddonsForPlan(
   addons: AddonWithTranslation[],
   opsPlan: MockPlan | undefined,
   opsAddons: MockAddon[],
 ) {
-  if (!opsPlan?.allowedAddonIds?.length) return addons;
-  const allowedSlugs = new Set(
-    opsPlan.allowedAddonIds.map((id) => opsAddons.find((item) => item.id === id)?.slug ?? id),
-  );
-  return addons.filter((addon) => allowedSlugs.has(addon.slug));
+  const included = addonIdSet(opsPlan?.includedAddonIds, opsAddons);
+  let list = addons;
+  if (opsPlan?.allowedAddonIds?.length) {
+    const allowed = addonIdSet(opsPlan.allowedAddonIds, opsAddons);
+    list = addons.filter((addon) => allowed.has(addon.slug));
+  }
+  if (!included.size) return list;
+  return list.filter((addon) => !included.has(addon.slug));
 }
 
 export function useLiveCatalog(
@@ -240,9 +264,13 @@ export function useLiveCatalog(
         : opsMatch
           ? mockPlanToPublic(opsMatch, locale)
           : plans[0]);
-    const opsPlan = liveOps.find((item) => item.slug === plan?.slug);
-    const addons = filterAddonsForPlan(allAddons, opsPlan, opsAddons);
-    return { plans, addons, allAddons, plan, opsPlan };
+    const opsPlan =
+      liveOps.find((item) => item.slug === plan?.slug) ??
+      MOCK_PLANS.find((item) => item.slug === plan?.slug);
+    const addonSource = opsAddons.length ? opsAddons : MOCK_ADDONS;
+    const addons = filterAddonsForPlan(allAddons, opsPlan, addonSource);
+    const includedAddons = includedAddonsForPlan(allAddons, opsPlan, addonSource);
+    return { plans, addons, includedAddons, allAddons, plan, opsPlan };
   }, [seedPlans, seedAddons, locale, planSlug, opsPlans, opsAddons, hydrated]);
 }
 

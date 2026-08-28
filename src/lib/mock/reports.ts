@@ -153,36 +153,43 @@ export function reportsFromOrders(
   cuts?: Record<string, number>,
 ) {
   const scoped = range ? orders.filter((item) => item.date >= range.from && item.date <= range.to) : orders;
-  const live = scoped.filter((item) => item.status !== "cancelled");
+  const billed = scoped.filter((item) => item.status === "completed");
+  const pending = scoped.filter((item) => item.status === "pending");
   const cancelled = scoped.filter((item) => item.status === "cancelled");
-  const revenue = live.reduce((sum, item) => sum + item.totalJpy, 0);
+  const revenue = billed.reduce((sum, item) => sum + item.totalJpy, 0);
   const refunds = cancelled.reduce((sum, item) => sum + item.totalJpy, 0);
   const summary = {
     revenue,
-    orders: scoped.length,
-    avg: live.length ? Math.round(revenue / live.length) : 0,
+    orders: billed.length,
+    avg: billed.length ? Math.round(revenue / billed.length) : 0,
     refunds,
+    pending: pending.length,
+    cancelled: cancelled.length,
   };
 
   const channelMap = new Map<string, { orders: number; revenue: number }>();
-  for (const item of live) {
+  for (const item of billed) {
     const current = channelMap.get(item.channel) ?? { orders: 0, revenue: 0 };
     current.orders += 1;
     current.revenue += item.totalJpy;
     channelMap.set(item.channel, current);
   }
-  const channels = [...channelMap.entries()].map(([key, found]) => ({
-    id: key,
-    name: adminChannel(locale, key),
-    fill: CHANNEL_FILL[key] ?? "#9CA3AF",
-    cut: cuts?.[key] ?? CHANNEL_CUT[key] ?? 0,
-    orders: found.orders,
-    revenue: found.revenue,
-    value: found.orders,
-  }));
+  const channels = [...channelMap.entries()].map(([key, found]) => {
+    const cut = cuts?.[key] ?? CHANNEL_CUT[key] ?? 0;
+    return {
+      id: key,
+      name: adminChannel(locale, key),
+      fill: CHANNEL_FILL[key] ?? "#9CA3AF",
+      cut,
+      orders: found.orders,
+      revenue: found.revenue,
+      net: Math.round(found.revenue * (1 - cut)),
+      value: found.orders,
+    };
+  });
 
   const planMap = new Map<string, { sold: number; revenue: number }>();
-  for (const item of live) {
+  for (const item of billed) {
     const seed = MOCK_PLANS.find((plan) => plan.slug === item.planSlug);
     const name = adminPlanName(locale, seed, item.planName);
     const current = planMap.get(name) ?? { sold: 0, revenue: 0 };
@@ -193,7 +200,7 @@ export function reportsFromOrders(
   const plans = [...planMap.entries()].map(([name, value]) => ({ name, ...value }));
 
   const nationMap = new Map<string, { value: number; fill: string }>();
-  for (const item of live) {
+  for (const item of billed) {
     const name = adminNation(locale, item.nationality);
     const fill = NATION_FILL[item.nationality] ?? "#9CA3AF";
     const current = nationMap.get(name) ?? { value: 0, fill };
@@ -206,8 +213,8 @@ export function reportsFromOrders(
     fill: found.fill,
   }));
 
-  const male = live.reduce((sum, item) => sum + item.male, 0);
-  const female = live.reduce((sum, item) => sum + item.female, 0);
+  const male = billed.reduce((sum, item) => sum + item.male, 0);
+  const female = billed.reduce((sum, item) => sum + item.female, 0);
   const gender = [
     { name: adminGender(locale, "male"), value: male, fill: "#22D3EE" },
     { name: adminGender(locale, "female"), value: female, fill: "#FF2E93" },
@@ -217,25 +224,36 @@ export function reportsFromOrders(
     band: adminDaypart(locale, part.id),
     range: part.range,
     id: part.id,
-    people: live
+    people: billed
       .filter((item) => (part.slots as readonly string[]).includes(item.time))
       .reduce((sum, item) => sum + item.riders, 0),
   }));
 
   const days = range ? eachIso(range.from, range.to) : [];
   const span = Math.max(days.length, 1);
-  const trendSource = days.length ? days : [...new Set(live.map((item) => item.date))].sort();
+  const trendSource = days.length ? days : [...new Set(billed.map((item) => item.date))].sort();
   const trend = trendSource.map((iso) => {
-    const current = live.filter((order) => order.date === iso).reduce((sum, order) => sum + order.totalJpy, 0);
+    const current = billed.filter((order) => order.date === iso).reduce((sum, order) => sum + order.totalJpy, 0);
     const prevIso = addDaysIso(iso, -span);
     const previous = orders
-      .filter((order) => order.date === prevIso && order.status !== "cancelled")
+      .filter((order) => order.date === prevIso && order.status === "completed")
       .reduce((sum, order) => sum + order.totalJpy, 0);
     return { day: iso.slice(5), iso, current, previous };
   });
 
-  const scale = Math.max(live.reduce((sum, item) => sum + item.riders, 0), 1) / 174;
+  const scale = Math.max(billed.reduce((sum, item) => sum + item.riders, 0), 1) / 174;
   const ages = REPORT_AGES.map((item) => ({ ...item, people: Math.round(item.people * scale) }));
 
-  return { summary, channels, plans, nations, gender, daypart, trend, ages };
+  return {
+    summary,
+    channels,
+    plans,
+    nations,
+    gender,
+    daypart,
+    trend,
+    ages,
+    pendingList: pending.slice(0, 10),
+    cancelledList: cancelled.slice(0, 10),
+  };
 }

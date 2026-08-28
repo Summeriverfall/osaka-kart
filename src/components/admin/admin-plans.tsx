@@ -9,6 +9,7 @@ import { coverOf, planImage, planRoute } from "@/lib/media";
 import { MOCK_PLANS, type MockPlan } from "@/lib/mock/plans";
 import { readLocalImage } from "@/lib/read-local-image";
 import { adminCopy } from "@/lib/admin/copy";
+import { b2Copy } from "@/lib/admin/b2-copy";
 import { AdminLangSelect, adminLangFromLocale, type AdminLangKey } from "@/components/admin/locale-field";
 import { cn } from "@/lib/utils";
 import { useOpsStore } from "@/stores/ops-store";
@@ -22,6 +23,15 @@ function toggleAddon(plan: MockPlan, addonId: string): MockPlan {
   return {
     ...plan,
     allowedAddonIds: on ? current.filter((id) => id !== addonId) : [...current, addonId],
+  };
+}
+
+function toggleIncluded(plan: MockPlan, addonId: string): MockPlan {
+  const current = plan.includedAddonIds ?? [];
+  const on = current.includes(addonId);
+  return {
+    ...plan,
+    includedAddonIds: on ? current.filter((id) => id !== addonId) : [...current, addonId],
   };
 }
 
@@ -195,6 +205,7 @@ function PlanImageField({
 export function AdminPlansView() {
   const locale = useLocale();
   const copy = adminCopy(locale).plans;
+  const b2 = b2Copy(locale);
   const { addons, patchPlan, upsertPlan } = useOpsStore();
   const { plans, storeId } = useStoreData();
   const notify = useToastStore((state) => state.notify);
@@ -240,6 +251,7 @@ export function AdminPlansView() {
             maxRiders: 4,
             includes: ["头盔", "赛车朝", "保险", "坑导"],
             allowedAddonIds: addons.map((item) => item.id),
+            includedAddonIds: [],
             storeIds: [storeId],
             coverImage: undefined,
             detailImage: undefined,
@@ -467,9 +479,10 @@ export function AdminPlansView() {
               <ul className="mt-2 space-y-1">
                 {addons.map((addon) => {
                   const allowed = (editing.allowedAddonIds ?? []).includes(addon.id);
+                  const included = (editing.includedAddonIds ?? []).includes(addon.id);
                   return (
-                    <li key={addon.id}>
-                      <label className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 hover:bg-slate-50">
+                    <li key={addon.id} className="rounded-xl px-2 py-2 hover:bg-slate-50">
+                      <label className="flex cursor-pointer items-center gap-3">
                         <input
                           type="checkbox"
                           checked={allowed}
@@ -478,11 +491,19 @@ export function AdminPlansView() {
                         />
                         <span className={cn("flex-1 text-sm", allowed ? "text-slate-800" : "text-slate-400")}>
                           {addon.name}
+                          <span className="ml-2 text-xs text-slate-400">{b2.allowed}</span>
                         </span>
                         <span className="text-xs text-slate-500">
                           {formatYenShort(addon.priceJpy)} {addon.unitLabel}
                         </span>
                       </label>
+                      <div className="mt-2 flex items-center justify-between gap-3 pl-7">
+                        <span>
+                          <span className="text-xs text-slate-600">{b2.included}</span>
+                          <span className="mt-0.5 block text-[11px] text-slate-400">{b2.includedHint}</span>
+                        </span>
+                        <NeonToggle checked={included} onChange={() => setEditing(toggleIncluded(editing, addon.id))} />
+                      </div>
                     </li>
                   );
                 })}

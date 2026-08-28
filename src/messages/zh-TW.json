@@ -40,6 +40,7 @@
   "VideosHome": {
     "title": "現場畫面",
     "lead": "真實街道，不是封閉賽道。",
+    "watchOn": "在 {platform} 觀看",
     "v1": "夜間道頓堀",
     "v2": "難波出發",
     "v3": "車隊燈光",
@@ -107,7 +108,10 @@
   "Footer": {
     "copyright": "© 2026 Future Kart Osaka. 保留所有權利。",
     "company": "Future Kart Osaka · 大阪",
-    "social": "關注"
+    "social": "關注",
+    "phone": "電話",
+    "hours": "營業時間",
+    "email": "電子信箱"
   },
   "Help": {
     "title": "幫助",
@@ -159,6 +163,8 @@
     "flow4Body": "回到集合點歸還裝備，保留照片或 GoPro 錄影。",
     "map": "集合點地圖",
     "addons": "加項",
+    "includedAddons": "套餐已含",
+    "selectedQty": "已選 {n}",
     "addonTotal": "加項",
     "grandTotal": "合計",
     "changePlan": "更換套餐",
@@ -248,6 +254,7 @@
     "faqLead": "上路前最常被問到的幾件事。駕照細則按國家不同。",
     "moreHelp": "查看各國駕照說明",
     "reviewLead": "客人帶走的感受。",
+    "fromReview": "來自 {platform}",
     "visitLead": "集合在難波。確切門牌預訂後發送。",
     "nextDate": "已選套餐，接下來選日期",
     "summary": "本次預約"

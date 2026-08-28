@@ -131,12 +131,19 @@ function VideoPositionCard({
         >
           <option value="file">{copy.cms.file}</option>
           <option value="youtube">{copy.cms.youtube}</option>
+          <option value="facebook">{copy.cms.facebook}</option>
+          <option value="instagram">{copy.cms.instagram}</option>
         </select>
       </label>
       {video.source === "youtube" ? (
         <label className="admin-field mt-3">
           {copy.cms.youtubeUrl}
           <input className="admin-input" value={video.youtubeId} onChange={(event) => onChange({ ...video, youtubeId: event.target.value })} />
+        </label>
+      ) : video.source === "facebook" || video.source === "instagram" ? (
+        <label className="admin-field mt-3">
+          {copy.cms.pageUrl}
+          <input className="admin-input" value={video.pageUrl ?? ""} onChange={(event) => onChange({ ...video, pageUrl: event.target.value })} />
         </label>
       ) : (
         <div className="mt-3">
@@ -548,6 +555,8 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="admin-field">{copy.cms.name}<input className="admin-input" value={review.name} onChange={(event) => setReview({ ...review, name: event.target.value })} /></label>
                 <label className="admin-field">{copy.cms.country}<input className="admin-input" value={review.country} onChange={(event) => setReview({ ...review, country: event.target.value })} /></label>
+                <label className="admin-field">{copy.cms.reviewPlatform}<input className="admin-input" value={review.platform ?? ""} onChange={(event) => setReview({ ...review, platform: event.target.value })} /></label>
+                <label className="admin-field">{copy.cms.reviewUrl}<input className="admin-input" value={review.url ?? ""} onChange={(event) => setReview({ ...review, url: event.target.value })} /></label>
               </div>
               <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.quote} value={review.quote} onChange={(quote) => setReview({ ...review, quote })} rows={3} />
               <ImageField

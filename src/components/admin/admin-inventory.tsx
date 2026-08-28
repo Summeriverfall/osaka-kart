@@ -1,7 +1,7 @@
 "use client";
 
-import { InventoryTimeline } from "@/components/admin/inventory-timeline";
+import { FleetInventoryGrid } from "@/components/admin/fleet-inventory-grid";
 
 export function AdminInventoryView() {
-  return <InventoryTimeline />;
+  return <FleetInventoryGrid />;
 }

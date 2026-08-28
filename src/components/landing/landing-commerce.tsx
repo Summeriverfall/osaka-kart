@@ -17,7 +17,7 @@ import { formatJpy } from "@/lib/format";
 import { parseIsoDate } from "@/lib/calendar";
 import { useLiveCatalog, useLiveInventory } from "@/lib/live-catalog";
 import { cmsBySlot, cmsMediaSrc, localeText, localizedList, resolveCmsVideo, useBookingContact, useLiveCms } from "@/lib/live-cms";
-import { type CmsVideo } from "@/lib/mock/cms";
+import { type CmsReview, type CmsVideo } from "@/lib/mock/cms";
 import { BOOKING_SLOTS } from "@/lib/booking/slots";
 import { DEFAULT_STORE_ID } from "@/lib/store-id";
 import { withSlash } from "@/lib/paths";
@@ -400,6 +400,21 @@ export function LandingFlow({ copy, theme }: { copy: LandingCopy; theme: SiteThe
   );
 }
 
+function ReviewFrom({ item }: { item: CmsReview }) {
+  const shop = useTranslations("Shop");
+  if (!item.platform) return null;
+  const stars = "⭐".repeat(Math.min(5, Math.max(1, item.rating ?? 5)));
+  const label = `${shop("fromReview", { platform: item.platform })} ${stars}`;
+  if (item.url) {
+    return (
+      <a className="shop-from" href={item.url} target="_blank" rel="noopener noreferrer">
+        {label}
+      </a>
+    );
+  }
+  return <p className="shop-from">{label}</p>;
+}
+
 export function LandingReviews({ copy, theme }: { copy: LandingCopy; theme: SiteTheme }) {
   const locale = useLocale();
   const cms = useLiveCms();
@@ -422,6 +437,7 @@ export function LandingReviews({ copy, theme }: { copy: LandingCopy; theme: Site
                 {item.name}
                 <span> · {item.country}</span>
               </footer>
+              <ReviewFrom item={item} />
             </blockquote>
           ))}
         </div>
@@ -449,6 +465,7 @@ export function LandingReviews({ copy, theme }: { copy: LandingCopy; theme: Site
                   {item.name}
                   <span>{item.country}</span>
                 </footer>
+                <ReviewFrom item={item} />
               </blockquote>
             ))}
           </div>
@@ -476,6 +493,7 @@ export function LandingReviews({ copy, theme }: { copy: LandingCopy; theme: Site
                 <strong>{item.name}</strong>
                 <span>{item.country}</span>
               </footer>
+              <ReviewFrom item={item} />
             </article>
           ))}
         </div>

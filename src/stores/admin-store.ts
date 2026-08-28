@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { boundStoreIdFromEmail, isSuperAdminEmail } from "@/lib/staff-bind";
+import { boundStoreIdFromEmail, isSuperAdminEmail, staffRecordForEmail } from "@/lib/staff-bind";
 import { ALL_STORES_ID } from "@/lib/store-id";
 
-export type AdminRole = "admin" | "manager";
+export type AdminRole = "admin" | "manager" | "staff";
 
 type AdminState = {
   email: string;
@@ -16,12 +16,16 @@ type AdminState = {
 };
 
 export function roleFromEmail(email: string): AdminRole {
-  return isSuperAdminEmail(email) ? "admin" : "manager";
+  const staff = staffRecordForEmail(email);
+  if (staff?.role === "admin" || isSuperAdminEmail(email)) return "admin";
+  if (staff?.role === "staff") return "staff";
+  return "manager";
 }
 
 export const ROLE_LABEL: Record<AdminRole, string> = {
   admin: "超管",
   manager: "店长",
+  staff: "员工",
 };
 
 export const useAdminStore = create<AdminState>()(
@@ -36,7 +40,7 @@ export const useAdminStore = create<AdminState>()(
         set({
           email: trimmed,
           role,
-          storeId: role === "admin" ? ALL_STORES_ID : boundStoreIdFromEmail(trimmed),
+        storeId: role === "admin" ? ALL_STORES_ID : boundStoreIdFromEmail(trimmed),
         });
       },
       setStoreId: (storeId) => {
@@ -45,7 +49,7 @@ export const useAdminStore = create<AdminState>()(
       },
       lockBoundStore: () => {
         const { role, email } = get();
-        if (role !== "manager") return;
+        if (role !== "manager" && role !== "staff") return;
         const next = boundStoreIdFromEmail(email);
         if (get().storeId !== next) set({ storeId: next });
       },
@@ -55,7 +59,7 @@ export const useAdminStore = create<AdminState>()(
       name: "osaka-kart-admin",
       onRehydrateStorage: () => (state) => {
         if (!state) return;
-        if (state.role === "manager") {
+        if (state.role === "manager" || state.role === "staff") {
           state.storeId = boundStoreIdFromEmail(state.email);
           return;
         }

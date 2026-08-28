@@ -1,8 +1,11 @@
 import { MOCK_STAFF } from "@/lib/mock/staff";
+import { useOpsStore } from "@/stores/ops-store";
 import { storeIdOf } from "@/lib/store-id";
 
 export function staffRecordForEmail(email: string) {
-  return MOCK_STAFF.find((item) => item.email.toLowerCase() === email.trim().toLowerCase());
+  const needle = email.trim().toLowerCase();
+  const live = typeof window !== "undefined" ? useOpsStore.getState().staff : [];
+  return (live.length ? live : MOCK_STAFF).find((item) => item.email.toLowerCase() === needle);
 }
 
 export function boundStoreIdFromEmail(email: string) {

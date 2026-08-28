@@ -40,6 +40,7 @@
   "VideosHome": {
     "title": "On the street",
     "lead": "Public roads, not a closed track.",
+    "watchOn": "Watch on {platform}",
     "v1": "Night Dotonbori",
     "v2": "Namba start",
     "v3": "Convoy lights",
@@ -107,7 +108,10 @@
   "Footer": {
     "copyright": "© 2026 Future Kart Osaka. All rights reserved.",
     "company": "Future Kart Osaka · Osaka, Japan",
-    "social": "Follow"
+    "social": "Follow",
+    "phone": "Phone",
+    "hours": "Hours",
+    "email": "Email"
   },
   "Help": {
     "title": "Help",
@@ -159,6 +163,8 @@
     "flow4Body": "Back to base, return the gear, and keep your photos or GoPro clip.",
     "map": "Meeting point",
     "addons": "Add-ons",
+    "includedAddons": "Included",
+    "selectedQty": "Selected {n}",
     "addonTotal": "Add-ons",
     "grandTotal": "Total",
     "changePlan": "Change plan",
@@ -248,6 +254,7 @@
     "faqLead": "The questions people ask before they ride. License rules differ by country.",
     "moreHelp": "License notes by country",
     "reviewLead": "What riders take away.",
+    "fromReview": "From {platform}",
     "visitLead": "We meet in Namba. The exact pin is sent after you book.",
     "nextDate": "Plan selected. Next, pick a date.",
     "summary": "Your booking"

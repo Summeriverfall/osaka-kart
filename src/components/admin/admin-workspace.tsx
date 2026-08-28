@@ -8,6 +8,8 @@ import { AdminLogsView } from "@/components/admin/admin-logs";
 import { AdminOrderDetailView } from "@/components/admin/admin-order-detail";
 import { AdminOrdersView } from "@/components/admin/admin-orders";
 import { AdminPageFrame } from "@/components/admin/admin-page-frame";
+import { AdminAddonsView } from "@/components/admin/admin-addons";
+import { AdminPermissionsView } from "@/components/admin/admin-permissions";
 import { AdminPlansView } from "@/components/admin/admin-plans";
 import { AdminReportsView } from "@/components/admin/admin-reports";
 import { AdminAnalyticsView } from "@/components/admin/admin-analytics";
@@ -18,6 +20,7 @@ import { AdminVehiclesView } from "@/components/admin/admin-vehicles";
 import { AdminCmsView } from "@/components/admin/admin-cms";
 import { AdminAffiliatesView } from "@/components/admin/admin-affiliates";
 import { ADMIN_PAGE_META, adminTabFromLocation, BOOKING_HOME, CONTENT_HOME, normalizeAdminTab, REPORT_HOME, SETTINGS_HOME } from "@/lib/admin/nav";
+import { b2Copy } from "@/lib/admin/b2-copy";
 import { adminCopy } from "@/lib/admin/copy";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { useLocale } from "next-intl";
@@ -25,9 +28,21 @@ import { usePathname } from "@/i18n/navigation";
 
 function metaFor(tab: string, locale: string) {
   const copy = adminCopy(locale);
+  const b2 = b2Copy(locale);
   if (tab.startsWith("/admin/orders/") && tab !== "/admin/orders") {
     const id = tab.slice("/admin/orders/".length);
     return { title: copy.orderDetail, lead: copy.orderLead(id) };
+  }
+  if (tab === "/admin/addons") return { title: b2.addonsMenu, lead: b2.addonsLead };
+  if (tab === "/admin/permissions") return { title: b2.permissions, lead: b2.permissionsLead };
+  if (tab === "/admin/settings/refund") return { title: b2.refundPolicy, lead: b2.refundPolicyLead };
+  if (tab === "/admin/inventory") {
+    const page = copy.pages[tab] ?? ADMIN_PAGE_META[tab];
+    return { title: page?.title ?? copy.nav[tab] ?? "库存管理", lead: b2.inventoryLead };
+  }
+  if (tab === "/admin/plans") {
+    const page = copy.pages[tab] ?? ADMIN_PAGE_META[tab];
+    return { title: page?.title ?? copy.nav[tab] ?? "套餐管理", lead: b2.plansLead };
   }
   return copy.pages[tab] ?? copy.pages["/admin/dashboard"] ?? ADMIN_PAGE_META[tab] ?? ADMIN_PAGE_META["/admin/dashboard"];
 }
@@ -49,8 +64,15 @@ function viewFor(tab: string) {
     case "/admin/vehicles":
       return <AdminVehiclesView />;
     case "/admin/plans":
-    case "/admin/addons":
       return <AdminPlansView />;
+    case "/admin/addons":
+      return <AdminAddonsView />;
+    case "/admin/permissions":
+      return (
+        <AdminRoleGate allow={["admin", "manager"]}>
+          <AdminPermissionsView />
+        </AdminRoleGate>
+      );
     case "/admin/content/videos":
       return <AdminCmsView section="videos" />;
     case "/admin/content/reviews":
@@ -120,6 +142,12 @@ function viewFor(tab: string) {
       return (
         <AdminRoleGate allow={["admin"]}>
           <AdminSettingsView section="email" />
+        </AdminRoleGate>
+      );
+    case "/admin/settings/refund":
+      return (
+        <AdminRoleGate allow={["admin"]}>
+          <AdminSettingsView section="refund" />
         </AdminRoleGate>
       );
     case "/admin/settings/logs":

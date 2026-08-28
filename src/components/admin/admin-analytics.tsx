@@ -21,9 +21,13 @@ import {
 import { CountUp } from "@/components/admin/count-up";
 import { ChannelAnalysisCard } from "@/components/admin/channel-analysis-card";
 import { adminCopy } from "@/lib/admin/copy";
+import { b2Copy } from "@/lib/admin/b2-copy";
 import { collectChannelIds, labelChannel } from "@/lib/channel-options";
 import { downloadCsv } from "@/lib/csv";
 import { todayIsoDate } from "@/lib/booking/slots";
+import { occupancyRate } from "@/lib/fleet-inventory";
+import { eachIso } from "@/lib/calendar";
+import { isAllStores } from "@/lib/store-id";
 import { formatYenShort } from "@/lib/format";
 import {
   analyticsFromOrders,
@@ -76,9 +80,10 @@ function Delta({ label, tone }: { label: string; tone: "up" | "down" | "flat" })
 export function AdminAnalyticsView() {
   const locale = useLocale();
   const copy = adminCopy(locale);
+  const b2 = b2Copy(locale);
   const notify = useToastStore((state) => state.notify);
   const today = todayIsoDate();
-  const { orders, storeId } = useStoreData();
+  const { orders, storeId, vehicles, vehicleSlots, specialDates } = useStoreData();
   const channels = useOpsStore((state) => state.settings.channels);
   const patchSettings = useOpsStore((state) => state.patchSettings);
   const [mode, setMode] = useState<CompareMode>("week");
@@ -98,6 +103,20 @@ export function AdminAnalyticsView() {
     () => analyticsFromOrders(orders, currentRange, previousRange, locale, cuts, storeId, copy.analytics.deltaNew),
     [orders, currentRange, previousRange, locale, cuts, storeId, copy.analytics.deltaNew],
   );
+  const occupancyTrend = useMemo(() => {
+    const days = eachIso(currentRange.from, currentRange.to);
+    return days.map((date) => ({
+      day: date.slice(5),
+      iso: date,
+      rate: Math.round(
+        occupancyRate(date, date, [date], vehicles, vehicleSlots, orders, specialDates, isAllStores(storeId) ? undefined : storeId) * 100,
+      ),
+    }));
+  }, [currentRange, vehicles, vehicleSlots, orders, specialDates, storeId]);
+  const cancelPie = [
+    { name: b2.voluntary, value: report.cancelSplit.voluntary, fill: "#94a3b8" },
+    { name: b2.noshow, value: report.cancelSplit.noshow, fill: "#f43f5e" },
+  ].filter((item) => item.value > 0);
 
   const channelRows = useMemo(() => {
     const byId = new Map(report.channels.map((item) => [item.id, item]));
@@ -345,6 +364,7 @@ export function AdminAnalyticsView() {
                 <Legend wrapperStyle={{ color: "#374151", fontSize: 12 }} />
                 <Bar dataKey="revenue" name={copy.analytics.current} fill="#34d399" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="revenuePrev" name={copy.analytics.previous} fill="#cbd5e1" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="revenueLastYear" name={b2.lastYear} fill="#93c5fd" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -392,6 +412,13 @@ export function AdminAnalyticsView() {
           fills={PLAN_FILLS}
         />
         <MixPie
+          title={b2.cancelSplit}
+          empty={copy.analytics.empty}
+          data={cancelPie}
+          dataKey="value"
+          pieRadius={pieRadius}
+        />
+        <MixPie
           title={copy.analytics.nations}
           empty={copy.analytics.empty}
           data={report.nations}
@@ -406,6 +433,21 @@ export function AdminAnalyticsView() {
           pieRadius={pieRadius}
           inner
         />
+        <section className="report-card min-w-0 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
+          <h2 className="mb-4 font-black">{b2.utilization}</h2>
+          <p className="mb-2 text-xs text-slate-400">{b2.utilizationHint}</p>
+          <div className="report-chart h-56 sm:h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={occupancyTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid stroke="rgba(15,23,42,0.08)" />
+                <XAxis dataKey="day" stroke="#6B7280" tick={axisTick} minTickGap={8} />
+                <YAxis stroke="#6B7280" width={narrow ? 28 : 36} domain={[0, 100]} tick={axisTick} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(value) => `${Number(value ?? 0)}%`} />
+                <Area type="monotone" dataKey="rate" name={b2.utilization} stroke="#1890ff" fill="#91d5ff" fillOpacity={0.35} strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
         <section className="report-card min-w-0 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
           <h2 className="mb-4 font-black">{copy.analytics.ages}</h2>
           <div className="report-chart h-56 sm:h-64">

@@ -1,13 +1,6 @@
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import {
-  Anton,
-  Geist,
-  Geist_Mono,
-  Noto_Serif_JP,
-  Orbitron,
-  Share_Tech_Mono,
-} from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { FileProtocolNav } from "@/components/file-protocol-nav";
 import { routing } from "@/i18n/routing";
@@ -22,38 +15,6 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-  preload: false,
-});
-
-const anton = Anton({
-  variable: "--font-anton",
-  weight: "400",
-  subsets: ["latin"],
-  display: "swap",
-  preload: false,
-});
-
-const orbitron = Orbitron({
-  variable: "--font-orbitron",
-  subsets: ["latin"],
-  weight: ["500", "700"],
-  display: "swap",
-  preload: false,
-});
-
-const notoSerifJp = Noto_Serif_JP({
-  variable: "--font-noto-serif-jp",
-  subsets: ["latin"],
-  weight: ["600", "700"],
-  display: "swap",
-  preload: false,
-});
-
-const shareTech = Share_Tech_Mono({
-  variable: "--font-share-tech",
-  weight: "400",
   subsets: ["latin"],
   display: "swap",
   preload: false,
@@ -85,10 +46,10 @@ export default async function LocaleLayout({
   return (
     <html
       lang={locale}
-      className={`dark ${geistSans.variable} ${geistMono.variable} ${anton.variable} ${orbitron.variable} ${notoSerifJp.variable} ${shareTech.variable}`}
+      className={`${geistSans.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-dvh bg-[#0A0A0F] text-[#F1F1F5] antialiased">
+      <body className="min-h-dvh bg-[#F5F5F7] text-[#1D1D1F] antialiased">
         <script dangerouslySetInnerHTML={{ __html: acidPaletteBootScript() }} />
         <NextIntlClientProvider
           locale={locale}

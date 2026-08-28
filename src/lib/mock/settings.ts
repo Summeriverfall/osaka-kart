@@ -57,6 +57,7 @@ export type MockSettings = {
   payments: MockPayChannel[];
   channels: MockBookChannel[];
   removedChannelIds?: string[];
+  refundPolicy?: string;
 };
 
 export const MOCK_PAYMENTS: MockPayChannel[] = [
@@ -415,4 +416,5 @@ export const MOCK_SETTINGS: MockSettings = {
   payments: MOCK_PAYMENTS,
   channels: MOCK_BOOK_CHANNELS,
   removedChannelIds: ["Viator"],
+  refundPolicy: "出发前 24 小时取消退 50%。出发前不足 24 小时或 No-show 不退款。",
 };

@@ -14,7 +14,8 @@ import {
 import { MOCK_SETTINGS, MOCK_EMAIL_TEMPLATES, MOCK_STORES, refreshBundledChannels, type MockSettings, type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
 import { MOCK_VEHICLES, type MockVehicle } from "@/lib/mock/vehicles";
 import { MOCK_STAFF, type MockStaff } from "@/lib/mock/staff";
-import { MOCK_CMS, mergeCms, refreshBundledVideos, type CmsState } from "@/lib/mock/cms";
+import { MOCK_ROLES, type MockRole } from "@/lib/mock/permissions";
+import { MOCK_CMS, isCustomCmsVideo, mergeCms, refreshBundledReviews, refreshBundledVideos, type CmsState } from "@/lib/mock/cms";
 import { applySlotPatch, syncOrderInventory } from "@/lib/ops-inventory";
 import { DEFAULT_STORE_ID, storeIdOf } from "@/lib/store-id";
 import { OPS_STORAGE_KEY, loadPersistedSlots, opsPersistStorage, savePersistedSlots } from "@/lib/ops-storage";
@@ -46,6 +47,7 @@ type OpsState = {
   settings: MockSettings;
   vehicles: MockVehicle[];
   staff: MockStaff[];
+  roles: MockRole[];
   affiliates: MockAffiliate[];
   templates: MockEmailTemplate[];
   stores: MockStore[];
@@ -53,7 +55,7 @@ type OpsState = {
   cms: CmsState;
   upsertOrder: (order: MockOrder, fromId?: string) => void;
   patchOrder: (id: string, patch: Partial<MockOrder>) => void;
-  setOrderStatus: (id: string, status: OrderStatus) => void;
+  setOrderStatus: (id: string, status: OrderStatus, extra?: Partial<MockOrder>) => void;
   upsertAddon: (addon: MockAddon) => void;
   patchAddon: (id: string, patch: Partial<MockAddon>) => void;
   removeAddon: (id: string) => void;
@@ -69,6 +71,7 @@ type OpsState = {
   patchVehicle: (id: string, patch: Partial<MockVehicle>) => void;
   upsertStaff: (row: MockStaff) => void;
   patchStaff: (id: string, patch: Partial<MockStaff>) => void;
+  upsertRole: (row: MockRole) => void;
   upsertAffiliate: (row: MockAffiliate) => void;
   patchAffiliate: (id: string, patch: Partial<MockAffiliate>) => void;
   patchTemplate: (id: string, patch: Partial<MockEmailTemplate>) => void;
@@ -166,6 +169,7 @@ export const useOpsStore = create<OpsState>()(
       settings: MOCK_SETTINGS,
       vehicles: MOCK_VEHICLES,
       staff: MOCK_STAFF,
+      roles: MOCK_ROLES,
       affiliates: MOCK_AFFILIATES,
       templates: MOCK_EMAIL_TEMPLATES,
       stores: MOCK_STORES,
@@ -208,7 +212,7 @@ export const useOpsStore = create<OpsState>()(
               : state.logs,
           };
         }),
-      setOrderStatus: (id, status) => get().patchOrder(id, { status }),
+      setOrderStatus: (id, status, extra) => get().patchOrder(id, { status, ...extra }),
       upsertAddon: (addon) =>
         set((state) => ({
           addons: replaceById(state.addons, addon),
@@ -337,6 +341,11 @@ export const useOpsStore = create<OpsState>()(
           staff: state.staff.map((item) => (item.id === id ? { ...item, ...patch } : item)),
           logs: [makeLog("员工变更", `更新员工 ${id}`), ...state.logs],
         })),
+      upsertRole: (row) =>
+        set((state) => ({
+          roles: replaceById(state.roles, row),
+          logs: [makeLog("员工变更", `保存角色 ${row.name}`), ...state.logs],
+        })),
       upsertAffiliate: (row) =>
         set((state) => ({
           affiliates: replaceById(state.affiliates, row),
@@ -407,7 +416,7 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 13,
+      version: 15,
       skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
@@ -555,6 +564,50 @@ export const useOpsStore = create<OpsState>()(
             store.id === "namba" ? { ...store, hours: MOCK_STORES[0].hours } : store,
           );
         }
+        if (version < 14) {
+          const cms = mergeCms(MOCK_CMS, state.cms);
+          state.cms = {
+            ...cms,
+            reviews: refreshBundledReviews(MOCK_CMS.reviews, cms.reviews),
+            videos: [
+              ...MOCK_CMS.videos.map((seed) => {
+                const prev = (cms.videos ?? []).find((item) => item.id === seed.id);
+                if (!prev) return seed;
+                if (seed.slot === "page") return seed;
+                return isCustomCmsVideo(prev) ? { ...seed, ...prev } : seed;
+              }),
+              ...(cms.videos ?? []).filter(
+                (item) => !MOCK_CMS.videos.some((seed) => seed.id === item.id) && isCustomCmsVideo(item),
+              ),
+            ],
+          };
+          state.plans = (state.plans ?? MOCK_PLANS).map((row) => {
+            const seed =
+              MOCK_PLANS.find((item) => item.id === row.id) ?? MOCK_PLANS.find((item) => item.slug === row.slug);
+            if (!seed) return row;
+            return { ...row, includedAddonIds: seed.includedAddonIds ?? row.includedAddonIds ?? [] };
+          });
+        }
+        if (version < 15) {
+          state.roles = state.roles?.length ? state.roles : MOCK_ROLES;
+          state.settings = {
+            ...MOCK_SETTINGS,
+            ...state.settings,
+            refundPolicy: state.settings?.refundPolicy ?? MOCK_SETTINGS.refundPolicy,
+          };
+          state.staff = (state.staff ?? MOCK_STAFF).map((row) => {
+            const seed = MOCK_STAFF.find((item) => item.id === row.id);
+            return {
+              ...row,
+              roleId: row.roleId ?? seed?.roleId ?? (row.role === "admin" ? "role-admin" : row.role === "staff" ? "role-staff" : "role-manager"),
+            };
+          });
+          state.orders = (state.orders ?? []).map((order) => ({
+            ...order,
+            cancelKind: order.status === "cancelled" ? order.cancelKind ?? "voluntary" : order.cancelKind,
+            refunds: order.refunds ?? [],
+          }));
+        }
         delete state.vehicleSlots;
         return state as OpsState;
       },
@@ -566,6 +619,7 @@ export const useOpsStore = create<OpsState>()(
         settings: state.settings,
         vehicles: state.vehicles,
         staff: state.staff,
+        roles: state.roles,
         affiliates: state.affiliates,
         templates: state.templates,
         stores: state.stores,
@@ -619,9 +673,11 @@ export const useOpsStore = create<OpsState>()(
             ),
           ),
           affiliates: extra.affiliates?.length ? extra.affiliates : current.affiliates,
+          roles: extra.roles?.length ? extra.roles : MOCK_ROLES,
           settings: {
             ...MOCK_SETTINGS,
             ...extra.settings,
+            refundPolicy: extra.settings?.refundPolicy ?? MOCK_SETTINGS.refundPolicy,
             channels: refreshBundledChannels(
               MOCK_SETTINGS.channels,
               extra.settings?.channels,

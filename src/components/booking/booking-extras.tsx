@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { IncludedAddonsList } from "@/components/addons/included-addons";
 import { formatJpy } from "@/lib/format";
-import { useLiveInventory } from "@/lib/live-catalog";
+import { useLiveCatalog, useLiveInventory } from "@/lib/live-catalog";
 import { addonImage } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { useBookingStore } from "@/stores/booking-store";
@@ -18,11 +19,13 @@ type BookingExtrasProps = {
   locale: string;
 };
 
-export function BookingExtras({ plan, addons, locale }: BookingExtrasProps) {
+export function BookingExtras({ plan: seedPlan, addons: seedAddons, locale }: BookingExtrasProps) {
   const t = useTranslations("Booking");
   const store = useBookingStore();
   const live = useLiveInventory();
   const [hydrated, setHydrated] = useState(false);
+  const { addons, includedAddons, plan } = useLiveCatalog([seedPlan], seedAddons, locale, seedPlan.slug);
+  const current = plan ?? seedPlan;
 
   useEffect(() => {
     setHydrated(true);
@@ -41,8 +44,8 @@ export function BookingExtras({ plan, addons, locale }: BookingExtrasProps) {
     const extras = addons
       .filter((addon) => selectedAddons.includes(addon.slug))
       .reduce((sum, addon) => sum + addon.price_jpy, 0);
-    return plan.base_price_jpy * riders + extras;
-  }, [plan, riders, addons, selectedAddons]);
+    return current.base_price_jpy * riders + extras;
+  }, [current, riders, addons, selectedAddons]);
 
   function toggleAddon(slug: string) {
     const next = selectedAddons.includes(slug)
@@ -69,6 +72,8 @@ export function BookingExtras({ plan, addons, locale }: BookingExtrasProps) {
           )}
         </select>
       </label>
+
+      <IncludedAddonsList addons={includedAddons} />
 
       <fieldset className="book-field">
         <legend>{t("addons")}</legend>

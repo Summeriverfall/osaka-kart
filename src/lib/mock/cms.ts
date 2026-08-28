@@ -3,7 +3,7 @@ import { SITE_CONTACT } from "@/lib/contact";
 import { emptyLocaleText, type LocaleText } from "@/lib/cms-text";
 
 export type CmsVideoSlot = "hero" | "gallery" | "experience" | "page";
-export type CmsVideoSource = "youtube" | "file";
+export type CmsVideoSource = "youtube" | "file" | "facebook" | "instagram";
 
 export type CmsVideo = {
   id: string;
@@ -12,6 +12,7 @@ export type CmsVideo = {
   youtubeId: string;
   file?: string;
   poster?: string;
+  pageUrl?: string;
   title: LocaleText;
   startAt?: number;
   active: boolean;
@@ -24,6 +25,9 @@ export type CmsReview = {
   country: string;
   quote: LocaleText;
   photo?: string;
+  platform?: string;
+  url?: string;
+  rating?: number;
   active: boolean;
   sort: number;
 };
@@ -135,6 +139,7 @@ function video(
     youtubeId,
     file: extra?.file,
     poster: extra?.poster,
+    pageUrl: extra?.pageUrl,
     title,
     startAt: extra?.startAt ?? 0,
     active: extra?.active ?? true,
@@ -202,13 +207,35 @@ export const MOCK_CMS: CmsState = {
       startAt: 108,
     }),
     video("page-1", "page", L("夜間道頓堀", "Night Dotonbori", "ナイト道頓堀", "나이트 도톤보리"), "aqz-KE-bpKQ", 20),
-    video("page-2", "page", L("難波出發", "Namba start", "難波スタート", "난바 출발"), "aqz-KE-bpKQ", 21),
-    video("page-3", "page", L("車隊燈光", "Convoy lights", "隊列の光", "대열의 빛"), "aqz-KE-bpKQ", 22),
-    video("page-4", "page", L("心齋橋環線", "Shinsaibashi loop", "心斎橋ループ", "신사이바시 루프"), "aqz-KE-bpKQ", 23),
+    video("page-2", "page", L("難波出發", "Namba start", "難波スタート", "난바 출발"), "M7lc1UVf-VE", 21),
+    video("page-3", "page", L("車隊燈光", "Convoy lights", "隊列の光", "대열의 빛"), "jNQXAC9IVRw", 22),
+    video("page-4", "page", L("心齋橋環線", "Shinsaibashi loop", "心斎橋ループ", "신사이바시 루프"), "LXb3EKWsInQ", 23),
     video("page-5", "page", L("通天閣夜跑", "Tsutenkaku night", "通天閣ナイト", "츠텐카쿠 나이트"), "aqz-KE-bpKQ", 24),
-    video("page-6", "page", L("大阪城路段", "Osaka Castle stretch", "大阪城区間", "오사카성 구간"), "aqz-KE-bpKQ", 25),
-    video("page-7", "page", L("頭盔視角", "Helmet cam", "ヘルメット視点", "헬멧 캠"), "aqz-KE-bpKQ", 26),
-    video("page-8", "page", L("車隊合影", "Team photo", "隊列ショット", "팀 사진"), "aqz-KE-bpKQ", 27),
+    video("page-6", "page", L("大阪城路段", "Osaka Castle stretch", "大阪城区間", "오사카성 구간"), "M7lc1UVf-VE", 25),
+    video(
+      "page-7",
+      "page",
+      L("Facebook 車隊", "Facebook convoy", "Facebookの隊列", "Facebook 대열"),
+      "",
+      26,
+      {
+        source: "facebook",
+        pageUrl: "https://www.facebook.com/facebook/videos/10153231379946729/",
+        poster: "/images/social/33.webp",
+      },
+    ),
+    video(
+      "page-8",
+      "page",
+      L("Instagram 現場", "Instagram on the street", "Instagramの現場", "Instagram 현장"),
+      "",
+      27,
+      {
+        source: "instagram",
+        pageUrl: "https://www.instagram.com/explore/tags/gokart/",
+        poster: "/images/social/yejiankadingche.webp",
+      },
+    ),
   ],
   reviews: [
     {
@@ -222,6 +249,9 @@ export const MOCK_CMS: CmsState = {
         "카트에서 보는 도시는 완전히 달랐다. 오사카에서 가장 좋은 밤.",
       ),
       photo: "/images/reviews/r1.webp",
+      platform: "TripAdvisor",
+      url: "https://www.tripadvisor.com/Attraction_Review-g298566-d17642580-Reviews-Akiba_Kart_Osaka-Osaka_Osaka_Prefecture_Kinki.html",
+      rating: 5,
       active: true,
       sort: 1,
     },
@@ -236,6 +266,9 @@ export const MOCK_CMS: CmsState = {
         "설명이 분명하고 가이드가 친절했다. 남기고 싶은 사진이 나왔다.",
       ),
       photo: "/images/reviews/r2.webp",
+      platform: "Google",
+      url: "https://www.google.com/maps/search/?api=1&query=go+kart+Osaka",
+      rating: 5,
       active: true,
       sort: 2,
     },
@@ -250,6 +283,9 @@ export const MOCK_CMS: CmsState = {
         "도로 속도에서도 안정적이었다. 네온 주행이 여행의 전부였다.",
       ),
       photo: "/images/reviews/r3.webp",
+      platform: "Klook",
+      url: "https://www.klook.com/en-US/activity/kart-osaka/",
+      rating: 5,
       active: true,
       sort: 3,
     },
@@ -517,6 +553,7 @@ export function blankVideo(): CmsVideo {
     youtubeId: "",
     file: "",
     poster: "",
+    pageUrl: "",
     title: emptyLocaleText(),
     startAt: 0,
     active: true,
@@ -531,6 +568,9 @@ export function blankReview(): CmsReview {
     country: "",
     quote: emptyLocaleText(),
     photo: "",
+    platform: "",
+    url: "",
+    rating: 5,
     active: true,
     sort: 50,
   };
@@ -563,11 +603,32 @@ export function isCustomCmsVideo(item: CmsVideo) {
   const file = item.file?.trim() ?? "";
   if (file.startsWith("data:") || file.startsWith("blob:")) return true;
   if (file.startsWith("http://") || file.startsWith("https://")) return true;
+  if (item.source === "facebook" || item.source === "instagram") {
+    return Boolean(item.pageUrl?.trim());
+  }
   if (item.source === "youtube") {
     const id = item.youtubeId?.trim() ?? "";
     return Boolean(id) && id !== "aqz-KE-bpKQ";
   }
   return false;
+}
+
+export function refreshBundledReviews(seed: CmsReview[], extra?: CmsReview[]) {
+  if (!Array.isArray(extra) || extra.length === 0) return seed;
+  const extraById = new Map(extra.map((item) => [item.id, item]));
+  const seedIds = new Set(seed.map((item) => item.id));
+  const merged = seed.map((seedItem) => {
+    const prev = extraById.get(seedItem.id);
+    if (!prev) return seedItem;
+    return {
+      ...seedItem,
+      ...prev,
+      platform: prev.platform?.trim() || seedItem.platform,
+      url: prev.url?.trim() || seedItem.url,
+      rating: prev.rating ?? seedItem.rating,
+    };
+  });
+  return [...merged, ...extra.filter((item) => !seedIds.has(item.id))];
 }
 
 function mergeVideos(seed: CmsVideo[], extra?: CmsVideo[]) {
@@ -635,7 +696,7 @@ export function mergeCms(seed: CmsState, extra?: Partial<CmsState> | null): CmsS
       ...item,
       poster: rewriteBundledMediaPath(item.poster) ?? item.poster,
     })),
-    reviews: Array.isArray(extra.reviews) ? extra.reviews : seed.reviews,
+    reviews: refreshBundledReviews(seed.reviews, extra.reviews),
     faqs: Array.isArray(extra.faqs) ? extra.faqs : seed.faqs,
     press: refreshBundledPress(seed.press, extra.press),
     meetup: extra.meetup ? { ...seed.meetup, ...extra.meetup } : seed.meetup,

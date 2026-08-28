@@ -18,12 +18,14 @@ const OPTIONS: OrderStatus[] = ["pending", "confirmed", "completed", "cancelled"
 type Props = {
   status: OrderStatus;
   onChange: (status: OrderStatus) => void;
+  allowComplete?: boolean;
 };
 
-export function StatusSelect({ status, onChange }: Props) {
+export function StatusSelect({ status, onChange, allowComplete = true }: Props) {
   const locale = useLocale();
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
+  const options = OPTIONS.filter((item) => item !== "completed" || allowComplete || status === "completed");
 
   useEffect(() => {
     if (!open) return;
@@ -48,7 +50,7 @@ export function StatusSelect({ status, onChange }: Props) {
       </button>
       {open ? (
         <div className="absolute top-full right-0 z-20 mt-1 min-w-28 rounded-lg border border-slate-200 bg-white py-1 shadow-lg md:right-auto md:left-0">
-          {OPTIONS.map((item) => (
+          {options.map((item) => (
             <button
               key={item}
               type="button"

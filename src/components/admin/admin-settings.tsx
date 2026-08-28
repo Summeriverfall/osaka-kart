@@ -15,16 +15,18 @@ import {
   adminStoreName,
 } from "@/lib/admin/copy";
 import { type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
+import { b2Copy } from "@/lib/admin/b2-copy";
 import { isBuiltinChannel } from "@/lib/channel-options";
 import { sendTestMail } from "@/lib/ops-notify";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 
-export type SettingsSection = "pay" | "channels" | "stores" | "email";
+export type SettingsSection = "pay" | "channels" | "stores" | "email" | "refund";
 
 export function AdminSettingsView({ section }: { section: SettingsSection }) {
   const locale = useLocale();
   const copy = adminCopy(locale);
+  const b2 = b2Copy(locale);
   const { settings, patchSettings, templates, patchTemplate, stores, upsertStore } = useOpsStore();
   const notify = useToastStore((state) => state.notify);
   const [tpl, setTpl] = useState<MockEmailTemplate | null>(null);
@@ -43,6 +45,24 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
 
   return (
     <div className="grid min-w-0 gap-6">
+      {section === "refund" ? (
+        <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
+          <p className="text-sm text-slate-500">{b2.refundPolicyLead}</p>
+          <label className="admin-field">
+            {b2.refundPolicy}
+            <textarea
+              className="admin-input min-h-40"
+              placeholder={b2.refundPolicyPh}
+              value={settings.refundPolicy ?? ""}
+              onChange={(event) => patchSettings({ refundPolicy: event.target.value })}
+            />
+          </label>
+          <button type="button" className="cta-btn" onClick={() => notify(b2.refundSaved)}>
+            {copy.common.save}
+          </button>
+        </section>
+      ) : null}
+
       {section === "pay" ? (
         <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
           {payments.map((item, index) => (

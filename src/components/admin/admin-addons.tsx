@@ -6,6 +6,7 @@ import { Camera, Image as ImageIcon, Shield, Shirt, Trash2 } from "lucide-react"
 import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import { adminCopy } from "@/lib/admin/copy";
+import { b2Copy } from "@/lib/admin/b2-copy";
 import { AdminLangSelect, adminLangFromLocale, type AdminLangKey } from "@/components/admin/locale-field";
 import { formatYenShort } from "@/lib/format";
 import { type AddonSlug, type MockAddon } from "@/lib/mock/addons";
@@ -38,6 +39,7 @@ const BLANK: MockAddon = {
 export function AdminAddonsView() {
   const locale = useLocale();
   const copy = adminCopy(locale);
+  const b2 = b2Copy(locale);
   const { addons, patchAddon, upsertAddon, removeAddon } = useOpsStore();
   const notify = useToastStore((state) => state.notify);
   const [editing, setEditing] = useState<MockAddon | null>(null);
@@ -138,6 +140,10 @@ export function AdminAddonsView() {
             <label className="admin-field">{copy.addons.desc}<textarea className="admin-input min-h-20" value={editing.description} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></label>
             <label className="admin-field">{copy.addons.price}<input className="admin-input" type="number" value={editing.priceJpy} onChange={(e) => setEditing({ ...editing, priceJpy: Number(e.target.value) })} /></label>
             <label className="admin-field">{copy.addons.maxQty}<input className="admin-input" type="number" value={editing.maxQty} onChange={(e) => setEditing({ ...editing, maxQty: Number(e.target.value) })} /></label>
+            <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <span className="text-sm">{b2.active}</span>
+              <NeonToggle checked={editing.active} onChange={(on) => setEditing({ ...editing, active: on })} />
+            </div>
             <label className="admin-field">
               {copy.addons.icon}
               <select className="admin-input" value={editing.slug} onChange={(e) => setEditing({ ...editing, slug: e.target.value as AddonSlug })}>

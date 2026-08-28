@@ -12,6 +12,7 @@ import { AdminReportNav } from "@/components/admin/admin-report-nav";
 import { AdminSettingsNav } from "@/components/admin/admin-settings-nav";
 import { AdminWorkspace } from "@/components/admin/admin-workspace";
 import { navForRole, normalizeAdminTab } from "@/lib/admin/nav";
+import { useAdminAccess } from "@/lib/admin-access";
 import { adminCopy, adminRoleLabel } from "@/lib/admin/copy";
 import { appPageHref, goToAppPath } from "@/lib/file-href";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
   const locale = useLocale();
   const { role, email, logout, lockBoundStore } = useAdminStore();
+  const { canView } = useAdminAccess();
   const [ready, setReady] = useState(false);
   const [open, setOpen] = useState(false);
   const [href, setHref] = useState("");
@@ -65,7 +67,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }, [current]);
 
   useEffect(() => {
-    if (role === "manager") lockBoundStore();
+    if (role === "manager" || role === "staff") lockBoundStore();
   }, [role, email, lockBoundStore]);
 
   useEffect(() => {
@@ -90,7 +92,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const items = navForRole(role);
+  const items = navForRole(role).filter((item) => canView(item.href));
 
   return (
     <div className="admin-app flex h-dvh overflow-hidden bg-[#f5f6f8] text-[#111827]">

@@ -1,6 +1,7 @@
 "use client";
 
 import { Camera, Image as ImageIcon, Minus, Plus, Shield, Shirt } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { formatYenShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useBookingStore } from "@/stores/booking-store";
@@ -30,6 +31,7 @@ type AddonPickerProps = {
 };
 
 export function AddonPicker({ addons, ctaLabel, onCta, sticky = true }: AddonPickerProps) {
+  const t = useTranslations("Plan");
   const store = useBookingStore();
   const extras = addons.reduce((sum, addon) => {
     const qty = store.addons.find((item) => item.id === addon.id)?.qty ?? 0;
@@ -70,20 +72,20 @@ export function AddonPicker({ addons, ctaLabel, onCta, sticky = true }: AddonPic
             <article
               key={addon.id}
               className={cn(
-                "rounded-2xl border bg-[#12121A] p-6 transition duration-200",
+                "rounded-2xl border bg-white p-6 transition duration-200",
                 selected
-                  ? "border-neon-pink shadow-[0_0_28px_rgb(255_46_147_/_35%)]"
-                  : "border-white/10 hover:border-neon-purple/60 hover:shadow-[0_0_24px_rgb(168_85_247_/_25%)]",
+                  ? "border-[#1B365D] bg-[#EEF3F8] shadow-[0_0_0_3px_rgb(27_54_93_/_12%)]"
+                  : "border-[#ECECEF] hover:border-[#1B365D]/40",
               )}
             >
-              <div className="mb-4 inline-flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-neon-pink to-neon-purple text-white shadow-[0_0_18px_rgb(255_46_147_/_35%)]">
+              <div className="mb-4 inline-flex size-12 items-center justify-center rounded-2xl bg-[#1B365D] text-white">
                 <Icon className="size-6" />
               </div>
-              <h3 className="text-lg font-black text-white">{addon.name}</h3>
-              <p className="mt-2 min-h-[3rem] text-sm leading-6 text-gray-300">{addon.description}</p>
-              <p className="mt-4 text-xl font-black text-neon-pink">
+              <h3 className="text-lg font-semibold text-[#1D1D1F]">{addon.name}</h3>
+              <p className="mt-2 min-h-[3rem] text-sm leading-6 text-[#6E6E73]">{addon.description}</p>
+              <p className="mt-4 text-xl font-semibold text-[#1B365D]">
                 + {formatYenShort(addon.priceJpy)}
-                <span className="ml-1 text-sm font-medium text-gray-400">{addon.unitLabel}</span>
+                <span className="ml-1 text-sm font-medium text-[#6E6E73]">{addon.unitLabel}</span>
               </p>
               <div className="mt-5 flex items-center gap-3">
                 <button
@@ -94,7 +96,7 @@ export function AddonPicker({ addons, ctaLabel, onCta, sticky = true }: AddonPic
                 >
                   <Minus className="size-3.5" />
                 </button>
-                <span className="w-8 text-center text-lg font-black">{qty}</span>
+                <span className="w-8 text-center text-lg font-semibold">{qty}</span>
                 <button
                   type="button"
                   className="plan-qty-btn"
@@ -104,8 +106,12 @@ export function AddonPicker({ addons, ctaLabel, onCta, sticky = true }: AddonPic
                 >
                   <Plus className="size-3.5" />
                 </button>
-                {addon.maxQty <= 1 ? (
-                  <span className="text-xs text-gray-400">最多 1</span>
+                {selected ? (
+                  <span className="rounded-full bg-[#1B365D] px-2.5 py-1 text-xs font-semibold text-white">
+                    {t("selectedQty", { n: qty })}
+                  </span>
+                ) : addon.maxQty <= 1 ? (
+                  <span className="text-xs text-[#6E6E73]">最多 1</span>
                 ) : null}
               </div>
             </article>
@@ -115,9 +121,9 @@ export function AddonPicker({ addons, ctaLabel, onCta, sticky = true }: AddonPic
 
       {sticky ? (
         <div className="addon-sticky-bar">
-          <p className="text-sm text-gray-300">
-            附加项总计：
-            <strong className="ml-2 text-lg font-black text-white">{formatYenShort(extras)}</strong>
+          <p className="text-sm text-[#6E6E73]">
+            {t("addonTotal")}
+            <strong className="ml-2 text-lg font-semibold text-[#1D1D1F]">{formatYenShort(extras)}</strong>
           </p>
           <button type="button" className="cta-btn px-6 py-3" onClick={onCta}>
             {ctaLabel}

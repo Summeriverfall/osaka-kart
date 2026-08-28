@@ -8,6 +8,7 @@ export type MockVehicle = {
   lastService: string;
   note: string;
   logs: string[];
+  logPhotos?: string[];
   storeId?: string;
 };
 
@@ -18,7 +19,7 @@ export const VEHICLE_STATUS_LABEL: Record<VehicleStatus, string> = {
 };
 
 export const MOCK_VEHICLES: MockVehicle[] = [
-  { id: "v1", code: "OK-01", model: "Street Kart S", status: "available", lastService: "2026-08-12", note: "", logs: ["2026-08-12 常规保养"] },
+  { id: "v1", code: "OK-01", model: "Street Kart S", status: "available", lastService: "2026-08-12", note: "", logs: ["2026-08-12 常规保养"], logPhotos: [] },
   { id: "v2", code: "OK-02", model: "Street Kart S", status: "available", lastService: "2026-08-12", note: "", logs: ["2026-08-12 常规保养"] },
   { id: "v3", code: "OK-03", model: "Street Kart S", status: "repair", lastService: "2026-08-18", note: "刹车片更换", logs: ["2026-08-18 进厂", "2026-08-19 等待零件"] },
   { id: "v4", code: "OK-04", model: "Street Kart S", status: "available", lastService: "2026-08-10", note: "", logs: ["2026-08-10 换胎"] },

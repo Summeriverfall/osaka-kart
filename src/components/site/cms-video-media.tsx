@@ -68,6 +68,32 @@ export function ResolvedVideo({
       />
     );
   }
+  if (resolved.kind === "facebook") {
+    return (
+      <iframe
+        title={title}
+        src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(resolved.href)}&show_text=false`}
+        className={cn("h-full w-full border-0", className)}
+        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+  if (resolved.kind === "instagram") {
+    return (
+      <a
+        href={resolved.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cn("relative block h-full w-full overflow-hidden bg-[#f5f5f7]", className)}
+      >
+        <img src={resolved.poster} alt="" className="h-full w-full object-cover" />
+        <span className="absolute inset-x-0 bottom-0 bg-black/55 px-3 py-2 text-center text-sm font-semibold text-white">
+          Instagram
+        </span>
+      </a>
+    );
+  }
   if (autoPlay && !controls) {
     return (
       <HeroVideo

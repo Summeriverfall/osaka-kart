@@ -2,14 +2,16 @@
 
 import { useEffect, useMemo } from "react";
 import { useLocale } from "next-intl";
-import { CalendarDays, ClipboardList, Plus, Wallet, Warehouse } from "lucide-react";
+import { CalendarDays, ClipboardList, Gauge, Plus, Wallet, Warehouse } from "lucide-react";
 import { CountUp } from "@/components/admin/count-up";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { setAdminFocusDate } from "@/lib/admin/focus-date";
 import { adminCopy, adminPlanName, adminStoreName, adminStoreStatus } from "@/lib/admin/copy";
 import { addDaysIso } from "@/lib/calendar";
 import { todayIsoDate } from "@/lib/booking/slots";
+import { occupancyRate } from "@/lib/fleet-inventory";
 import { formatYenShort } from "@/lib/format";
+import { b2Copy } from "@/lib/admin/b2-copy";
 import { ALL_STORES_ID, isAllStores, storeIdOf } from "@/lib/store-id";
 import { useStoreData } from "@/lib/use-store-data";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
@@ -28,6 +30,7 @@ const tooltipStyle = {
 export function AdminDashboardView() {
   const locale = useLocale();
   const copy = adminCopy(locale);
+  const b2 = b2Copy(locale);
   const go = useAdminNavStore((state) => state.go);
   const role = useAdminStore((state) => state.role);
   const notify = useToastStore((state) => state.notify);
@@ -35,7 +38,7 @@ export function AdminDashboardView() {
   const vehiclesAll = useOpsStore((state) => state.vehicles);
   const plans = useOpsStore((state) => state.plans);
   const ensureDemoOrders = useOpsStore((state) => state.ensureDemoOrders);
-  const { orders, vehicles, stores, storeId, setStoreId, canSwitch, store } = useStoreData();
+  const { orders, vehicles, stores, storeId, setStoreId, canSwitch, store, vehicleSlots, specialDates } = useStoreData();
   const showingAll = canSwitch && isAllStores(storeId);
   const todayIso = todayIsoDate();
 
@@ -54,9 +57,21 @@ export function AdminDashboardView() {
   const dayOrders = orders.filter((item) => item.date === todayIso).sort((a, b) => a.time.localeCompare(b.time));
   const prevOrders = orders.filter((item) => item.date === yesterdayIso);
   const pending = dayOrders.filter((item) => item.status === "pending").length;
-  const todayRevenue = dayOrders.reduce((sum, item) => sum + item.totalJpy, 0);
-  const prevRevenue = prevOrders.reduce((sum, item) => sum + item.totalJpy, 0);
+  const billedToday = dayOrders.filter((item) => item.status === "completed");
+  const billedPrev = prevOrders.filter((item) => item.status === "completed");
+  const todayRevenue = billedToday.reduce((sum, item) => sum + item.totalJpy, 0);
+  const prevRevenue = billedPrev.reduce((sum, item) => sum + item.totalJpy, 0);
   const freeKarts = vehicles.filter((item) => item.status === "available").length;
+  const utilization = occupancyRate(
+    todayIso,
+    todayIso,
+    [todayIso],
+    vehicles,
+    vehicleSlots,
+    orders,
+    specialDates,
+    showingAll ? undefined : storeId,
+  );
   const week = weekDays.map((date) => ({
     iso: date,
     day: date.slice(5),
@@ -72,7 +87,7 @@ export function AdminDashboardView() {
       name: adminStoreName(locale, item.id, item.name),
       status: adminStoreStatus(locale, item.status),
       todayOrders: storeToday.length,
-      todayRevenue: storeToday.reduce((sum, order) => sum + order.totalJpy, 0),
+      todayRevenue: storeToday.filter((order) => order.status === "completed").reduce((sum, order) => sum + order.totalJpy, 0),
       pending: storeToday.filter((order) => order.status === "pending").length,
       karts: storeVehicles.filter((vehicle) => vehicle.status === "available").length,
     };
@@ -116,6 +131,15 @@ export function AdminDashboardView() {
       warn: false,
       href: "/admin/inventory",
     },
+    {
+      label: b2.utilization,
+      value: Math.round(utilization * 100),
+      icon: Gauge,
+      trend: b2.utilizationHint,
+      warn: utilization >= 0.85,
+      href: "/admin/inventory",
+      pct: true,
+    },
   ] as const;
 
   const actions = [
@@ -151,14 +175,14 @@ export function AdminDashboardView() {
         </div>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {cards.map((card) => (
           <button
             key={card.label}
             type="button"
             onClick={() => {
               setAdminFocusDate(todayIso);
-              go(card.href === "/admin/inventory" ? "/admin/inventory" : "/admin/orders");
+              go(card.href);
             }}
             className="rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:border-blue-400 sm:p-6"
           >
@@ -167,7 +191,7 @@ export function AdminDashboardView() {
               <card.icon className="size-4 text-blue-600" />
             </div>
             <p className="mt-3 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
-              <CountUp value={card.value} yen={"yen" in card} />
+              {"pct" in card && card.pct ? `${card.value}%` : <CountUp value={card.value} yen={"yen" in card} />}
             </p>
             <p className={`mt-2 text-xs ${card.warn ? "text-amber-600" : "text-emerald-600"}`}>{card.trend}</p>
           </button>

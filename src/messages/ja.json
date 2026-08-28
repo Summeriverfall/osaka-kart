@@ -40,6 +40,7 @@
   "VideosHome": {
     "title": "実際の走行風景",
     "lead": "クローズドコースではなく、実際の公道を走行します。",
+    "watchOn": "{platform}で見る",
     "v1": "ナイト道頓堀",
     "v2": "難波スタート",
     "v3": "隊列の光",
@@ -107,7 +108,10 @@
   "Footer": {
     "copyright": "© 2026 Future Kart Osaka. All rights reserved.",
     "company": "Future Kart Osaka · 大阪",
-    "social": "フォロー"
+    "social": "フォロー",
+    "phone": "電話",
+    "hours": "営業時間",
+    "email": "メール"
   },
   "Help": {
     "title": "ヘルプ",
@@ -159,6 +163,8 @@
     "flow4Body": "集合場所に戻り、装備を返却します。写真やGoPro映像も旅の思い出としてお楽しみいただけます。",
     "map": "集合場所",
     "addons": "オプション",
+    "includedAddons": "セットに含む",
+    "selectedQty": "選択中 {n}",
     "addonTotal": "オプション",
     "grandTotal": "合計",
     "changePlan": "プランを変更",
@@ -248,6 +254,7 @@
     "faqLead": "走行前によくある質問。免許の条件は国によって異なります。",
     "moreHelp": "国別の免許メモ",
     "reviewLead": "実際に体験したお客さまからのコメント。",
+    "fromReview": "{platform}より",
     "visitLead": "集合場所は難波周辺です。正確な集合場所はご予約後にお送りします。",
     "nextDate": "プランを選択したら、次に日付を選びます。",
     "summary": "この予約"

@@ -7,6 +7,7 @@ import { formatJpy } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { RideNoteChecks, allNotesChecked, emptyNoteChecks, type NoteKey } from "@/components/notes/ride-notes";
 import { AddonPicker, type AddonCardModel } from "@/components/addons/addon-picker";
+import { IncludedAddonsList } from "@/components/addons/included-addons";
 import { MonthCalendar } from "@/components/booking/month-calendar";
 import { BOOKING_SLOTS, todayIsoDate } from "@/lib/booking/slots";
 import { useLiveCatalog, useLiveInventory } from "@/lib/live-catalog";
@@ -43,7 +44,7 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
   const notesOk = allNotesChecked(notes);
 
   const planSlugHint = hydrated ? store.planSlug || initialPlan : initialPlan;
-  const { plans, addons, plan: catalogPlan } = useLiveCatalog(seedPlans, seedAddons, locale, planSlugHint);
+  const { plans, addons, includedAddons, plan: catalogPlan } = useLiveCatalog(seedPlans, seedAddons, locale, planSlugHint);
 
   useEffect(() => {
     const queryPlan = new URLSearchParams(window.location.search).get("plan") || "";
@@ -127,8 +128,8 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
               className={cn(
                 "w-full rounded-full border px-1.5 py-2 text-[0.62rem] font-black tracking-wide uppercase transition sm:px-2 sm:text-xs sm:tracking-[0.12em]",
                 index === step
-                  ? "border-neon-pink bg-gradient-to-r from-neon-pink to-neon-purple text-white"
-                  : "border-white/10 text-[#9CA3AF]",
+                  ? "border-[#1B365D] bg-[#1B365D] text-white"
+                  : "border-[#D2D2D7] bg-white text-[#6E6E73]",
               )}
             >
               <span className="sm:hidden">{index + 1}</span>
@@ -153,6 +154,7 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
               </select>
             </label>
           </article>
+          <IncludedAddonsList addons={includedAddons} />
           <AddonPicker addons={addonCards} ctaLabel={t("submit")} onCta={() => undefined} sticky={false} />
         </>
       ) : null}

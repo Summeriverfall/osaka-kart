@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { AddonPicker, type AddonCardModel } from "@/components/addons/addon-picker";
+import { IncludedAddonsList } from "@/components/addons/included-addons";
 import { MonthCalendar } from "@/components/booking/month-calendar";
 import { BOOKING_SLOTS, todayIsoDate } from "@/lib/booking/slots";
 import { formatJpy } from "@/lib/format";
@@ -34,7 +35,7 @@ export function PlanExperience({ plan: seedPlan, plans: seedPlans, addons: seedA
   const notify = useToastStore((state) => state.notify);
   const minIso = todayIsoDate();
   const live = useLiveInventory();
-  const { plans, addons, plan } = useLiveCatalog(seedPlans, seedAddons, locale, seedPlan.slug);
+  const { plans, addons, includedAddons, plan } = useLiveCatalog(seedPlans, seedAddons, locale, seedPlan.slug);
   const current = plan ?? seedPlan;
 
   const cards: AddonCardModel[] = useMemo(
@@ -155,7 +156,8 @@ export function PlanExperience({ plan: seedPlan, plans: seedPlans, addons: seedA
       </section>
 
       <section className="pb-24">
-        <h2 className="mb-6 text-xl font-black">{book("addons")}</h2>
+        <IncludedAddonsList addons={includedAddons} />
+        <h2 className="mt-8 mb-6 text-xl font-semibold">{book("addons")}</h2>
         <AddonPicker addons={cards} ctaLabel={t("addToBooking")} onCta={addToBooking} />
       </section>
     </div>

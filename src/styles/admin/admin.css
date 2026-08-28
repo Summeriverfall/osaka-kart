@@ -4,6 +4,7 @@ html:has(.admin-app) {
   color-scheme: light;
   height: 100%;
   overflow: hidden;
+  font-family: "Microsoft YaHei", "PingFang SC", "PingFang TC", sans-serif;
 }
 
 html:has(.admin-app) body {
@@ -12,6 +13,7 @@ html:has(.admin-app) body {
   color: #111827;
   height: 100%;
   overflow: hidden;
+  font-family: "Microsoft YaHei", "PingFang SC", "PingFang TC", sans-serif;
 }
 
 .admin-app {

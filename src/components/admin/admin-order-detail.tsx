@@ -7,9 +7,11 @@ import { OrderEditFields } from "@/components/admin/order-edit-fields";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Modal } from "@/components/ui/modal";
 import { adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
+import { b2Copy } from "@/lib/admin/b2-copy";
+import { useAdminAccess } from "@/lib/admin-access";
 import { labelChannel, liveChannelIds } from "@/lib/channel-options";
 import { formatYenShort } from "@/lib/format";
-import { type MockOrder, type OrderStatus } from "@/lib/mock/orders";
+import { type MockOrder, type OrderCancelKind, type OrderStatus } from "@/lib/mock/orders";
 import { sendStatusMail } from "@/lib/ops-notify";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { useOpsStore } from "@/stores/ops-store";
@@ -18,6 +20,8 @@ import { useToastStore } from "@/stores/toast-store";
 export function AdminOrderDetailView({ id }: { id: string }) {
   const locale = useLocale();
   const copy = adminCopy(locale);
+  const b2 = b2Copy(locale);
+  const { canCompleteOrder } = useAdminAccess();
   const go = useAdminNavStore((state) => state.go);
   const order = useOpsStore((state) => {
     const match = state.orders.find((item) => item.id === id);
@@ -26,12 +30,17 @@ export function AdminOrderDetailView({ id }: { id: string }) {
     return undefined;
   });
   const plans = useOpsStore((state) => state.plans);
+  const affiliates = useOpsStore((state) => state.affiliates);
   const upsertOrder = useOpsStore((state) => state.upsertOrder);
+  const patchOrder = useOpsStore((state) => state.patchOrder);
   const setOrderStatus = useOpsStore((state) => state.setOrderStatus);
   const templates = useOpsStore((state) => state.templates);
   const settings = useOpsStore((state) => state.settings);
   const notify = useToastStore((state) => state.notify);
   const [draft, setDraft] = useState<MockOrder | null>(null);
+  const [refundNote, setRefundNote] = useState("");
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelKind, setCancelKind] = useState<OrderCancelKind>("voluntary");
 
   const channelOptions = useMemo(
     () => liveChannelIds(settings.channels, draft?.channel ?? order?.channel),
@@ -95,23 +104,79 @@ export function AdminOrderDetailView({ id }: { id: string }) {
           <div>{copy.orders.passport}：{order.passport}</div>
           <div>{copy.orders.riders}：{order.riders}{copy.orders.mf(order.male, order.female)}</div>
           <div>{copy.orders.channel}：{labelChannel(locale, order.channel, settings.channels)}</div>
+          <div>
+            {b2.affiliateField}：
+            {(() => {
+              const row = affiliates.find((item) => item.id === order.affiliateId);
+              return row ? `${row.name}（${row.commissionPct}%）` : b2.affiliateNone;
+            })()}
+          </div>
           <div>{copy.orders.amount}：{formatYenShort(order.totalJpy)} · {order.paid ? copy.common.paid : copy.common.unpaid}</div>
           <div className="sm:col-span-2">{copy.orders.addons}：{order.addons.join("、") || copy.common.none}</div>
           <div className="sm:col-span-2">{copy.orders.note}：{order.note || "—"}</div>
+          {order.status === "cancelled" ? (
+            <div className="sm:col-span-2">
+              {b2.cancelKind}：{order.cancelKind === "noshow" ? b2.noshow : b2.voluntary}
+            </div>
+          ) : null}
         </dl>
         <div className="mt-6">
           <OrderDocs locale={locale} />
+        </div>
+        <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm font-semibold text-slate-800">{b2.refundAction}</p>
+          <p className="mt-1 text-xs text-slate-500">{b2.refundReserved}</p>
+          {(order.refunds ?? []).length ? (
+            <ul className="mt-3 space-y-1 text-sm text-slate-600">
+              {(order.refunds ?? []).map((item, index) => (
+                <li key={`${item.time}-${index}`}>
+                  {item.time} · {item.note}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-slate-400">{b2.refundEmpty}</p>
+          )}
+          <label className="admin-field mt-3">
+            {b2.refundNote}
+            <textarea className="admin-input min-h-16" value={refundNote} onChange={(event) => setRefundNote(event.target.value)} />
+          </label>
+          <button
+            type="button"
+            className="mt-2 rounded-full border border-slate-200 px-4 py-2 text-sm hover:border-blue-400"
+            onClick={() => {
+              const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
+              patchOrder(order.id, {
+                refunds: [...(order.refunds ?? []), { time: stamp, note: refundNote.trim() || b2.refundReserved }],
+              });
+              setRefundNote("");
+              notify(b2.refundReserved);
+            }}
+          >
+            {b2.refundAction}
+          </button>
         </div>
         <div className="mt-6 flex flex-wrap gap-3">
           <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setDraft({ ...order })}>
             {copy.orders.editTitle}
           </button>
-          {(["pending", "confirmed", "cancelled", "completed"] as OrderStatus[]).map((status) => (
+          {(["pending", "confirmed", "cancelled", "completed"] as OrderStatus[])
+            .filter((status) => status !== "completed" || canCompleteOrder())
+            .map((status) => (
             <button
               key={status}
               type="button"
               className="rounded-full border border-slate-200 px-3 py-2 text-xs hover:border-blue-400"
               onClick={() => {
+                if (status === "completed" && !canCompleteOrder()) {
+                  notify(b2.completeOnlyManager);
+                  return;
+                }
+                if (status === "cancelled") {
+                  setCancelKind(order.cancelKind ?? "voluntary");
+                  setCancelOpen(true);
+                  return;
+                }
                 setOrderStatus(order.id, status);
                 void sendStatusMail(status, { ...order, status }, templates, settings, locale).then(notify);
               }}
@@ -147,6 +212,38 @@ export function AdminOrderDetailView({ id }: { id: string }) {
             onChange={setDraft}
           />
         ) : null}
+      </Modal>
+
+      <Modal
+        open={cancelOpen}
+        title={b2.cancelKind}
+        onClose={() => setCancelOpen(false)}
+        footer={
+          <>
+            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setCancelOpen(false)}>
+              {copy.common.cancel}
+            </button>
+            <button
+              type="button"
+              className="cta-btn px-5 py-2.5"
+              onClick={() => {
+                setOrderStatus(order.id, "cancelled", { cancelKind });
+                void sendStatusMail("cancelled", { ...order, status: "cancelled", cancelKind }, templates, settings, locale).then(notify);
+                setCancelOpen(false);
+              }}
+            >
+              {copy.common.save}
+            </button>
+          </>
+        }
+      >
+        <label className="admin-field">
+          {b2.cancelKind}
+          <select className="admin-input" value={cancelKind} onChange={(event) => setCancelKind(event.target.value as OrderCancelKind)}>
+            <option value="voluntary">{b2.voluntary}</option>
+            <option value="noshow">{b2.noshow}</option>
+          </select>
+        </label>
       </Modal>
     </div>
   );

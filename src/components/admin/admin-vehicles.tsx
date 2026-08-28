@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useLocale } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import { adminCopy, adminVehicleStatus } from "@/lib/admin/copy";
+import { b2Copy } from "@/lib/admin/b2-copy";
 import { type MockVehicle, type VehicleStatus } from "@/lib/mock/vehicles";
+import { readCmsImage } from "@/lib/read-local-image";
 import { cn } from "@/lib/utils";
 import { useOpsStore } from "@/stores/ops-store";
 import { useStoreData } from "@/lib/use-store-data";
@@ -24,6 +26,7 @@ const BLANK: MockVehicle = {
 export function AdminVehiclesView() {
   const locale = useLocale();
   const copy = adminCopy(locale);
+  const b2 = b2Copy(locale);
   const { vehicles, storeId } = useStoreData();
   const { upsertVehicle } = useOpsStore();
   const notify = useToastStore((state) => state.notify);
@@ -189,6 +192,54 @@ export function AdminVehiclesView() {
           >
             {copy.vehicles.logAdd}
           </button>
+        </div>
+        <div className="mt-4">
+          <p className="text-sm text-slate-600">{b2.photos}</p>
+          <p className="mt-1 text-xs text-slate-500">{b2.photosHint}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {(logs?.logPhotos ?? []).map((src, index) => (
+              <div key={`${src.slice(0, 24)}-${index}`} className="relative">
+                <img src={src} alt="" className="h-20 w-20 rounded-lg border border-slate-200 object-cover" />
+                <button
+                  type="button"
+                  className="absolute -top-1 -right-1 rounded-full bg-white px-1.5 text-xs text-rose-600 shadow"
+                  onClick={() =>
+                    setLogs((current) =>
+                      current
+                        ? { ...current, logPhotos: (current.logPhotos ?? []).filter((_, i) => i !== index) }
+                        : current,
+                    )
+                  }
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <label className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-lg border border-dashed border-slate-300 text-xs text-slate-500 hover:border-blue-400">
+              +
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                className="hidden"
+                onChange={async (event) => {
+                  const files = [...(event.target.files ?? [])];
+                  event.target.value = "";
+                  if (!files.length || !logs) return;
+                  const next: string[] = [];
+                  for (const file of files) {
+                    try {
+                      next.push(await readCmsImage(file));
+                    } catch {
+                      notify(copy.plans.errFail);
+                    }
+                  }
+                  if (!next.length) return;
+                  setLogs({ ...logs, logPhotos: [...(logs.logPhotos ?? []), ...next] });
+                }}
+              />
+            </label>
+          </div>
         </div>
       </Modal>
     </div>

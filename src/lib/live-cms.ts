@@ -17,7 +17,9 @@ export function useLiveCms(): CmsState {
 
 export type ResolvedCmsVideo =
   | { kind: "youtube"; id: string; poster: string }
-  | { kind: "file"; src: string; poster: string };
+  | { kind: "file"; src: string; poster: string }
+  | { kind: "facebook"; href: string; poster: string }
+  | { kind: "instagram"; href: string; poster: string };
 
 export function resolveCmsVideo(video: CmsVideo | undefined, fallback?: string): ResolvedCmsVideo | null {
   if (!video) {
@@ -30,6 +32,12 @@ export function resolveCmsVideo(video: CmsVideo | undefined, fallback?: string):
       : asset(video.poster)
     : asset("/images/hero/poster.webp");
 
+  if (video.source === "facebook" && video.pageUrl?.trim()) {
+    return { kind: "facebook", href: video.pageUrl.trim(), poster };
+  }
+  if (video.source === "instagram" && video.pageUrl?.trim()) {
+    return { kind: "instagram", href: video.pageUrl.trim(), poster };
+  }
   if (video.source === "youtube" && video.youtubeId) {
     return { kind: "youtube", id: video.youtubeId, poster };
   }

@@ -85,24 +85,24 @@ function inRange(date: string, range: DateRange) {
   return date >= range.from && date <= range.to;
 }
 
-function liveOf(orders: MockOrder[]) {
-  return orders.filter((item) => item.status !== "cancelled");
+function billedOf(orders: MockOrder[]) {
+  return orders.filter((item) => item.status === "completed");
 }
 
 function summarize(orders: MockOrder[], cuts: Record<string, number>): AnalyticsKpi {
-  const live = liveOf(orders);
-  const revenue = live.reduce((sum, item) => sum + item.totalJpy, 0);
-  const profit = live.reduce((sum, item) => {
+  const billed = billedOf(orders);
+  const revenue = billed.reduce((sum, item) => sum + item.totalJpy, 0);
+  const profit = billed.reduce((sum, item) => {
     const cut = cuts[item.channel] ?? 0;
     return sum + Math.round(item.totalJpy * (1 - cut));
   }, 0);
   return {
     bookings: orders.length,
-    completed: orders.filter((item) => item.status === "completed").length,
+    completed: billed.length,
     cancelled: orders.filter((item) => item.status === "cancelled").length,
     revenue,
     profit,
-    aov: live.length ? Math.round(revenue / live.length) : 0,
+    aov: billed.length ? Math.round(revenue / billed.length) : 0,
   };
 }
 
@@ -111,14 +111,14 @@ function dailyMap(orders: MockOrder[]) {
   for (const item of orders) {
     const row = map.get(item.date) ?? { bookings: 0, revenue: 0 };
     row.bookings += 1;
-    if (item.status !== "cancelled") row.revenue += item.totalJpy;
+    if (item.status === "completed") row.revenue += item.totalJpy;
     map.set(item.date, row);
   }
   return map;
 }
 
 function mixFromOrders(orders: MockOrder[], locale: string) {
-  const live = liveOf(orders);
+  const live = billedOf(orders);
 
   const planMap = new Map<string, { sold: number; revenue: number }>();
   for (const item of live) {
@@ -203,12 +203,17 @@ export function analyticsFromOrders(
   const currentDaily = dailyMap(currentOrders);
   const previousDaily = dailyMap(previousOrders);
   const length = Math.max(currentDays.length, previousDays.length, 1);
+  const mix = mixFromOrders(currentOrders, locale);
+  const cancelled = currentOrders.filter((item) => item.status === "cancelled");
+  const allDaily = dailyMap(pool);
 
   const trend = Array.from({ length }, (_, index) => {
     const currentIso = currentDays[index];
     const previousIso = previousDays[index];
     const now = currentIso ? currentDaily.get(currentIso) : undefined;
     const was = previousIso ? previousDaily.get(previousIso) : undefined;
+    const lastYearIso = currentIso ? addYearsIso(currentIso, -1) : "";
+    const lastYear = lastYearIso ? allDaily.get(lastYearIso) : undefined;
     return {
       day: (currentIso ?? previousIso ?? "").slice(5),
       iso: currentIso ?? previousIso ?? "",
@@ -216,10 +221,10 @@ export function analyticsFromOrders(
       bookingsPrev: was?.bookings ?? 0,
       revenue: now?.revenue ?? 0,
       revenuePrev: was?.revenue ?? 0,
+      revenueLastYear: lastYear?.revenue ?? 0,
+      bookingsLastYear: lastYear?.bookings ?? 0,
     };
   });
-
-  const mix = mixFromOrders(currentOrders, locale);
 
   return {
     current,
@@ -233,6 +238,10 @@ export function analyticsFromOrders(
       aov: formatDelta(current.aov, previous.aov, freshLabel),
     },
     trend,
+    cancelSplit: {
+      voluntary: cancelled.filter((item) => item.cancelKind !== "noshow").length,
+      noshow: cancelled.filter((item) => item.cancelKind === "noshow").length,
+    },
     ...mix,
   };
 }

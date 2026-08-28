@@ -14,6 +14,7 @@ export type MockPlan = {
   maxRiders: number;
   includes: string[];
   allowedAddonIds: string[];
+  includedAddonIds?: string[];
   storeIds?: string[];
   coverImage?: string;
   detailImage?: string;
@@ -51,6 +52,7 @@ export const MOCK_PLANS: MockPlan[] = [
     includesJa: ["ヘルメット", "ベーシックレーシングスーツ", "保険", "ガイド"],
     includesEn: ["Helmet", "Basic racing suit", "Insurance", "Guide"],
     allowedAddonIds: CORE_ONLY,
+    includedAddonIds: ["addon-insurance"],
     storeIds: ["namba"],
     description: "黄昏时分沿湾岸走一圈，路线短、好上手，适合想先试车的人。",
     descriptionEn: "A short twilight run along the bay. Easy to start with if you want to try a kart first.",
@@ -75,6 +77,7 @@ export const MOCK_PLANS: MockPlan[] = [
     includesJa: ["ヘルメット", "レーシングスーツ", "保険", "ガイド"],
     includesEn: ["Helmet", "Racing suit", "Insurance", "Guide"],
     allowedAddonIds: ALL_ADDONS,
+    includedAddonIds: ["addon-insurance"],
     description:
       "在大阪市中心的难波，体验 60 分钟的街景骑行。一边看热闹景点，一边感受速度。路线专为新手设计，第一次来也能放心玩。",
     descriptionEn:
@@ -104,6 +107,7 @@ export const MOCK_PLANS: MockPlan[] = [
     includesJa: ["ヘルメット", "レーシングスーツ", "保険", "ガイド"],
     includesEn: ["Helmet", "Racing suit", "Insurance", "Guide"],
     allowedAddonIds: ALL_ADDONS,
+    includedAddonIds: ["addon-insurance"],
     description:
       "以大阪地标通天阁为中心，体验 90 分钟行程。地道街巷和著名景点更多，路线更长，可以慢慢把城市看一遍。",
     descriptionEn:
@@ -133,6 +137,7 @@ export const MOCK_PLANS: MockPlan[] = [
     includesJa: ["ヘルメット", "レーシングスーツ", "保険", "ガイド", "ルート案内"],
     includesEn: ["Helmet", "Racing suit", "Insurance", "Guide", "Route briefing"],
     allowedAddonIds: ALL_ADDONS,
+    includedAddonIds: ["addon-insurance", "addon-costume"],
     description:
       "以大阪城为背景的 120 分钟行程。历史街区和现代街景串在一条路上，适合想把代表性景点慢慢看完的人。",
     descriptionEn:
@@ -161,6 +166,7 @@ export const MOCK_PLANS: MockPlan[] = [
     includesJa: ["ヘルメット", "レーシングスーツ", "保険", "ガイド", "夜景撮影スポット"],
     includesEn: ["Helmet", "Racing suit", "Insurance", "Guide", "Night photo spots"],
     allowedAddonIds: NO_PHOTOS,
+    includedAddonIds: ["addon-costume"],
     storeIds: ["namba"],
     description: "夜间霓虹路线，灯火和街景更密，适合想拍夜景的人。",
     descriptionEn: "A neon night course through lit streets. Good if you want night photos.",

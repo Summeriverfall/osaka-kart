@@ -1,5 +1,6 @@
 import { Check, MapPinned, ShieldAlert, Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { IncludedAddonsLive } from "@/components/addons/included-addons";
 import { PlanExperience } from "@/components/plan/plan-experience";
 import { PlanSummaryCard } from "@/components/plan/plan-summary";
 import { LivePlanHeading } from "@/components/plan/live-plan-heading";
@@ -31,7 +32,7 @@ export async function PlanDetailView({ plan, plans, addons, locale }: PlanDetail
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0F] via-[#0A0A0F]/55 to-[#0A0A0F]/20" />
-        <div className="relative z-10 mx-auto flex min-h-[42vh] w-full max-w-6xl items-end px-4 pb-10">
+        <div className="relative z-10 mx-auto flex min-h-[42vh] w-full max-w-6xl items-end px-4 pb-10 text-white">
           <div>
             <p className="mb-3 text-xs tracking-[0.2em] text-neon-cyan uppercase">
               {t("eyebrow")}
@@ -74,20 +75,28 @@ export async function PlanDetailView({ plan, plans, addons, locale }: PlanDetail
 
           {translation.includes.length > 0 && (
             <section>
-              <h2 className="mb-4 text-xl font-black">{t("includes")}</h2>
+              <h2 className="mb-4 text-xl font-semibold">{t("includes")}</h2>
               <ul className="grid gap-3 sm:grid-cols-2">
                 {translation.includes.map((item) => (
                   <li
                     key={item}
-                    className="flex items-start gap-2 text-sm text-[#F1F1F5]"
+                    className="flex items-start gap-2 text-sm text-[#1D1D1F]"
                   >
-                    <Check className="mt-0.5 size-4 shrink-0 text-neon-cyan" />
+                    <Check className="mt-0.5 size-4 shrink-0 text-[#1B365D]" />
                     {item}
                   </li>
                 ))}
               </ul>
+              <div className="mt-5">
+                <IncludedAddonsLive plan={plan} addons={addons} locale={locale} />
+              </div>
             </section>
           )}
+          {translation.includes.length === 0 ? (
+            <section>
+              <IncludedAddonsLive plan={plan} addons={addons} locale={locale} />
+            </section>
+          ) : null}
 
           <section>
             <h2 className="mb-4 flex items-center gap-2 text-xl font-black">

@@ -7,13 +7,15 @@ import { ChannelBadge } from "@/components/admin/channel-badge";
 import { StatusSelect } from "@/components/admin/status-select";
 import { Modal } from "@/components/ui/modal";
 import { adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
+import { b2Copy } from "@/lib/admin/b2-copy";
+import { useAdminAccess } from "@/lib/admin-access";
 import { collectChannelIds, labelChannel, liveChannelIds } from "@/lib/channel-options";
 import { readAdminFocusDate } from "@/lib/admin/focus-date";
 import { todayIsoDate } from "@/lib/booking/slots";
 import { formatYenShort } from "@/lib/format";
 import { OrderDocs } from "@/components/admin/order-docs";
 import { OrderEditFields } from "@/components/admin/order-edit-fields";
-import { type MockOrder, type OrderStatus } from "@/lib/mock/orders";
+import { type MockOrder, type OrderCancelKind, type OrderStatus } from "@/lib/mock/orders";
 import { MOCK_PLANS } from "@/lib/mock/plans";
 import { cn } from "@/lib/utils";
 import { useOpsStore } from "@/stores/ops-store";
@@ -127,7 +129,9 @@ function orderDateInRange(date: string, from: string, to: string) {
 export function AdminOrdersView() {
   const locale = useLocale();
   const copy = adminCopy(locale);
-  const { upsertOrder, patchOrder, setOrderStatus, templates, settings } = useOpsStore();
+  const b2 = b2Copy(locale);
+  const { canCompleteOrder } = useAdminAccess();
+  const { upsertOrder, patchOrder, setOrderStatus, templates, settings, affiliates } = useOpsStore();
   const { orders: storeOrders, storeId, plans } = useStoreData();
   const notify = useToastStore((state) => state.notify);
   const [from, setFrom] = useState(() => readAdminFocusDate());
@@ -135,12 +139,16 @@ export function AdminOrdersView() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<OrderStatus | "all">("all");
   const [channel, setChannel] = useState<string>("all");
+  const [affiliate, setAffiliate] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("time");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [editing, setEditing] = useState<MockOrder | null>(null);
   const [editingFromId, setEditingFromId] = useState("");
   const [detail, setDetail] = useState<MockOrder | null>(null);
   const [refund, setRefund] = useState<MockOrder | null>(null);
+  const [refundNote, setRefundNote] = useState("");
+  const [cancelTarget, setCancelTarget] = useState<MockOrder | null>(null);
+  const [cancelKind, setCancelKind] = useState<OrderCancelKind>("voluntary");
   const today = todayIsoDate();
 
   const rows = useMemo(() => {
@@ -148,6 +156,7 @@ export function AdminOrdersView() {
       if (!orderDateInRange(item.date, from, to)) return false;
       if (status !== "all" && item.status !== status) return false;
       if (channel !== "all" && item.channel !== channel) return false;
+      if (affiliate !== "all" && (item.affiliateId ?? "") !== affiliate) return false;
       const q = query.trim().toLowerCase();
       if (!q) return true;
       return [item.id, item.customer, item.planName].join(" ").toLowerCase().includes(q);
@@ -160,7 +169,7 @@ export function AdminOrdersView() {
       return left.localeCompare(right) * dir;
     });
     return sorted;
-  }, [storeOrders, from, to, status, channel, query, sortKey, sortDir]);
+  }, [storeOrders, from, to, status, channel, affiliate, query, sortKey, sortDir]);
 
   const listedChannels = useMemo(
     () => collectChannelIds(settings.channels, storeOrders.map((item) => item.channel)),
@@ -236,12 +245,41 @@ export function AdminOrdersView() {
 
   function changeStatus(id: string, next: OrderStatus) {
     const current = useOpsStore.getState().orders.find((item) => item.id === id);
+    if (next === "completed" && !canCompleteOrder()) {
+      notify(b2.completeOnlyManager);
+      return;
+    }
+    if (next === "cancelled") {
+      if (current) setCancelTarget(current);
+      setCancelKind(current?.cancelKind ?? "voluntary");
+      return;
+    }
     setOrderStatus(id, next);
     if (!current) {
       notify(copy.notify.status(adminOrderStatus(locale, next)));
       return;
     }
     void sendStatusMail(next, { ...current, status: next }, templates, settings, locale).then(notify);
+  }
+
+  function confirmCancel() {
+    if (!cancelTarget) return;
+    setOrderStatus(cancelTarget.id, "cancelled", { cancelKind });
+    void sendStatusMail("cancelled", { ...cancelTarget, status: "cancelled", cancelKind }, templates, settings, locale).then(
+      notify,
+    );
+    setCancelTarget(null);
+  }
+
+  function recordRefund() {
+    if (!refund) return;
+    const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
+    patchOrder(refund.id, {
+      refunds: [...(refund.refunds ?? []), { time: stamp, note: refundNote.trim() || b2.refundReserved }],
+    });
+    notify(b2.refundReserved);
+    setRefund(null);
+    setRefundNote("");
   }
 
   function sortMark(key: SortKey) {
@@ -316,6 +354,32 @@ export function AdminOrdersView() {
               <option key={key} value={key}>{copy.orderStatus[key]}</option>
             ))}
           </select>
+          <select
+            className="order-toolbar-status"
+            aria-label={b2.channelFilter}
+            value={channel}
+            onChange={(event) => setChannel(event.target.value)}
+          >
+            <option value="all">{copy.orders.allChannels}</option>
+            {listedChannels.map((id) => (
+              <option key={id} value={id}>
+                {labelChannel(locale, id, settings.channels)}
+              </option>
+            ))}
+          </select>
+          <select
+            className="order-toolbar-status"
+            aria-label={b2.affiliateFilter}
+            value={affiliate}
+            onChange={(event) => setAffiliate(event.target.value)}
+          >
+            <option value="all">{b2.allAffiliates}</option>
+            {affiliates.map((row) => (
+              <option key={row.id} value={row.id}>
+                {row.name} ({row.commissionPct}%)
+              </option>
+            ))}
+          </select>
           <button
             type="button"
             className="cta-btn order-toolbar-add"
@@ -382,7 +446,7 @@ export function AdminOrdersView() {
                 <td className="u-mix">{order.riders}{copy.orders.mf(order.male, order.female)}</td>
                 <td>{formatYenShort(order.totalJpy)}</td>
                 <td>
-                  <StatusSelect status={order.status} onChange={(next) => changeStatus(order.id, next)} />
+                  <StatusSelect status={order.status} allowComplete={canCompleteOrder()} onChange={(next) => changeStatus(order.id, next)} />
                 </td>
                 <td className="order-ops-cell">
                   <OrderOps
@@ -412,7 +476,7 @@ export function AdminOrdersView() {
               </div>
               <div className="flex shrink-0 flex-col items-end gap-2">
                 <ChannelBadge channel={order.channel} />
-                <StatusSelect status={order.status} onChange={(next) => changeStatus(order.id, next)} />
+                <StatusSelect status={order.status} allowComplete={canCompleteOrder()} onChange={(next) => changeStatus(order.id, next)} />
               </div>
             </div>
             <div className="order-ops-mobile">
@@ -486,7 +550,33 @@ export function AdminOrdersView() {
             <p>{copy.orders.riders}：{detail.riders}{copy.orders.mf(detail.male, detail.female)}</p>
             <p>{copy.orders.amount}：{formatYenShort(detail.totalJpy)} · {detail.paid ? copy.common.paid : copy.common.unpaid}</p>
             <p>{copy.orders.channel}：<ChannelBadge channel={detail.channel} /></p>
+            <p>
+              {b2.affiliateField}：
+              {(() => {
+                const row = affiliates.find((item) => item.id === detail.affiliateId);
+                return row ? `${row.name}（${row.commissionPct}%）` : b2.affiliateNone;
+              })()}
+            </p>
             <p>{copy.orders.status}：{adminOrderStatus(locale, detail.status)}</p>
+            {detail.status === "cancelled" ? (
+              <p>
+                {b2.cancelKind}：{detail.cancelKind === "noshow" ? b2.noshow : b2.voluntary}
+              </p>
+            ) : null}
+            <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <p className="font-semibold text-slate-700">{b2.refundLog}</p>
+              {(detail.refunds ?? []).length ? (
+                <ul className="mt-2 space-y-1">
+                  {(detail.refunds ?? []).map((item, index) => (
+                    <li key={`${item.time}-${index}`}>
+                      {item.time} · {item.note}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-1">{b2.refundEmpty}</p>
+              )}
+            </div>
             <OrderDocs locale={locale} />
           </div>
         ) : null}
@@ -494,31 +584,52 @@ export function AdminOrdersView() {
 
       <Modal
         open={Boolean(refund)}
-        title={copy.orders.refundTitle}
-        onClose={() => setRefund(null)}
+        title={b2.refundAction}
+        onClose={() => {
+          setRefund(null);
+          setRefundNote("");
+        }}
         footer={
           <>
-            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setRefund(null)}>{copy.common.back}</button>
+            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => { setRefund(null); setRefundNote(""); }}>{copy.common.back}</button>
             <button
               type="button"
               className="rounded-full bg-slate-700 px-5 py-2.5 text-sm text-white"
-              onClick={() => {
-                if (!refund) return;
-                patchOrder(refund.id, { status: "cancelled", note: refund.note || copy.orders.refundNote });
-                void sendStatusMail("cancelled", { ...refund, status: "cancelled" }, templates, settings, locale).then(
-                  notify,
-                );
-                setRefund(null);
-              }}
+              onClick={recordRefund}
             >
-              {copy.orders.refundOk}
+              {b2.refundAction}
             </button>
           </>
         }
       >
+        <p className="text-sm text-slate-500">{b2.refundReserved}</p>
+        <label className="admin-field mt-3">
+          {b2.refundNote}
+          <textarea className="admin-input min-h-20" value={refundNote} onChange={(event) => setRefundNote(event.target.value)} />
+        </label>
+      </Modal>
+
+      <Modal
+        open={Boolean(cancelTarget)}
+        title={b2.cancelKind}
+        onClose={() => setCancelTarget(null)}
+        footer={
+          <>
+            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setCancelTarget(null)}>{copy.common.back}</button>
+            <button type="button" className="cta-btn px-5 py-2.5" onClick={confirmCancel}>{copy.common.save}</button>
+          </>
+        }
+      >
         <p className="text-sm text-slate-500">
-          {refund ? copy.orders.refundLead(refund.id, refund.customer) : ""}
+          {cancelTarget ? `${cancelTarget.id} · ${cancelTarget.customer}` : ""}
         </p>
+        <label className="admin-field mt-3">
+          {b2.cancelKind}
+          <select className="admin-input" value={cancelKind} onChange={(event) => setCancelKind(event.target.value as OrderCancelKind)}>
+            <option value="voluntary">{b2.voluntary}</option>
+            <option value="noshow">{b2.noshow}</option>
+          </select>
+        </label>
       </Modal>
     </div>
   );
