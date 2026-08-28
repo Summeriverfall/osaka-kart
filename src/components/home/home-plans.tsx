@@ -24,21 +24,38 @@ export function HomePlans({ plans: seedPlans, locale, sectionId = "plans", kicke
 
   const grid = (
     <div className="ok-pkgs">
-      {plans.map((plan) => {
+      {plans.map((plan, index) => {
         const href = (PLAN_SLUGS as readonly string[]).includes(plan.slug)
           ? withSlash(`/plan/${plan.slug}`)
           : withSlash(`/booking?plan=${plan.slug}`);
+        const points = plan.translation.highlights.slice(0, 3);
         return (
           <article key={plan.id} className="ok-pkg">
-            <img src={coverOf(plan)} alt={plan.translation.name} />
+            <div className="ok-pkg-shot">
+              <img src={coverOf(plan)} alt="" />
+              <span className="ok-pkg-idx">{String(index + 1).padStart(2, "0")}</span>
+            </div>
             <div className="ok-pkg-body">
+              <p className="ok-pkg-time">{plan.duration_minutes}</p>
               <h3>{plan.translation.name}</h3>
+              <p className="ok-pkg-meta">
+                {planT("minutes", { n: plan.duration_minutes })}
+                {plan.distance_km != null ? ` · ${planT("km", { n: plan.distance_km })}` : ""}
+              </p>
+              {points.length ? (
+                <ul className="ok-pkg-points">
+                  {points.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="ok-pkg-desc">{plan.translation.description}</p>
+              )}
               <p className="ok-pkg-price">
                 {formatJpy(plan.base_price_jpy, locale)}
                 <span>{planT("perPerson")}</span>
               </p>
-              <p className="line-clamp-3">{plan.translation.description}</p>
-              <Link href={href} className="ok-btn ok-btn-sm">
+              <Link href={href} className="ok-pkg-go">
                 {t("select")}
               </Link>
             </div>

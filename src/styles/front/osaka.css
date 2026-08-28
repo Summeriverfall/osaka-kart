@@ -431,36 +431,160 @@ html:not(:has(.admin-app)) .ok-brand strong {
 }
 
 .ok-pkgs {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
 }
 
 .ok-pkg {
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1.25rem;
-  background: #161625;
+  display: grid;
+  gap: 1.5rem;
+  padding: 2.25rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
   text-align: left;
-  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
-.ok-pkg:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255, 0, 110, 0.35);
-  box-shadow: 0 16px 40px rgba(255, 0, 110, 0.12);
+.ok-pkg:last-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.ok-pkg img {
+.ok-pkg-shot {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.15rem;
+  background: #101018;
+}
+
+.ok-pkg-shot img {
+  display: block;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
+  transition: transform 0.55s ease;
+}
+
+.ok-pkg:hover .ok-pkg-shot img {
+  transform: scale(1.04);
+}
+
+.ok-pkg-idx {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1;
+  padding: 0.28rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.55);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
 }
 
 .ok-pkg-body {
   display: flex;
   flex-direction: column;
-  padding: 1.4rem 1.5rem 1.6rem;
+  justify-content: center;
+  min-width: 0;
+  padding: 0.2rem 0 0.4rem;
+}
+
+.ok-pkg-time {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(3.2rem, 8vw, 5.2rem);
+  font-weight: 700;
+  letter-spacing: -0.07em;
+  line-height: 0.9;
+}
+
+.ok-pkg h3 {
+  margin: 1rem 0 0;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+}
+
+.ok-pkg-meta {
+  margin: 0.55rem 0 0;
+  color: var(--ok-g500);
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+}
+
+.ok-pkg-points {
+  margin: 1.1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ok-pkg-points li {
+  position: relative;
+  padding-left: 1rem;
+  color: var(--ok-g300);
+  font-size: 0.94rem;
+  line-height: 1.7;
+}
+
+.ok-pkg-points li::before {
+  content: "";
+  position: absolute;
+  top: 0.72em;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--ok-pink);
+}
+
+.ok-pkg-desc {
+  margin: 1.1rem 0 0;
+  max-width: 36rem;
+  color: var(--ok-g300);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.ok-pkg-price {
+  margin: 1.35rem 0 0;
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.ok-pkg-price span {
+  margin-left: 0.3rem;
+  color: var(--ok-g500);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.ok-pkg-go {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 1.25rem;
+  color: var(--ok-pink);
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.ok-pkg-go::after {
+  content: "→";
+  margin-left: 0.45rem;
+  transition: transform 0.2s;
+}
+
+.ok-pkg-go:hover {
+  color: #fff;
+}
+
+.ok-pkg-go:hover::after {
+  transform: translateX(4px);
 }
 
 .ok-btn.ok-btn-sm {
@@ -468,32 +592,6 @@ html:not(:has(.admin-app)) .ok-brand strong {
   align-self: flex-start;
   padding: 11px 1.35rem;
   font-size: 0.82rem;
-}
-
-.ok-pkg h3 {
-  font-size: 1.2rem;
-  font-weight: 800;
-}
-
-.ok-pkg-price {
-  margin-top: 0.35rem;
-  color: var(--ok-pink);
-  font-size: 1.45rem;
-  font-weight: 800;
-}
-
-.ok-pkg-price span {
-  margin-left: 0.25rem;
-  color: var(--ok-g500);
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.ok-pkg p {
-  margin-top: 0.6rem;
-  color: var(--ok-g300);
-  font-size: 0.9rem;
-  line-height: 1.55;
 }
 
 .ok-reviews {
@@ -1015,8 +1113,19 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
     display: inline;
   }
 
-  .ok-pkgs {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .ok-pkg {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    gap: 3rem;
+    padding: 3rem 0;
+    align-items: center;
+  }
+
+  .ok-pkg:nth-child(even) {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  }
+
+  .ok-pkg:nth-child(even) .ok-pkg-shot {
+    order: 2;
   }
 
   .ok-reviews,
@@ -1063,8 +1172,13 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
     display: none;
   }
 
-  .ok-pkgs {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .ok-pkg {
+    grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+    gap: 4.25rem;
+  }
+
+  .ok-pkg:nth-child(even) {
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
   }
 
   .ok-vids {
