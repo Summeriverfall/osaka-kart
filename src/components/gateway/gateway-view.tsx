@@ -1,8 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { BrandMark } from "@/components/site/brand-mark";
-import { LocaleSwitcher } from "@/components/site/locale-switcher";
+import { SiteFooter } from "@/components/site/site-footer";
+import { SiteNav } from "@/components/site/site-nav";
 import { asset } from "@/lib/asset";
 import { formatJpy } from "@/lib/format";
 import { appPageHref, isFileProtocol, navigateToHref } from "@/lib/file-href";
@@ -30,12 +30,8 @@ export function GatewayView({ fromPrice, locale }: GatewayViewProps) {
   const t = useTranslations("Gateway");
 
   return (
-    <div className="gateway-root" data-theme="portal">
-      <header className="gateway-top">
-        <BrandMark />
-        <LocaleSwitcher />
-      </header>
-
+    <div className="ok-page gateway-root ok-page-pad" data-theme="portal">
+      <SiteNav />
       <main className="gateway-main">
         <p className="gateway-kicker">{t("kicker")}</p>
         <h1>{t("title")}</h1>
@@ -81,6 +77,7 @@ export function GatewayView({ fromPrice, locale }: GatewayViewProps) {
           })}
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }

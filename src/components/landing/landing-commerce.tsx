@@ -191,6 +191,7 @@ export function LandingBook({
       email: store.email,
       phone: store.phone,
       licenseOk: true,
+      affiliateCode: store.affiliateCode,
       ref: `OK-${Date.now().toString(36).toUpperCase()}`,
       planName: plan.translation.name,
       totalJpy: bookingTotal(plan, addons, store.riders, store.addonSlugs),

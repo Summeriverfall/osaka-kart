@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { formatJpy } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { coverOf } from "@/lib/media";
 import { RideNoteChecks, allNotesChecked, emptyNoteChecks, type NoteKey } from "@/components/notes/ride-notes";
 import { AddonPicker, type AddonCardModel } from "@/components/addons/addon-picker";
 import { IncludedAddonsList } from "@/components/addons/included-addons";
@@ -21,7 +22,7 @@ import {
 } from "@/stores/booking-store";
 import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 
-const STEPS = ["Plan", "Date", "Time", "Info"] as const;
+const STEPS = ["stepPlan", "stepDate", "stepTime", "stepInfo"] as const;
 
 type BookingFormProps = {
   plans: PlanWithTranslation[];
@@ -105,6 +106,7 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
       email: store.email,
       phone: store.phone,
       licenseOk: true,
+      affiliateCode: store.affiliateCode,
       ref: `OK-${Date.now().toString(36).toUpperCase()}`,
       planName: plan.translation.name,
       totalJpy: total,
@@ -119,21 +121,20 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
 
   return (
     <form className="book-form" onSubmit={onSubmit}>
-      <ol className="mb-8 grid grid-cols-4 gap-2">
+      <ol className="ok-steps">
         {STEPS.map((label, index) => (
           <li key={label}>
             <button
               type="button"
               onClick={() => setStep(index)}
               className={cn(
-                "w-full rounded-full border px-1.5 py-2 text-[0.62rem] font-black tracking-wide uppercase transition sm:px-2 sm:text-xs sm:tracking-[0.12em]",
-                index === step
-                  ? "border-[#FF2E97] bg-[#FF2E97] text-white"
-                  : "border-white/15 bg-[#161625] text-[#A0A0A0]",
+                "ok-step",
+                index === step && "is-on",
+                index < step && "is-done",
               )}
             >
-              <span className="sm:hidden">{index + 1}</span>
-              <span className="hidden sm:inline">{index + 1}. {label}</span>
+              <span className="ok-step-num">{index + 1}</span>
+              <span className="ok-step-label">{t(label)}</span>
             </button>
           </li>
         ))}
@@ -141,19 +142,22 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
 
       {step === 0 ? (
         <>
-          <article className="rounded-2xl border border-white/10 bg-[#12121A] p-4">
-            <p className="text-xs text-[#9CA3AF]">{t("plan")}</p>
-            <h2 className="mt-1 text-xl font-black">{plan.translation.name}</h2>
-            <p className="text-neon-pink">{formatJpy(plan.base_price_jpy, locale)}</p>
-            <label className="book-field mt-3">
-              <span>更换套餐</span>
-              <select value={plan.slug} onChange={(e) => store.patch({ planSlug: e.target.value, riders: 1 })}>
-                {plans.map((item) => (
-                  <option key={item.id} value={item.slug}>{item.translation.name}</option>
-                ))}
-              </select>
-            </label>
-          </article>
+          <div className="ok-pick-grid">
+            {plans.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={cn("ok-pick", item.slug === plan.slug && "is-on")}
+                onClick={() => store.patch({ planSlug: item.slug, riders: 1 })}
+              >
+                <img src={coverOf(item)} alt="" />
+                <span>
+                  <strong>{item.translation.name}</strong>
+                  <em>{formatJpy(item.base_price_jpy, locale)}</em>
+                </span>
+              </button>
+            ))}
+          </div>
           <IncludedAddonsList addons={includedAddons} />
           <AddonPicker addons={addonCards} ctaLabel={t("submit")} onCta={() => undefined} sticky={false} />
         </>
@@ -207,14 +211,14 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
             <label className="book-field"><span>{t("email")}</span><input type="email" value={hydrated ? store.email : ""} onChange={(e) => store.patch({ email: e.target.value })} required /></label>
           </div>
           <label className="book-field"><span>{t("phone")}</span><input value={hydrated ? store.phone : ""} onChange={(e) => store.patch({ phone: e.target.value })} required /></label>
-          <label className="book-field"><span>证件号</span><input value={passport} onChange={(e) => setPassport(e.target.value)} required /></label>
+          <label className="book-field"><span>{t("passport")}</span><input value={passport} onChange={(e) => setPassport(e.target.value)} required /></label>
           <label className="book-field">
-            <span>国籍</span>
+            <span>{t("nationality")}</span>
             <select value={nation} onChange={(e) => setNation(e.target.value)}>
               {["USA", "China", "Japan", "United Kingdom", "Korea", "Taiwan", "Other"].map((item) => <option key={item}>{item}</option>)}
             </select>
           </label>
-          <label className="book-field"><span>特殊要求</span><textarea value={request} onChange={(e) => setRequest(e.target.value)} /></label>
+          <label className="book-field"><span>{t("request")}</span><textarea value={request} onChange={(e) => setRequest(e.target.value)} /></label>
           <RideNoteChecks checked={notes} onToggle={(key: NoteKey, on: boolean) => {
             setNotes((prev) => {
               const next = { ...prev, [key]: on };
@@ -223,9 +227,9 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
             });
           }} />
           <aside className="rounded-2xl border border-white/10 bg-[#12121A] p-4">
-            <p className="text-xs text-[#9CA3AF]">订单摘要</p>
+            <p className="text-xs text-[#9CA3AF]">{t("summary")}</p>
             <p className="mt-2 font-black">{plan.translation.name}</p>
-            <p className="text-sm text-[#9CA3AF]">{store.date} {store.time} · {riders}人</p>
+            <p className="text-sm text-[#9CA3AF]">{store.date} {store.time} · {riders}</p>
             <p className="mt-3 text-2xl font-black text-neon-pink">{formatJpy(total, locale)}</p>
           </aside>
         </>
@@ -237,10 +241,10 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
       </div>
       <div className="flex gap-3">
         {step > 0 ? (
-          <button type="button" className="cta-btn cta-btn-ghost px-5 py-3" onClick={() => setStep((n) => n - 1)}>返回</button>
+          <button type="button" className="cta-btn cta-btn-ghost px-5 py-3" onClick={() => setStep((n) => n - 1)}>{t("back")}</button>
         ) : null}
-        <button type="submit" className="cta-btn book-submit flex-1" disabled={step === 3 && !notesOk}>
-          {step === 3 ? t("submit") : "Continue"}
+        <button type="submit" className="ok-btn book-submit flex-1 justify-center" disabled={step === 3 && !notesOk}>
+          {step === 3 ? t("submit") : t("next")}
         </button>
       </div>
     </form>

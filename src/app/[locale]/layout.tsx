@@ -3,6 +3,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { FileProtocolNav } from "@/components/file-protocol-nav";
+import { PromoCapture } from "@/components/promo/promo-capture";
 import { routing } from "@/i18n/routing";
 import { acidPaletteBootScript } from "@/lib/acid-palette";
 
@@ -57,6 +58,7 @@ export default async function LocaleLayout({
           timeZone="Asia/Tokyo"
         >
           <FileProtocolNav />
+          <PromoCapture />
           {children}
         </NextIntlClientProvider>
       </body>

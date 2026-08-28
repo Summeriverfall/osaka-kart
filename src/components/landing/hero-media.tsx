@@ -7,9 +7,10 @@ import type { SiteTheme } from "@/lib/visual-theme";
 
 type HeroMediaProps = {
   theme: SiteTheme;
+  plain?: boolean;
 };
 
-export function HeroMedia({ theme }: HeroMediaProps) {
+export function HeroMedia({ theme, plain }: HeroMediaProps) {
   const cms = useLiveCms();
   const hero = heroMediaOf(cms, theme);
   const poster = hero.resolved?.poster ?? asset("/images/hero/poster.webp");
@@ -38,16 +39,16 @@ export function HeroMedia({ theme }: HeroMediaProps) {
         />
       ) : null}
 
-      {theme === "neon" && (
+      {plain ? null : theme === "neon" && (
         <>
           <div className="absolute inset-0 z-[2] bg-gradient-to-b from-[#0A0A0F]/70 via-[#0A0A0F]/30 to-[#0A0A0F]/90" />
           <div className="pointer-events-none absolute -top-24 left-[-4rem] z-[2] h-96 w-96 rounded-full bg-neon-pink/20 blur-[128px]" />
         </>
       )}
 
-      {theme === "acid" && <div className="hero-acid-veil" />}
+      {plain ? null : theme === "acid" && <div className="hero-acid-veil" />}
 
-      {theme === "oni" && (
+      {plain ? null : theme === "oni" && (
         <>
           <div className="absolute inset-0 z-[2] bg-gradient-to-b from-black/80 via-[#3a0000]/45 to-black/90" />
           <div className="hero-oni-frame" />

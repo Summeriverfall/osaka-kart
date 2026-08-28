@@ -1,4 +1,3 @@
-import { AcidBar } from "@/components/landing/acid-bar";
 import { AcidDock } from "@/components/landing/acid-dock";
 import { AcidGallery } from "@/components/landing/acid-gallery";
 import { AcidMasthead } from "@/components/landing/acid-masthead";
@@ -14,6 +13,7 @@ import {
 } from "@/components/landing/landing-commerce";
 import { HtmlTheme } from "@/components/layout/html-theme";
 import { SiteFooter } from "@/components/site/site-footer";
+import { SiteNav } from "@/components/site/site-nav";
 import type { LandingCopy } from "@/components/landing/copy";
 import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 import { ACID_PALETTE } from "@/lib/acid-palette";
@@ -30,12 +30,7 @@ export function AcidLanding({ plans, addons, locale, copy }: Props) {
     <div className="landing-root acid-root" data-theme="acid" data-acid-palette={ACID_PALETTE}>
       <HtmlTheme theme="acid" acidPalette={ACID_PALETTE} />
       <span className="acid-rail" aria-hidden />
-      <AcidBar
-        access={copy.access.title}
-        book={copy.nav.calendar}
-        plans={copy.nav.plans}
-        faq={copy.nav.faq}
-      />
+      <SiteNav look="acid" />
       <AcidMasthead copy={copy} />
       <LandingVisit copy={copy} theme="acid" />
       <LandingFlow copy={copy} theme="acid" />

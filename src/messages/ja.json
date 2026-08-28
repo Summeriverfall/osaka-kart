@@ -7,11 +7,14 @@
     "home": "ホーム",
     "plans": "プラン",
     "faq": "FAQ",
-    "videos": "現場",
+    "videos": "動画",
     "experience": "動画",
     "booking": "今すぐ予約",
     "calendar": "予約",
-    "menu": "メニュー"
+    "menu": "メニュー",
+    "reviews": "レビュー",
+    "help": "ヘルプ",
+    "viewPackages": "プランを見る"
   },
   "Gateway": {
     "kicker": "大阪の公道カート",
@@ -31,6 +34,10 @@
     "subtitle": "公道走行可能なナンバー登録車両。ガイドが先導し、難波の街を走ります。レーシングスーツ・ヘルメット・保険込み。",
     "cta": "プランと料金を見る",
     "rating": "4.9（2,000件以上の口コミ）",
+    "ridersCount": "2,000+",
+    "ridersLabel": "ライダー",
+    "ratingScore": "4.9",
+    "ratingLabel": "評価",
     "scroll": "スクロール"
   },
   "PlansHome": {
@@ -111,7 +118,15 @@
     "social": "フォロー",
     "phone": "電話",
     "hours": "営業時間",
-    "email": "メール"
+    "email": "メール",
+    "blurb": "大阪のネオンを公道カートで走る。コース・装備・集合場所はそのまま。難波から出発。",
+    "license": "免許の条件",
+    "safety": "安全について",
+    "contact": "お問い合わせ",
+    "map": "地図を見る",
+    "looks": "別デザイン",
+    "privacy": "プライバシー",
+    "terms": "利用規約"
   },
   "Help": {
     "title": "ヘルプ",
@@ -196,7 +211,17 @@
     "whatsapp": "WhatsApp",
     "addonAdd": "プランに追加",
     "addonOn": "追加済み",
-    "full": "満員"
+    "full": "満員",
+    "stepPlan": "プラン",
+    "stepDate": "日付",
+    "stepTime": "時間",
+    "stepInfo": "情報",
+    "next": "次へ →",
+    "changePlan": "プランを変更",
+    "passport": "旅券番号",
+    "nationality": "国籍",
+    "request": "ご要望",
+    "summary": "予約内容"
   },
   "Press": {
     "title": "メディア掲載",

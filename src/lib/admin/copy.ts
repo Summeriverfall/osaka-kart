@@ -875,6 +875,8 @@ const zh: AdminCopy = {
     Instagram: "Instagram",
     TikTok: "TikTok",
     携程: "携程",
+    GetYourGuide: "GetYourGuide",
+    丽思卡尔顿酒店: "丽思卡尔顿酒店",
   },
   vehicleStatus: {
     available: "可用",
@@ -1609,6 +1611,8 @@ const en: AdminCopy = {
     Instagram: "Instagram",
     TikTok: "TikTok",
     携程: "Ctrip",
+    GetYourGuide: "GetYourGuide",
+    丽思卡尔顿酒店: "The Ritz-Carlton",
   },
   vehicleStatus: {
     available: "Ready",
@@ -2343,6 +2347,8 @@ const ja: AdminCopy = {
     Instagram: "Instagram",
     TikTok: "TikTok",
     携程: "Ctrip",
+    GetYourGuide: "GetYourGuide",
+    丽思卡尔顿酒店: "リッツ・カールトン",
   },
   vehicleStatus: {
     available: "利用可能",

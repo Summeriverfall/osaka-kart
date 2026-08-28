@@ -17,37 +17,52 @@ const COUNTRIES = [
 
 export function HelpContent() {
   const t = useTranslations("Help");
+  const nav = useTranslations("Nav");
 
   return (
-    <div className="help-page bg-[#0A0A0F]">
+    <div className="ok-page">
       <SiteNav />
-      <main className="help-main">
-        <p className="shop-kicker">Help</p>
-        <h1>{t("title")}</h1>
+      <header className="ok-page-head ok-page-head-pad">
+        <div className="ok-sec-wide">
+          <p className="ok-kicker">{nav("help")}</p>
+          <h1>{t("title")}</h1>
+        </div>
+      </header>
 
-        <section className="mt-10">
-          <h2 className="mb-4 text-2xl font-black">{t("licenseTitle")}</h2>
-          <p className="mb-6 text-[#9CA3AF]">{t("licenseLead")}</p>
-          <div className="grid gap-4 md:grid-cols-2">
+      <HomeFaq kicker={nav("faq")} />
+
+      <section id="license" className="ok-sec ok-sec-alt">
+        <div className="ok-sec-wide">
+          <header className="ok-sec-head">
+            <p className="ok-kicker">License</p>
+            <h2>{t("licenseTitle")}</h2>
+            <p className="ok-sec-lead">{t("licenseLead")}</p>
+          </header>
+          <div className="ok-safety">
             {COUNTRIES.map((item) => (
-              <article key={item.code} className="rounded-2xl border border-white/10 bg-[#12121A] p-5">
-                <p className="text-xs tracking-[0.16em] text-neon-pink uppercase">{item.code}</p>
-                <h3 className="mt-2 font-black">{t(item.name)}</h3>
-                <p className="mt-2 text-sm leading-6 text-[#9CA3AF]">{t(item.body)}</p>
+              <article key={item.code}>
+                <p className="ok-kicker">{item.code}</p>
+                <h3>{t(item.name)}</h3>
+                <p>{t(item.body)}</p>
               </article>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="mt-12">
-          <h2 className="mb-4 text-2xl font-black">{t("safetyTitle")}</h2>
-          <article className="rounded-2xl border border-white/10 bg-[#12121A] p-5">
-            <Shield className="size-5 text-neon-pink" />
-            <p className="mt-3 text-sm leading-6 text-[#9CA3AF]">{t("safetyBody")}</p>
+      <section id="safety" className="ok-sec">
+        <div className="ok-sec-wide">
+          <header className="ok-sec-head">
+            <p className="ok-kicker">Safety</p>
+            <h2>{t("safetyTitle")}</h2>
+          </header>
+          <article className="ok-panel ok-panel-wide">
+            <Shield className="size-5 text-[var(--ok-pink)]" />
+            <p className="mt-3">{t("safetyBody")}</p>
           </article>
-        </section>
-      </main>
-      <HomeFaq />
+        </div>
+      </section>
+
       <SiteFooter />
       <FloatBook />
     </div>

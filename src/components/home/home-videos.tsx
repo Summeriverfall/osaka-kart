@@ -16,7 +16,7 @@ function sourceLabel(clip: CmsVideo) {
   return "";
 }
 
-export function HomeVideos({ limit }: { limit?: number }) {
+export function HomeVideos({ limit, kicker }: { limit?: number; kicker?: string }) {
   const t = useTranslations("VideosHome");
   const locale = useLocale();
   const cms = useLiveCms();
@@ -40,28 +40,31 @@ export function HomeVideos({ limit }: { limit?: number }) {
   }
 
   return (
-    <section id="videos" className="bg-black py-20">
-      <div className="mx-auto max-w-6xl px-4">
-        <h2 className="mb-3 text-3xl font-semibold text-white md:text-4xl">{title}</h2>
-        <p className="mb-10 text-[#A0A0A0]">{lead}</p>
+    <section id="videos" className="ok-sec">
+      <div className="ok-sec-wide">
+        <header className="ok-sec-head">
+          {kicker ? <p className="ok-kicker">{kicker}</p> : null}
+          <h2>{title}</h2>
+          <p className="ok-sec-lead">{lead}</p>
+        </header>
 
         {featured ? (
-          <div className="mb-10 overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#161625] shadow-[0_12px_36px_rgb(0_0_0_/_35%)]">
+          <article className="ok-vid mb-6">
             <div className="aspect-video bg-black">
               <CmsVideoMedia video={featured} controls className="h-full w-full" />
             </div>
-            <div className="flex items-center justify-between gap-3 px-5 py-4">
-              <p className="font-semibold text-white">{localeText(featured.title, locale)}</p>
+            <div className="ok-vid-body">
+              <p className="font-semibold">{localeText(featured.title, locale)}</p>
               {sourceLabel(featured) ? (
-                <span className="rounded-full bg-[#FF2E97]/15 px-3 py-1 text-xs font-semibold text-[#FF2E97]">
+                <span className="rounded-full bg-[rgba(255,0,110,0.15)] px-3 py-1 text-xs font-semibold text-[var(--ok-pink)]">
                   {sourceLabel(featured)}
                 </span>
               ) : null}
             </div>
-          </div>
+          </article>
         ) : null}
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="ok-vids">
           {rest.map((clip) => {
             const media = resolveCmsVideo(clip);
             const platform = sourceLabel(clip);
@@ -69,21 +72,21 @@ export function HomeVideos({ limit }: { limit?: number }) {
               <button
                 key={clip.id}
                 type="button"
-                className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#161625] text-left shadow-[0_12px_36px_rgb(0_0_0_/_35%)] transition hover:-translate-y-0.5 hover:border-[#FF2E97]/40 hover:shadow-[0_16px_44px_rgb(255_46_151_/_18%)]"
+                className="ok-vid"
                 onClick={() => openClip(clip)}
               >
-                <div className="relative aspect-video overflow-hidden bg-black">
+                <div className="relative overflow-hidden bg-black">
                   {media?.kind === "youtube" ? (
-                    <img src={youtubeThumb(media.id)} alt="" className="h-full w-full object-cover" />
+                    <img src={youtubeThumb(media.id)} alt="" />
                   ) : (
-                    <img src={media?.poster} alt="" className="h-full w-full object-cover" />
+                    <img src={media?.poster} alt="" />
                   )}
                   <Play className="absolute top-1/2 left-1/2 size-12 -translate-x-1/2 -translate-y-1/2 text-white drop-shadow-lg" />
                 </div>
-                <div className="p-4">
-                  <p className="font-semibold text-white">{localeText(clip.title, locale)}</p>
+                <div className="ok-vid-body">
+                  <p className="font-semibold">{localeText(clip.title, locale)}</p>
                   {platform ? (
-                    <p className="mt-1 text-xs font-semibold text-[#FF2E97]">
+                    <p className="text-xs font-semibold text-[var(--ok-pink)]">
                       {t("watchOn", { platform })}
                     </p>
                   ) : null}
@@ -100,7 +103,7 @@ export function HomeVideos({ limit }: { limit?: number }) {
         onClose={() => setPlaying(null)}
         wide
         footer={
-          <button type="button" className="cta-btn px-5 py-2.5" onClick={() => setPlaying(null)}>
+          <button type="button" className="ok-btn px-5 py-2.5" onClick={() => setPlaying(null)}>
             <X className="size-4" /> {t("title")}
           </button>
         }

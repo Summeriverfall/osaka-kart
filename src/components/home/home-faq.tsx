@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/accordion";
 import { localeText, localizedList, useLiveCms } from "@/lib/live-cms";
 
-export function HomeFaq() {
+export function HomeFaq({ kicker }: { kicker?: string }) {
   const t = useTranslations("Faq");
   const locale = useLocale();
   const cms = useLiveCms();
@@ -34,26 +34,21 @@ export function HomeFaq() {
   const title = localeText(cms.labels.faqTitle, locale, t("title"));
 
   return (
-    <section id="faq" className="bg-[#0A0A0F] py-20">
-      <div className="mx-auto max-w-3xl px-4">
-        <h2 className="mb-8 text-center text-3xl font-black md:text-4xl">
-          {title}
-        </h2>
-        <Accordion
-          multiple
-          defaultValue={list.map((item) => item.id)}
-          className="space-y-3"
-        >
+    <section id="faq" className="ok-sec">
+      <div className="ok-sec-wide">
+        <header className="ok-sec-head">
+          {kicker ? <p className="ok-kicker">{kicker}</p> : null}
+          <h2>{title}</h2>
+        </header>
+        <Accordion multiple className="ok-faq">
           {list.map((item) => (
-            <AccordionItem
-              key={item.id}
-              value={item.id}
-              className="rounded-[1.25rem] border border-white/10 border-b-0 bg-[#161625] px-5"
-            >
-              <AccordionTrigger className="text-lg text-[#F1F1F5] hover:no-underline hover:text-[var(--neon-pink)]">
+            <AccordionItem key={item.id} value={item.id} className="ok-faq-item border-0">
+              <AccordionTrigger className="text-[1.05rem] text-white hover:no-underline hover:text-[var(--ok-pink)]">
                 {item.q}
               </AccordionTrigger>
-              <AccordionContent className="text-base leading-7 text-[#A0A0A0]">{item.a}</AccordionContent>
+              <AccordionContent className="text-[0.95rem] leading-7 text-[var(--ok-g300)]">
+                {item.a}
+              </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>

@@ -27,9 +27,13 @@ export type MockStore = {
   created: string;
 };
 
+export type ChannelKind = "ota" | "hotel" | "social" | "direct" | "other";
+
 export type MockBookChannel = {
   id: string;
   name?: string;
+  kind?: ChannelKind;
+  contact?: string;
   enabled: boolean;
   locked?: boolean;
   cut: number;
@@ -69,17 +73,20 @@ export const MOCK_PAYMENTS: MockPayChannel[] = [
 ];
 
 export const MOCK_BOOK_CHANNELS: MockBookChannel[] = [
-  { id: "Klook", enabled: true, cut: 0.18, fieldLabel: "API Key", fieldValue: "" },
-  { id: "官网", enabled: true, locked: true, cut: 0 },
-  { id: "Instagram", enabled: true, cut: 0 },
-  { id: "TikTok", enabled: true, cut: 0 },
-  { id: "携程", enabled: true, cut: 0.15 },
-  { id: "微信", enabled: true, cut: 0.05 },
-  { id: "WhatsApp", enabled: true, cut: 0 },
-  { id: "线下", enabled: true, cut: 0 },
+  { id: "官网", enabled: true, locked: true, kind: "direct", contact: "官网客服", cut: 0 },
+  { id: "Klook", enabled: true, kind: "ota", contact: "李娜", cut: 0.18, fieldLabel: "API Key", fieldValue: "" },
+  { id: "Viator", enabled: true, kind: "ota", contact: "James Cole", cut: 0.2 },
+  { id: "携程", enabled: true, kind: "ota", contact: "王倩", cut: 0.15 },
+  { id: "GetYourGuide", enabled: true, kind: "ota", contact: "Anna Berg", cut: 0.16 },
+  { id: "丽思卡尔顿酒店", name: "丽思卡尔顿酒店", enabled: true, kind: "hotel", contact: "前台礼宾", cut: 0.12 },
+  { id: "Instagram", enabled: true, kind: "social", contact: "内容运营", cut: 0 },
+  { id: "TikTok", enabled: true, kind: "social", contact: "内容运营", cut: 0 },
+  { id: "微信", enabled: true, kind: "social", contact: "社群运营", cut: 0.05 },
+  { id: "WhatsApp", enabled: true, kind: "social", contact: "预订专员", cut: 0 },
+  { id: "线下", enabled: true, kind: "direct", contact: "难波店", cut: 0 },
 ];
 
-const REMOVED_BOOK_CHANNELS = new Set(["Viator"]);
+const REMOVED_BOOK_CHANNELS = new Set<string>([]);
 
 export function refreshBundledChannels(
   seed: MockBookChannel[],
@@ -104,6 +111,8 @@ export function refreshBundledChannels(
         ...prev,
         id: seedItem.id,
         locked: seedItem.locked,
+        kind: prev.kind ?? seedItem.kind,
+        contact: prev.contact ?? seedItem.contact,
       };
     });
   const custom = (extra ?? []).filter(
@@ -415,6 +424,6 @@ export const MOCK_SETTINGS: MockSettings = {
   mailTemplateId: "",
   payments: MOCK_PAYMENTS,
   channels: MOCK_BOOK_CHANNELS,
-  removedChannelIds: ["Viator"],
+  removedChannelIds: [],
   refundPolicy: "出发前 24 小时取消退 50%。出发前不足 24 小时或 No-show 不退款。",
 };

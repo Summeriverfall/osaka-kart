@@ -52,7 +52,19 @@ export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   completed: "已完成",
 };
 
-export const CHANNELS: OrderChannel[] = ["Klook", "官网", "Instagram", "TikTok", "携程", "微信", "WhatsApp", "线下"];
+export const CHANNELS: OrderChannel[] = [
+  "官网",
+  "Klook",
+  "Viator",
+  "携程",
+  "GetYourGuide",
+  "丽思卡尔顿酒店",
+  "Instagram",
+  "TikTok",
+  "微信",
+  "WhatsApp",
+  "线下",
+];
 
 const SLOTS = ["10:00", "11:30", "13:00", "14:30", "16:00", "17:30", "19:00"] as const;
 
@@ -144,7 +156,9 @@ export function buildWeekDemoOrders(today = todayIsoDate()): MockOrder[] {
           ...(status === "cancelled" ? [log(`${date} 08:02`, "店长 佐藤", "取消订单", index === 0 ? "No-show" : "行程变更")] : []),
         ],
         cancelKind: status === "cancelled" ? (index === 0 ? "noshow" : "voluntary") : undefined,
-        affiliateId: index === 2 ? "af-yuki" : index === 3 ? "af-mei" : undefined,
+        affiliateId: ["af-yuki", "af-mei", "af-chen", undefined, "af-lisa", "af-rits", "af-via", "af-gyg"][
+          (index + Math.abs(offset)) % 8
+        ],
       });
     }
   }

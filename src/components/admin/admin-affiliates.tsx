@@ -1,10 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Plus, Search } from "lucide-react";
 import { useLocale } from "next-intl";
 import { Modal } from "@/components/ui/modal";
-import { blankAffiliate, type MockAffiliate } from "@/lib/mock/affiliates";
+import { downloadAffiliatePoster, downloadQrPng, POSTER_TEMPLATES } from "@/lib/affiliate-poster";
+import { affiliateStats } from "@/lib/affiliate-stats";
+import { b3Copy } from "@/lib/admin/b3-copy";
 import { formatYenShort } from "@/lib/format";
+import { AFFILIATE_DEMO_PASSWORD, blankAffiliate, generateAffiliateCode, type MockAffiliate } from "@/lib/mock/affiliates";
+import { promoHref, qrImageSrc } from "@/lib/promo";
 import { cn } from "@/lib/utils";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { useOpsStore } from "@/stores/ops-store";
@@ -83,22 +88,21 @@ function copyOf(locale: string) {
   };
 }
 
-function promoHref(code: string) {
-  const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-  const path = `${base}/zh-TW/?ref=${encodeURIComponent(code)}`;
-  if (typeof window === "undefined") return path;
-  return `${window.location.origin}${path}`;
-}
+type SortKey = "name" | "email" | "phone" | "code" | "pct" | "orders" | "cut" | "status";
+type StatusFilter = "all" | "active" | "paused";
 
-function statsOf(affiliate: MockAffiliate, orders: { channel: string; totalJpy: number; date: string; id: string; customer: string }[]) {
-  const related = orders.filter((item) => item.channel === affiliate.channel);
-  const cut = related.reduce((sum, item) => sum + (item.totalJpy * affiliate.commissionPct) / 100, 0);
-  return { related, cut };
+function posterName(locale: string, id: string) {
+  const row = POSTER_TEMPLATES.find((item) => item.id === id);
+  if (!row) return id;
+  if (locale.startsWith("ja")) return row.nameJa;
+  if (locale.startsWith("en")) return row.nameEn;
+  return row.name;
 }
 
 export function AdminAffiliatesView({ id }: { id?: string }) {
   const locale = useLocale();
   const copy = copyOf(locale);
+  const b3 = b3Copy(locale);
   const go = useAdminNavStore((state) => state.go);
   const affiliates = useOpsStore((state) => state.affiliates);
   const orders = useOpsStore((state) => state.orders);
@@ -106,6 +110,11 @@ export function AdminAffiliatesView({ id }: { id?: string }) {
   const upsertAffiliate = useOpsStore((state) => state.upsertAffiliate);
   const notify = useToastStore((state) => state.notify);
   const [editing, setEditing] = useState<MockAffiliate | null>(null);
+  const [isNew, setIsNew] = useState(false);
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<StatusFilter>("all");
+  const [sortKey, setSortKey] = useState<SortKey>("cut");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const current = id ? affiliates.find((item) => item.id === id) : undefined;
 
@@ -115,20 +124,102 @@ export function AdminAffiliatesView({ id }: { id?: string }) {
     return ids;
   }, [channels, editing?.channel]);
 
+  const rows = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const filtered = affiliates.filter((item) => {
+      if (status !== "all" && item.status !== status) return false;
+      if (!q) return true;
+      return [item.name, item.email, item.phone, item.code].some((field) => field.toLowerCase().includes(q));
+    });
+    return [...filtered].sort((a, b) => {
+      const sa = affiliateStats(a, orders);
+      const sb = affiliateStats(b, orders);
+      const av =
+        sortKey === "name"
+          ? a.name
+          : sortKey === "email"
+            ? a.email
+            : sortKey === "phone"
+              ? a.phone
+              : sortKey === "code"
+                ? a.code
+                : sortKey === "pct"
+                  ? a.commissionPct
+                  : sortKey === "orders"
+                    ? sa.orderCount
+                    : sortKey === "cut"
+                      ? sa.cut
+                      : a.status;
+      const bv =
+        sortKey === "name"
+          ? b.name
+          : sortKey === "email"
+            ? b.email
+            : sortKey === "phone"
+              ? b.phone
+              : sortKey === "code"
+                ? b.code
+                : sortKey === "pct"
+                  ? b.commissionPct
+                  : sortKey === "orders"
+                    ? sb.orderCount
+                    : sortKey === "cut"
+                      ? sb.cut
+                      : b.status;
+      const cmp = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv), locale);
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [affiliates, orders, query, status, sortKey, sortDir, locale]);
+
+  function toggleSort(key: SortKey) {
+    if (sortKey === key) setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(key);
+      setSortDir(key === "name" || key === "email" || key === "phone" || key === "code" ? "asc" : "desc");
+    }
+  }
+
+  function sortMark(key: SortKey) {
+    if (sortKey !== key) return "↕";
+    return sortDir === "desc" ? "↓" : "↑";
+  }
+
   function save(row: MockAffiliate) {
+    const code = row.code.trim().toUpperCase() || generateAffiliateCode(row.name || row.id);
     const next: MockAffiliate = {
       ...row,
       name: row.name.trim() || row.code.trim() || "Agent",
-      code: row.code.trim().toUpperCase() || row.id.slice(-6).toUpperCase(),
+      email: row.email.trim(),
+      phone: row.phone.trim(),
+      password: row.password.trim() || AFFILIATE_DEMO_PASSWORD,
+      code,
       commissionPct: Math.min(80, Math.max(0, Number(row.commissionPct) || 0)),
     };
     upsertAffiliate(next);
     setEditing(null);
+    setIsNew(false);
     notify(copy.saved);
   }
 
+  function openNew() {
+    const row = blankAffiliate();
+    row.code = generateAffiliateCode("AGENT");
+    setIsNew(true);
+    setEditing(row);
+  }
+
+  async function copyText(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      notify(b3.copied);
+    } catch {
+      notify(text);
+    }
+  }
+
   if (current) {
-    const { related, cut } = statsOf(current, orders);
+    const stats = affiliateStats(current, orders);
+    const link = promoHref(current.code, locale);
     return (
       <div className="space-y-5">
         <button type="button" className="text-sm text-blue-600" onClick={() => go("/admin/affiliates")}>
@@ -139,10 +230,10 @@ export function AdminAffiliatesView({ id }: { id?: string }) {
             <div>
               <h2 className="text-xl font-black">{current.name}</h2>
               <p className="mt-1 text-sm text-slate-500">
-                {current.code} · {current.channel} · {current.commissionPct}%
+                {current.code} · {current.email} · {current.phone} · {current.commissionPct}%
               </p>
             </div>
-            <button type="button" className="text-sm text-blue-600" onClick={() => setEditing(current)}>
+            <button type="button" className="text-sm text-blue-600" onClick={() => { setIsNew(false); setEditing(current); }}>
               {copy.edit}
             </button>
           </div>
@@ -151,32 +242,81 @@ export function AdminAffiliatesView({ id }: { id?: string }) {
               <p className="text-xs tracking-wide text-slate-500 uppercase">{copy.info}</p>
               <p className="mt-2 text-sm leading-6 text-slate-700">{current.note || "—"}</p>
               <p className="mt-3 text-xs text-slate-500">{copy.link}</p>
-              <a className="mt-1 block break-all text-sm text-blue-600" href={promoHref(current.code)}>
-                {promoHref(current.code)}
+              <a className="mt-1 block break-all text-sm text-blue-600" href={link}>
+                {link}
               </a>
+              <button type="button" className="mt-2 text-xs text-blue-600" onClick={() => copyText(link)}>
+                {b3.copyLink}
+              </button>
             </article>
             <article className="rounded-xl border border-slate-100 bg-slate-50 p-4">
               <p className="text-xs tracking-wide text-slate-500 uppercase">{copy.fees}</p>
-              <p className="mt-2 text-3xl font-black">{formatYenShort(cut)}</p>
+              <p className="mt-2 text-3xl font-black">{formatYenShort(stats.cut)}</p>
               <p className="mt-1 text-sm text-slate-500">
-                {related.length} {copy.orders} · {current.commissionPct}%
+                {stats.orderCount} {copy.orders} · {current.commissionPct}%
               </p>
             </article>
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-[160px_1fr]">
+            <div>
+              <p className="text-xs tracking-wide text-slate-500 uppercase">{b3.qr}</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="mt-2 size-40 rounded-xl border border-slate-200 bg-white p-2" src={qrImageSrc(link, 280)} alt={current.code} />
+              <button type="button" className="mt-2 text-xs text-blue-600" onClick={() => downloadQrPng(current.code, link)}>
+                {b3.downloadQr}
+              </button>
+            </div>
+            <div>
+              <p className="text-xs tracking-wide text-slate-500 uppercase">{b3.posters}</p>
+              <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                {POSTER_TEMPLATES.map((tpl) => (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-left text-sm hover:border-blue-400"
+                    onClick={() =>
+                      downloadAffiliatePoster({
+                        template: tpl,
+                        name: current.name,
+                        code: current.code,
+                        link,
+                        cut: current.commissionPct,
+                      })
+                    }
+                  >
+                    <span className="block font-semibold">{posterName(locale, tpl.id)}</span>
+                    <span className="mt-1 block text-xs text-slate-500">{tpl.hint}</span>
+                    <span className="mt-2 block text-xs text-blue-600">{b3.posterDl}</span>
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                disabled
+                className="mt-3 w-full cursor-not-allowed rounded-xl border border-dashed border-slate-200 px-3 py-2 text-sm text-slate-400"
+              >
+                {b3.posterCustom}
+              </button>
+              <p className="mt-1 text-xs leading-5 text-slate-400">{b3.posterCustomHint}</p>
+            </div>
           </div>
         </section>
         <section className="rounded-2xl border border-slate-200 bg-white p-5">
           <h3 className="font-black">{copy.orders}</h3>
-          {related.length === 0 ? (
+          {stats.related.length === 0 ? (
             <p className="mt-3 text-sm text-slate-500">{copy.empty}</p>
           ) : (
             <ul className="mt-3 divide-y divide-slate-100">
-              {related.map((order) => (
+              {stats.related.map((order) => (
                 <li key={order.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
                   <span>
                     {order.date} · {order.customer} · {order.id}
                   </span>
                   <span className="font-semibold">
-                    {formatYenShort(order.totalJpy)} → {formatYenShort((order.totalJpy * current.commissionPct) / 100)}
+                    {formatYenShort(order.totalJpy)}
+                    {order.status === "completed"
+                      ? ` → ${formatYenShort((order.totalJpy * current.commissionPct) / 100)}`
+                      : ""}
                   </span>
                 </li>
               ))}
@@ -186,9 +326,11 @@ export function AdminAffiliatesView({ id }: { id?: string }) {
         {editing ? (
           <AffiliateEditor
             copy={copy}
+            b3={b3}
             value={editing}
+            isNew={isNew}
             channels={channelOptions}
-            onClose={() => setEditing(null)}
+            onClose={() => { setEditing(null); setIsNew(false); }}
             onSave={save}
             onChange={setEditing}
           />
@@ -199,65 +341,105 @@ export function AdminAffiliatesView({ id }: { id?: string }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <button type="button" className="cta-btn" onClick={() => setEditing(blankAffiliate())}>
-          {copy.add}
-        </button>
-      </div>
+      <section className="order-toolbar">
+        <div className="order-toolbar-main">
+          <label className="order-toolbar-search">
+            <Search />
+            <input
+              type="search"
+              value={query}
+              placeholder={b3.searchAffiliate}
+              aria-label={b3.searchAffiliate}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </label>
+          <select
+            className="order-toolbar-status"
+            aria-label={copy.status}
+            value={status}
+            onChange={(event) => setStatus(event.target.value as StatusFilter)}
+          >
+            <option value="all">{b3.statusAll}</option>
+            <option value="active">{copy.on}</option>
+            <option value="paused">{copy.off}</option>
+          </select>
+          <button type="button" className="cta-btn order-toolbar-add" onClick={openNew}>
+            <Plus className="size-4" />
+            {copy.add}
+          </button>
+        </div>
+      </section>
       <div className="hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white md:block">
         <table className="admin-table">
           <thead>
             <tr>
-              <th>{copy.name}</th>
-              <th>{copy.code}</th>
-              <th>{copy.channel}</th>
-              <th>{copy.pct}</th>
-              <th>{copy.orders}</th>
-              <th>{copy.cut}</th>
-              <th>{copy.status}</th>
-              <th />
+              {([
+                ["name", copy.name],
+                ["email", b3.email],
+                ["phone", b3.phone],
+                ["code", copy.code],
+                ["pct", copy.pct],
+                ["orders", copy.orders],
+                ["cut", b3.commission],
+                ["status", copy.status],
+              ] as [SortKey, string][]).map(([key, label]) => (
+                <th key={key}>
+                  <button type="button" className="inline-flex items-center gap-1 font-semibold" onClick={() => toggleSort(key)}>
+                    {label} {sortMark(key)}
+                  </button>
+                </th>
+              ))}
+              <th>{copy.open}</th>
             </tr>
           </thead>
           <tbody>
-            {affiliates.map((item) => {
-              const { related, cut } = statsOf(item, orders);
-              return (
-                <tr key={item.id} className={item.status === "active" ? "" : "opacity-50"}>
-                  <td>{item.name}</td>
-                  <td className="font-mono text-xs">{item.code}</td>
-                  <td>{item.channel}</td>
-                  <td>{item.commissionPct}%</td>
-                  <td>{related.length}</td>
-                  <td>{formatYenShort(cut)}</td>
-                  <td>{item.status === "active" ? copy.on : copy.off}</td>
-                  <td className="space-x-2">
-                    <button type="button" className="text-xs text-blue-600" onClick={() => setEditing(item)}>
-                      {copy.edit}
-                    </button>
-                    <button type="button" className="text-xs text-sky-600" onClick={() => go(`/admin/affiliates/${item.id}`)}>
-                      {copy.open}
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="py-8 text-center text-slate-500">{b3.emptyList}</td>
+              </tr>
+            ) : (
+              rows.map((item) => {
+                const stats = affiliateStats(item, orders);
+                return (
+                  <tr key={item.id} className={item.status === "active" ? "" : "opacity-50"}>
+                    <td>{item.name}</td>
+                    <td className="text-sm">{item.email}</td>
+                    <td className="text-sm">{item.phone || "—"}</td>
+                    <td className="font-mono text-xs">{item.code}</td>
+                    <td>{item.commissionPct}%</td>
+                    <td>{stats.orderCount}</td>
+                    <td>{formatYenShort(stats.cut)}</td>
+                    <td>{item.status === "active" ? copy.on : copy.off}</td>
+                    <td className="space-x-2">
+                      <button type="button" className="text-xs text-blue-600" onClick={() => { setIsNew(false); setEditing(item); }}>
+                        {copy.edit}
+                      </button>
+                      <button type="button" className="text-xs text-sky-600" onClick={() => go(`/admin/affiliates/${item.id}`)}>
+                        {copy.open}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
       <div className="grid gap-3 md:hidden">
-        {affiliates.map((item) => {
-          const { related, cut } = statsOf(item, orders);
+        {rows.length === 0 ? <p className="text-sm text-slate-500">{b3.emptyList}</p> : null}
+        {rows.map((item) => {
+          const stats = affiliateStats(item, orders);
           return (
             <article key={item.id} className={cn("rounded-2xl border border-slate-200 bg-white p-4", item.status !== "active" && "opacity-60")}>
               <p className="font-black">{item.name}</p>
               <p className="text-sm text-slate-500">
-                {item.code} · {item.channel} · {item.commissionPct}%
+                {item.email} · {item.phone || "—"}
               </p>
               <p className="mt-1 text-sm">
-                {related.length} {copy.orders} · {formatYenShort(cut)}
+                {item.code} · {item.commissionPct}% · {stats.orderCount} {copy.orders} · {formatYenShort(stats.cut)}
               </p>
               <div className="mt-3 flex gap-3">
-                <button type="button" className="text-xs text-blue-600" onClick={() => setEditing(item)}>
+                <button type="button" className="text-xs text-blue-600" onClick={() => { setIsNew(false); setEditing(item); }}>
                   {copy.edit}
                 </button>
                 <button type="button" className="text-xs text-sky-600" onClick={() => go(`/admin/affiliates/${item.id}`)}>
@@ -271,9 +453,11 @@ export function AdminAffiliatesView({ id }: { id?: string }) {
       {editing ? (
         <AffiliateEditor
           copy={copy}
+          b3={b3}
           value={editing}
+          isNew={isNew}
           channels={channelOptions}
-          onClose={() => setEditing(null)}
+          onClose={() => { setEditing(null); setIsNew(false); }}
           onSave={save}
           onChange={setEditing}
         />
@@ -284,55 +468,82 @@ export function AdminAffiliatesView({ id }: { id?: string }) {
 
 function AffiliateEditor({
   copy,
+  b3,
   value,
+  isNew,
   channels,
   onClose,
   onSave,
   onChange,
 }: {
   copy: ReturnType<typeof copyOf>;
+  b3: ReturnType<typeof b3Copy>;
   value: MockAffiliate;
+  isNew: boolean;
   channels: string[];
   onClose: () => void;
   onSave: (row: MockAffiliate) => void;
   onChange: (row: MockAffiliate) => void;
 }) {
   return (
-    <Modal open title={value.name || copy.add} onClose={onClose} footer={
-      <button type="button" className="cta-btn" onClick={() => onSave(value)}>
-        {copy.save}
-      </button>
-    }>
-      <label className="grid gap-1 text-sm text-white">
+    <Modal
+      open
+      title={value.name || copy.add}
+      onClose={onClose}
+      footer={
+        <button type="button" className="cta-btn" onClick={() => onSave(value)}>
+          {copy.save}
+        </button>
+      }
+    >
+      <label className="admin-field">
         {copy.name}
-        <input className="rounded-lg border border-white/15 bg-black/30 px-3 py-2" value={value.name} onChange={(event) => onChange({ ...value, name: event.target.value })} />
+        <input
+          className="admin-input"
+          value={value.name}
+          onChange={(event) => onChange({ ...value, name: event.target.value })}
+        />
       </label>
-      <label className="grid gap-1 text-sm text-white">
+      <label className="admin-field">
+        {b3.email}
+        <input className="admin-input" type="email" value={value.email} onChange={(event) => onChange({ ...value, email: event.target.value })} />
+      </label>
+      <label className="admin-field">
+        {b3.phone}
+        <input className="admin-input" value={value.phone} onChange={(event) => onChange({ ...value, phone: event.target.value })} />
+      </label>
+      <label className="admin-field">
+        {b3.password}
+        <input className="admin-input" value={value.password} onChange={(event) => onChange({ ...value, password: event.target.value })} />
+        <span className="text-xs font-normal text-slate-400">{b3.passwordHint}</span>
+      </label>
+      <label className="admin-field">
         {copy.code}
-        <input className="rounded-lg border border-white/15 bg-black/30 px-3 py-2" value={value.code} onChange={(event) => onChange({ ...value, code: event.target.value })} />
+        <input className="admin-input font-mono uppercase" value={value.code} readOnly={isNew} onChange={(event) => onChange({ ...value, code: event.target.value.toUpperCase() })} />
+        {isNew ? <span className="text-xs font-normal text-slate-400">{b3.autoCode}</span> : null}
       </label>
-      <label className="grid gap-1 text-sm text-white">
+      <label className="admin-field">
         {copy.channel}
-        <select className="rounded-lg border border-white/15 bg-black/30 px-3 py-2" value={value.channel} onChange={(event) => onChange({ ...value, channel: event.target.value })}>
+        <select className="admin-input" value={value.channel} onChange={(event) => onChange({ ...value, channel: event.target.value })}>
           {channels.map((item) => (
             <option key={item} value={item}>{item}</option>
           ))}
         </select>
       </label>
-      <label className="grid gap-1 text-sm text-white">
+      <label className="admin-field">
         {copy.pct}
-        <input type="number" min={0} max={80} className="rounded-lg border border-white/15 bg-black/30 px-3 py-2" value={value.commissionPct} onChange={(event) => onChange({ ...value, commissionPct: Number(event.target.value) })} />
+        <input type="number" min={0} max={80} className="admin-input" value={value.commissionPct} onChange={(event) => onChange({ ...value, commissionPct: Number(event.target.value) })} />
       </label>
-      <label className="grid gap-1 text-sm text-white">
+      <label className="admin-field">
         {copy.status}
-        <select className="rounded-lg border border-white/15 bg-black/30 px-3 py-2" value={value.status} onChange={(event) => onChange({ ...value, status: event.target.value as MockAffiliate["status"] })}>
+        <select className="admin-input" value={value.status} onChange={(event) => onChange({ ...value, status: event.target.value as MockAffiliate["status"] })}>
           <option value="active">{copy.on}</option>
           <option value="paused">{copy.off}</option>
         </select>
       </label>
-      <label className="grid gap-1 text-sm text-white">
+      <label className="admin-field">
         {copy.note}
-        <textarea className="min-h-24 rounded-lg border border-white/15 bg-black/30 px-3 py-2" value={value.note} onChange={(event) => onChange({ ...value, note: event.target.value })} />
+        <textarea className="admin-input min-h-24" value={value.note} onChange={(event) => onChange({ ...value, note: event.target.value })} />
       </label>
     </Modal>
   );

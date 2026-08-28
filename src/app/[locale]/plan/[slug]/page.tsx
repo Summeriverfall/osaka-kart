@@ -26,7 +26,7 @@ export default async function PlanDetailPage({ params }: PageProps) {
   if (!plan) notFound();
 
   return (
-    <div className="min-h-dvh bg-[#0A0A0F] pt-16">
+    <div className="ok-page ok-page-pad">
       <SiteNav />
       <PlanDetailView plan={plan} plans={plans} addons={addons} locale={locale} />
       <SiteFooter />

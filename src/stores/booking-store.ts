@@ -19,6 +19,7 @@ export type BookingDraft = {
   email: string;
   phone: string;
   licenseOk: boolean;
+  affiliateCode: string;
 };
 
 const emptyDraft: BookingDraft = {
@@ -31,6 +32,7 @@ const emptyDraft: BookingDraft = {
   email: "",
   phone: "",
   licenseOk: false,
+  affiliateCode: "",
 };
 
 type BookingState = BookingDraft & {
@@ -136,6 +138,7 @@ export const useBookingStore = create<BookingState>()(
       reset: () =>
         set({
           ...emptyDraft,
+          affiliateCode: get().affiliateCode,
           planId: null,
           planName: "",
           basePrice: 0,

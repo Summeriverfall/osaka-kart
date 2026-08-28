@@ -23,7 +23,9 @@ import { CountUp } from "@/components/admin/count-up";
 import { useStoreData } from "@/lib/use-store-data";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
+import { affiliateReportRows } from "@/lib/affiliate-stats";
 import { b2Copy } from "@/lib/admin/b2-copy";
+import { b3Copy } from "@/lib/admin/b3-copy";
 import { cn } from "@/lib/utils";
 
 const tooltipStyle = {
@@ -84,12 +86,14 @@ export function AdminReportsView() {
   const locale = useLocale();
   const copy = adminCopy(locale);
   const b2 = b2Copy(locale);
+  const b3 = b3Copy(locale);
   const notify = useToastStore((state) => state.notify);
   const today = todayIsoDate();
   const [kind, setKind] = useState<RangeKind>("month");
   const [tab, setTab] = useState<"revenue" | "affiliates">("revenue");
   const [custom, setCustom] = useState(() => ({ from: addDaysIso(today, -13), to: today }));
   const { orders } = useStoreData();
+  const affiliates = useOpsStore((state) => state.affiliates);
   const channels = useOpsStore((state) => state.settings.channels);
   const cuts = useMemo(() => {
     const map: Record<string, number> = {};
@@ -98,6 +102,10 @@ export function AdminReportsView() {
   }, [channels]);
   const range = useMemo(() => resolveReportRange(kind, today, custom), [kind, today, custom]);
   const report = useMemo(() => reportsFromOrders(orders, range, locale, cuts), [orders, range, locale, cuts]);
+  const affiliateRows = useMemo(() => {
+    const scoped = orders.filter((item) => item.date >= range.from && item.date <= range.to);
+    return affiliateReportRows(affiliates, scoped);
+  }, [orders, affiliates, range]);
   const exportOk = () => notify(copy.reports.exportOk);
   const totalRev = report.plans.reduce((sum, item) => sum + item.revenue, 0) || 1;
   const narrow = useNarrow();
@@ -141,33 +149,6 @@ export function AdminReportsView() {
         </span>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          className={cn("rounded-full border px-3 py-1.5 text-sm", tab === "revenue" ? "border-blue-600 bg-blue-600 text-white" : "border-slate-200 text-slate-500")}
-          onClick={() => setTab("revenue")}
-        >
-          {copy.reports.revenue}
-        </button>
-        <button
-          type="button"
-          className={cn("rounded-full border px-3 py-1.5 text-sm", tab === "affiliates" ? "border-blue-600 bg-blue-600 text-white" : "border-slate-200 text-slate-500")}
-          onClick={() => setTab("affiliates")}
-        >
-          {b2.affiliateTab}
-        </button>
-      </div>
-
-      {tab === "affiliates" ? (
-        <section className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center">
-          <h2 className="font-black">{b2.affiliateTab}</h2>
-          <p className="mt-2 text-sm text-slate-500">{b2.affiliateTabHint}</p>
-        </section>
-      ) : null}
-
-      {tab === "revenue" ? (
-      <>
-
       {kind === "custom" ? (
         <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
           <label className="grid min-w-0 flex-[1_1_8rem] gap-1 text-xs text-slate-500">
@@ -194,6 +175,75 @@ export function AdminReportsView() {
           <p className="pb-2 text-xs text-slate-400">{copy.reports.customHint}</p>
         </div>
       ) : null}
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          className={cn("rounded-full border px-3 py-1.5 text-sm", tab === "revenue" ? "border-blue-600 bg-blue-600 text-white" : "border-slate-200 text-slate-500")}
+          onClick={() => setTab("revenue")}
+        >
+          {copy.reports.revenue}
+        </button>
+        <button
+          type="button"
+          className={cn("rounded-full border px-3 py-1.5 text-sm", tab === "affiliates" ? "border-blue-600 bg-blue-600 text-white" : "border-slate-200 text-slate-500")}
+          onClick={() => setTab("affiliates")}
+        >
+          {b2.affiliateTab}
+        </button>
+      </div>
+
+      {tab === "affiliates" ? (
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
+          <h2 className="font-black">{b2.affiliateTab}</h2>
+          <p className="mt-2 text-sm text-slate-500">{b3.affiliateTabHint}</p>
+          <div className="mt-4 hidden overflow-x-auto md:block">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>{copy.staff.name}</th>
+                  <th>{b3.reportOrders}</th>
+                  <th>{b3.reportAmount}</th>
+                  <th>{b3.reportCut}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {affiliateRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-slate-500">{b3.emptyList}</td>
+                  </tr>
+                ) : (
+                  affiliateRows.map((row) => (
+                    <tr key={row.affiliate.id}>
+                      <td>
+                        {row.affiliate.name}
+                        <span className="ml-2 text-xs text-slate-400">{row.affiliate.commissionPct}%</span>
+                      </td>
+                      <td>{row.orderCount}</td>
+                      <td>{formatYenShort(row.amount)}</td>
+                      <td className="font-semibold">{formatYenShort(row.cut)}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4 grid gap-3 md:hidden">
+            {affiliateRows.length === 0 ? <p className="text-sm text-slate-500">{b3.emptyList}</p> : null}
+            {affiliateRows.map((row) => (
+              <article key={row.affiliate.id} className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                <p className="font-black">{row.affiliate.name}</p>
+                <p className="mt-1 text-sm text-slate-500">
+                  {row.orderCount} · {formatYenShort(row.amount)} · {formatYenShort(row.cut)}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {tab === "revenue" ? (
+      <>
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {[

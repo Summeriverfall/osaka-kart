@@ -2,7 +2,6 @@
 
 import { useTranslations } from "next-intl";
 import { AcidRaceBook } from "@/components/landing/acid-race-book";
-import { AcidBar } from "@/components/landing/acid-bar";
 import { HtmlTheme } from "@/components/layout/html-theme";
 import { SiteFooter } from "@/components/site/site-footer";
 import { BookingForm } from "@/components/booking/booking-form";
@@ -23,22 +22,13 @@ export function BookingPageView({ plans, addons, locale, initialPlan }: BookingP
   const look = useSiteLook();
   const t = useTranslations("Booking");
   const cal = useTranslations("Calendar");
-  const nav = useTranslations("Nav");
-  const meet = useTranslations("Meet");
 
   if (look === "acid") {
     return (
-      <div className="acid-root acid-book-page" data-theme="acid" data-acid-palette={ACID_PALETTE}>
+      <div className="acid-root acid-book-page ok-page-pad" data-theme="acid" data-acid-palette={ACID_PALETTE}>
         <HtmlTheme theme="acid" acidPalette={ACID_PALETTE} />
         <span className="acid-rail" aria-hidden />
-        <AcidBar
-          access={meet("title")}
-          book={nav("calendar")}
-          plans={nav("plans")}
-          faq={nav("faq")}
-          home={nav("home")}
-          away
-        />
+        <SiteNav look="acid" />
         <main className="acid-book-main">
           <AcidRaceBook
             mode="page"
@@ -57,22 +47,24 @@ export function BookingPageView({ plans, addons, locale, initialPlan }: BookingP
   }
 
   return (
-    <div className="min-h-dvh bg-[#0A0A0F] pt-16">
+    <div className="ok-page ok-page-pad">
       <SiteNav />
-      <main className="book-main mx-auto max-w-5xl px-4 py-16">
-        <p className="book-kicker">{t("kicker")}</p>
-        <h1 className="mt-2 text-4xl font-black">{t("title")}</h1>
-        <p className="book-lead mt-3">{t("lead")}</p>
-        <BookingPageContact />
-        <div className="book-page-grid">
-          <aside className="book-aside">
-            <article className="book-note">
+      <main className="ok-shell">
+        <header className="ok-page-head">
+          <p className="ok-kicker">{t("kicker")}</p>
+          <h1>{t("title")}</h1>
+          <p className="ok-page-lead">{t("lead")}</p>
+          <BookingPageContact />
+        </header>
+        <div className="ok-book-layout">
+          <BookingForm plans={plans} addons={addons} locale={locale} initialPlan={initialPlan} />
+          <aside className="ok-book-aside">
+            <article className="ok-panel">
               <h2>{cal("noteTitle")}</h2>
               <p>{cal("noteBody")}</p>
             </article>
             <BookingPageCallNote />
           </aside>
-          <BookingForm plans={plans} addons={addons} locale={locale} initialPlan={initialPlan} />
         </div>
       </main>
       <SiteFooter />

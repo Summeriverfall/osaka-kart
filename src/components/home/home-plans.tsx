@@ -12,56 +12,52 @@ import type { PlanWithTranslation } from "@/lib/plans/types";
 type Props = {
   plans: PlanWithTranslation[];
   locale: string;
+  sectionId?: string;
+  kicker?: string;
+  heading?: boolean;
 };
 
-export function HomePlans({ plans: seedPlans, locale }: Props) {
+export function HomePlans({ plans: seedPlans, locale, sectionId = "plans", kicker, heading = true }: Props) {
   const t = useTranslations("PlansHome");
   const planT = useTranslations("Plan");
   const plans = useLivePlans(seedPlans, locale);
 
+  const grid = (
+    <div className="ok-pkgs">
+      {plans.map((plan) => {
+        const href = (PLAN_SLUGS as readonly string[]).includes(plan.slug)
+          ? withSlash(`/plan/${plan.slug}`)
+          : withSlash(`/booking?plan=${plan.slug}`);
+        return (
+          <article key={plan.id} className="ok-pkg">
+            <img src={coverOf(plan)} alt={plan.translation.name} />
+            <div className="ok-pkg-body">
+              <h3>{plan.translation.name}</h3>
+              <p className="ok-pkg-price">
+                {formatJpy(plan.base_price_jpy, locale)}
+                <span>{planT("perPerson")}</span>
+              </p>
+              <p className="line-clamp-3">{plan.translation.description}</p>
+              <Link href={href} className="ok-btn ok-btn-sm">
+                {t("select")}
+              </Link>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
+
+  if (!heading) return grid;
+
   return (
-    <section id="plans" className="bg-[#0A0A0F] py-20">
-      <div className="mx-auto max-w-6xl px-4">
-        <h2 className="mb-8 text-3xl font-black md:text-4xl">{t("title")}</h2>
-      </div>
-      <div className="flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-4 md:px-[max(1rem,calc((100vw-72rem)/2+1rem))]">
-        {plans.map((plan) => {
-          const href = (PLAN_SLUGS as readonly string[]).includes(plan.slug)
-            ? withSlash(`/plan/${plan.slug}`)
-            : withSlash(`/booking?plan=${plan.slug}`);
-          return (
-            <article
-              key={plan.id}
-              className="w-80 flex-shrink-0 snap-center overflow-hidden rounded-2xl border border-white/10 bg-[#12121A]"
-            >
-              <div className="aspect-video overflow-hidden bg-[#12121A]">
-                <img
-                  src={coverOf(plan)}
-                  alt={plan.translation.name}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <div className="p-5">
-                <h3 className="text-xl font-black">{plan.translation.name}</h3>
-                <p className="mt-2 text-2xl font-black">
-                  {formatJpy(plan.base_price_jpy, locale)}
-                  <span className="ml-1 text-sm font-medium text-gray-400">
-                    {planT("perPerson")}
-                  </span>
-                </p>
-                <p className="mt-3 line-clamp-3 text-sm text-gray-400">
-                  {plan.translation.description}
-                </p>
-                <Link
-                  href={href}
-                  className="cta-btn mt-5 inline-flex w-full px-4 py-2.5 text-center text-sm"
-                >
-                  {t("select")}
-                </Link>
-              </div>
-            </article>
-          );
-        })}
+    <section id={sectionId} className="ok-sec">
+      <div className="ok-sec-wide">
+        <header className="ok-sec-head">
+          {kicker ? <p className="ok-kicker">{kicker}</p> : null}
+          <h2>{t("title")}</h2>
+        </header>
+        {grid}
       </div>
     </section>
   );

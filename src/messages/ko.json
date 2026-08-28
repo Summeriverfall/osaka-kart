@@ -7,11 +7,14 @@
     "home": "홈",
     "plans": "플랜",
     "faq": "FAQ",
-    "videos": "현장",
+    "videos": "영상",
     "experience": "영상",
     "booking": "지금 예약",
     "calendar": "예약",
-    "menu": "메뉴"
+    "menu": "메뉴",
+    "reviews": "후기",
+    "help": "도움말",
+    "viewPackages": "플랜 보기"
   },
   "Gateway": {
     "kicker": "오사카 합법 도로 카트",
@@ -31,6 +34,10 @@
     "subtitle": "밤의 난바에서 출발해 대열을 따라 도톤보리 불빛 속으로. 헬멧, 슈트, 보험은 요금에 포함. 코스와 날짜만 고르면 오늘 밤 바로 달릴 수 있다.",
     "cta": "플랜과 요금 보기",
     "rating": "4.9 (후기 2,000+)",
+    "ridersCount": "2,000+",
+    "ridersLabel": "라이더",
+    "ratingScore": "4.9",
+    "ratingLabel": "평점",
     "scroll": "아래로"
   },
   "PlansHome": {
@@ -111,7 +118,15 @@
     "social": "팔로우",
     "phone": "전화",
     "hours": "영업시간",
-    "email": "이메일"
+    "email": "이메일",
+    "blurb": "오사카 네온 거리를 합법 카트로. 코스·장비·집합 장소는 그대로. 난바에서 출발.",
+    "license": "면허 요건",
+    "safety": "안전 안내",
+    "contact": "문의",
+    "map": "지도 보기",
+    "looks": "다른 룩",
+    "privacy": "개인정보",
+    "terms": "이용약관"
   },
   "Help": {
     "title": "도움말",
@@ -196,7 +211,17 @@
     "whatsapp": "WhatsApp",
     "addonAdd": "패키지에 추가",
     "addonOn": "추가됨",
-    "full": "마감"
+    "full": "마감",
+    "stepPlan": "패키지",
+    "stepDate": "날짜",
+    "stepTime": "시간",
+    "stepInfo": "정보",
+    "next": "다음 →",
+    "changePlan": "패키지 변경",
+    "passport": "여권 번호",
+    "nationality": "국적",
+    "request": "요청 사항",
+    "summary": "예약 요약"
   },
   "Press": {
     "title": "뉴스 보도",

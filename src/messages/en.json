@@ -5,13 +5,16 @@
   },
   "Nav": {
     "home": "Home",
-    "plans": "Plans",
+    "plans": "Packages",
     "faq": "FAQ",
-    "videos": "Gallery",
+    "videos": "Videos",
     "experience": "Videos",
-    "booking": "Book now",
+    "booking": "Book Now",
     "calendar": "Book",
-    "menu": "Menu"
+    "menu": "Menu",
+    "reviews": "Reviews",
+    "help": "Help",
+    "viewPackages": "View Packages"
   },
   "Gateway": {
     "kicker": "Street-legal karting in Osaka",
@@ -31,6 +34,10 @@
     "subtitle": "Roll out of Namba at night and follow the convoy into Dotonbori's lights. Helmet, suit, and insurance are already in the price — pick a plan and a date, and you're on the street tonight.",
     "cta": "See plans and prices",
     "rating": "4.9 (2,000+ reviews)",
+    "ridersCount": "2,000+",
+    "ridersLabel": "Happy Riders",
+    "ratingScore": "4.9",
+    "ratingLabel": "Rating",
     "scroll": "Scroll"
   },
   "PlansHome": {
@@ -101,9 +108,9 @@
     "walk": "About 5 min walk from Namba Station."
   },
   "CtaBand": {
-    "title": "Ready to Drive?",
-    "subtitle": "Pick a plan, lock a slot, and take the neon streets.",
-    "button": "BOOK YOUR RIDE"
+    "title": "Ready to Go?",
+    "subtitle": "Limited spots during peak season — book your seat now",
+    "button": "Book Now →"
   },
   "Footer": {
     "copyright": "© 2026 Future Kart Osaka. All rights reserved.",
@@ -111,7 +118,15 @@
     "social": "Follow",
     "phone": "Phone",
     "hours": "Hours",
-    "email": "Email"
+    "email": "Email",
+    "blurb": "Street-legal karts through Osaka's neon. Same course, gear, and meeting point — book a slot and roll out of Namba.",
+    "license": "License Requirements",
+    "safety": "Safety Info",
+    "contact": "Contact Us",
+    "map": "View on Map",
+    "looks": "Other looks",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
   },
   "Help": {
     "title": "Help",
@@ -196,7 +211,17 @@
     "whatsapp": "WhatsApp",
     "addonAdd": "Add to plan",
     "addonOn": "Added",
-    "full": "Full"
+    "full": "Full",
+    "stepPlan": "Package",
+    "stepDate": "Date",
+    "stepTime": "Time",
+    "stepInfo": "Details",
+    "next": "Next →",
+    "changePlan": "Change package",
+    "passport": "ID / passport no.",
+    "nationality": "Nationality",
+    "request": "Special requests",
+    "summary": "Order summary"
   },
   "Press": {
     "title": "In the news",

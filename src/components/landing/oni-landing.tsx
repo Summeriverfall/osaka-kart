@@ -1,10 +1,10 @@
-import { SiteNav } from "@/components/landing/site-nav";
 import { PlanShowcase } from "@/components/landing/plan-showcase";
 import { FloatBook } from "@/components/landing/float-book";
 import { LandingCommerce, LandingGallery } from "@/components/landing/landing-commerce";
 import { OniStreet } from "@/components/landing/oni-street";
 import { HtmlTheme } from "@/components/layout/html-theme";
 import { SiteFooter } from "@/components/site/site-footer";
+import { SiteNav } from "@/components/site/site-nav";
 import type { LandingCopy } from "@/components/landing/copy";
 import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 
@@ -19,14 +19,7 @@ export function OniLanding({ plans, addons, locale, copy }: Props) {
   return (
     <div className="landing-root oni-root" data-theme="oni" id="top">
       <HtmlTheme theme="oni" />
-      <SiteNav
-        theme="oni"
-        experience={copy.nav.experience}
-        plans={copy.nav.plans}
-        faq={copy.nav.faq}
-        calendar={copy.nav.calendar}
-        booking={copy.nav.booking}
-      />
+      <SiteNav look="oni" />
       <OniStreet copy={copy} />
       <LandingGallery copy={copy} />
       <section id="plans" className="oni-section">

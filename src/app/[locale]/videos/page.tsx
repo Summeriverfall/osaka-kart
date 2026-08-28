@@ -11,7 +11,7 @@ export default async function VideosPage({ params }: PageProps) {
   setRequestLocale(locale);
 
   return (
-    <div className="min-h-dvh bg-[#0A0A0F] pt-16">
+    <div className="ok-page ok-page-pad">
       <SiteNav />
       <HomeVideos />
       <SiteFooter />

@@ -19,6 +19,8 @@ import { SiteNav } from "@/components/site/site-nav";
 import { enabledPayMethods } from "@/lib/live-catalog";
 import { cn } from "@/lib/utils";
 import { sendNewBookingMail } from "@/lib/ops-notify";
+import { readStoredPromoCode } from "@/lib/promo";
+import { useBookingStore } from "@/stores/booking-store";
 import { useOpsStore, scheduleOpsRehydrate } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 
@@ -74,6 +76,7 @@ export function PayView({ locale }: PayViewProps) {
       note: result.note,
       totalJpy: result.totalJpy,
       storeId: result.storeId,
+      affiliateCode: result.affiliateCode || useBookingStore.getState().affiliateCode || readStoredPromoCode(),
     });
     const next = { ...result, paid: true, synced: committed.ok };
     sessionStorage.setItem(BOOKING_RESULT_KEY, JSON.stringify(next));
@@ -102,9 +105,9 @@ export function PayView({ locale }: PayViewProps) {
   }
 
   return (
-    <div className="pay-page">
+    <div className="ok-page pay-page">
       <SiteNav />
-      <main className="pay-main">
+      <main className="ok-shell pay-main">
         <p className="pay-kicker">{t("kicker")}</p>
         <h1>{t("title")}</h1>
         <p className="pay-lead">{t("lead")}</p>
@@ -112,7 +115,7 @@ export function PayView({ locale }: PayViewProps) {
         {!result ? (
           <div className="pay-empty">
             <p>{t("empty")}</p>
-            <Link href={siteHome(look, "book")} className="cta-btn cta-btn-solid">
+            <Link href={withSlash("/booking")} className="ok-btn">
               {t("book")}
             </Link>
           </div>

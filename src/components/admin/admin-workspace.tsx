@@ -21,6 +21,7 @@ import { AdminCmsView } from "@/components/admin/admin-cms";
 import { AdminAffiliatesView } from "@/components/admin/admin-affiliates";
 import { ADMIN_PAGE_META, adminTabFromLocation, BOOKING_HOME, CONTENT_HOME, normalizeAdminTab, REPORT_HOME, SETTINGS_HOME } from "@/lib/admin/nav";
 import { b2Copy } from "@/lib/admin/b2-copy";
+import { b3Copy } from "@/lib/admin/b3-copy";
 import { adminCopy } from "@/lib/admin/copy";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { useLocale } from "next-intl";
@@ -43,6 +44,14 @@ function metaFor(tab: string, locale: string) {
   if (tab === "/admin/plans") {
     const page = copy.pages[tab] ?? ADMIN_PAGE_META[tab];
     return { title: page?.title ?? copy.nav[tab] ?? "套餐管理", lead: b2.plansLead };
+  }
+  if (tab === "/admin/settings/channels") {
+    const page = copy.pages[tab] ?? ADMIN_PAGE_META[tab];
+    return { title: page?.title ?? copy.nav[tab] ?? "渠道设置", lead: b3Copy(locale).channelsLead };
+  }
+  if (tab === "/admin/affiliates" || (tab.startsWith("/admin/affiliates/") && tab !== "/admin/affiliates")) {
+    const page = copy.pages["/admin/affiliates"] ?? ADMIN_PAGE_META["/admin/affiliates"];
+    return { title: page?.title ?? copy.nav["/admin/affiliates"] ?? "推广代理", lead: b3Copy(locale).affiliatesLead };
   }
   return copy.pages[tab] ?? copy.pages["/admin/dashboard"] ?? ADMIN_PAGE_META[tab] ?? ADMIN_PAGE_META["/admin/dashboard"];
 }

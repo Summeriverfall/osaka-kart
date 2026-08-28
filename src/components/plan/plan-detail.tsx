@@ -26,13 +26,13 @@ export async function PlanDetailView({ plan, plans, addons, locale }: PlanDetail
 
   return (
     <article>
-      <section className="relative min-h-[42vh] overflow-hidden">
+      <section className="relative min-h-[52vh] overflow-hidden">
         <LivePlanCover
           plan={plan}
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0F] via-[#0A0A0F]/55 to-[#0A0A0F]/20" />
-        <div className="relative z-10 mx-auto flex min-h-[42vh] w-full max-w-6xl items-end px-4 pb-10 text-white">
+        <div className="relative z-10 mx-auto flex min-h-[52vh] w-full max-w-[80rem] items-end px-[var(--ok-gutter,2rem)] pb-12 text-white">
           <div>
             <p className="mb-3 text-xs tracking-[0.2em] text-neon-cyan uppercase">
               {t("eyebrow")}
@@ -42,8 +42,8 @@ export async function PlanDetailView({ plan, plans, addons, locale }: PlanDetail
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 lg:grid-cols-3">
-        <div className="space-y-12 lg:col-span-2">
+      <div className="mx-auto grid max-w-[80rem] gap-12 px-[var(--ok-gutter,2rem)] py-20 lg:grid-cols-12">
+        <div className="space-y-14 lg:col-span-8">
           <section>
             <p className="text-base leading-relaxed text-[#F1F1F5]/90">
               <LivePlanDescription plan={plan} />
@@ -133,7 +133,7 @@ export async function PlanDetailView({ plan, plans, addons, locale }: PlanDetail
           )}
         </div>
 
-        <aside>
+        <aside className="lg:col-span-4">
           <PlanSummaryCard plan={plan} addons={addons} locale={locale} />
         </aside>
       </div>

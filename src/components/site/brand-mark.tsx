@@ -6,7 +6,7 @@ import { SITE_BRAND, SITE_BRAND_SHORT } from "@/lib/brand";
 import { asset } from "@/lib/asset";
 import { siteHome } from "@/lib/paths";
 import { useSiteLook } from "@/lib/site-look";
-import type { SiteTheme } from "@/lib/visual-theme";
+import { isSiteTheme, type SiteTheme } from "@/lib/visual-theme";
 import { cn } from "@/lib/utils";
 
 export type BrandMarkProps = {
@@ -27,7 +27,7 @@ export function BrandMark({ className, look, name, short, suffix, logo }: BrandM
   const pathname = useAppPathname();
   const current = useSiteLook(look);
   const segment = pathname.split("/").filter(Boolean)[0];
-  const href = !segment ? "/" : siteHome(current);
+  const href = isSiteTheme(segment) ? siteHome(current) : "/";
   const displayName = name?.trim() || SITE_BRAND;
   const displayShort = short?.trim() || SITE_BRAND_SHORT;
   const displaySuffix = suffix?.trim() || "Osaka";

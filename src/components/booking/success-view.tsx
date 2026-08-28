@@ -33,9 +33,9 @@ export function SuccessView({ locale }: SuccessViewProps) {
   }, []);
 
   return (
-    <div className="min-h-dvh bg-[#0A0A0F] pt-16">
+    <div className="ok-page ok-page-pad">
       <SiteNav />
-      <main className="mx-auto max-w-xl px-4 py-20">
+      <main className="ok-shell ok-success">
         <p className="text-xs tracking-[0.2em] text-neon-pink uppercase">
           {result?.paid ? t("paidKicker") : t("kicker")}
         </p>
@@ -65,13 +65,13 @@ export function SuccessView({ locale }: SuccessViewProps) {
         )}
         <div className="mt-8 flex flex-col gap-3">
           {result && !result.paid ? (
-            <Link href={withSlash("/pay")} className="cta-btn inline-flex px-6 py-3">
+            <Link href={withSlash("/pay")} className="ok-btn">
               {t("pay")}
             </Link>
           ) : null}
           <a
             href={appPageHref(siteHome(look), locale)}
-            className={result && !result.paid ? "cta-btn cta-btn-ghost inline-flex px-6 py-3" : "cta-btn mt-8 inline-flex px-6 py-3"}
+            className={result && !result.paid ? "ok-btn-ghost" : "ok-btn"}
             suppressHydrationWarning
           >
             {t("back")}

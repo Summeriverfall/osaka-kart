@@ -14,12 +14,15 @@ export default async function PlanListPage({ params }: PageProps) {
   const plans = await getPlans(locale);
 
   return (
-    <div className="min-h-dvh bg-[#0A0A0F] pt-16">
+    <div className="ok-page ok-page-pad">
       <SiteNav />
-      <main className="mx-auto max-w-6xl px-4 py-16">
-        <h1 className="text-4xl font-black">{t("title")}</h1>
-        <p className="mt-2 text-gray-400">{t("lead")}</p>
-        <HomePlans plans={plans} locale={locale} />
+      <main className="ok-shell">
+        <header className="ok-page-head">
+          <p className="ok-kicker">{t("eyebrow")}</p>
+          <h1>{t("title")}</h1>
+          <p className="ok-page-lead">{t("lead")}</p>
+        </header>
+        <HomePlans plans={plans} locale={locale} heading={false} />
       </main>
       <SiteFooter />
       <FloatBook />

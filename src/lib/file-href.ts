@@ -21,12 +21,14 @@ export function fileSiteRoot() {
       return url.href;
     }
   }
-  const adminIndex = path.lastIndexOf("/admin/");
-  if (adminIndex >= 0) {
-    url.pathname = `${path.slice(0, adminIndex)}/`;
-    url.search = "";
-    url.hash = "";
-    return url.href;
+  for (const section of ["/admin/", "/agent/"] as const) {
+    const sectionIndex = path.lastIndexOf(section);
+    if (sectionIndex >= 0) {
+      url.pathname = `${path.slice(0, sectionIndex)}/`;
+      url.search = "";
+      url.hash = "";
+      return url.href;
+    }
   }
   url.pathname = path.endsWith("/") ? path : `${path.replace(/\/[^/]+$/, "")}/`;
   url.search = "";

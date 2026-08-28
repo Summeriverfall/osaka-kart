@@ -1,17 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Calendar, Menu, X } from "lucide-react";
+import { useState } from "react";
+import { Calendar } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useAppPathname } from "@/lib/use-app-pathname";
 import { LiveBrandMark } from "@/components/site/live-brand-mark";
-import { ContactTicker, NavBookingContact } from "@/components/site/contact-ticker";
+import { NavBookingContact } from "@/components/site/contact-ticker";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
-import { siteHome, withSlash } from "@/lib/paths";
+import { withSlash } from "@/lib/paths";
 import { appPageHref, isFileProtocol, navigateToHref } from "@/lib/file-href";
 import { useSiteLook } from "@/lib/site-look";
 import { isSiteTheme, type SiteTheme } from "@/lib/visual-theme";
-import { cn } from "@/lib/utils";
 import { ToastHost } from "@/components/ui/toast-host";
 
 type SiteNavProps = {
@@ -23,17 +22,18 @@ export function SiteNav({ look }: SiteNavProps) {
   const locale = useLocale();
   const pathname = useAppPathname();
   const currentLook = useSiteLook(look);
-  const home = siteHome(currentLook);
   const segment = pathname.split("/").filter(Boolean)[0];
-  const onLanding = isSiteTheme(segment);
-  const [scrolled, setScrolled] = useState(false);
+  const onTheme = isSiteTheme(segment);
+  const onHome = !segment;
+  const onLanding = onHome || onTheme;
   const [open, setOpen] = useState(false);
 
   const items = [
-    { hash: "#top", href: home, key: "home" as const },
-    { hash: "#plans", href: siteHome(currentLook, "plans"), key: "plans" as const },
-    { hash: "#faq", href: withSlash("/faq"), key: "faq" as const },
-    { hash: "#experience", href: siteHome(currentLook, "experience"), key: "videos" as const },
+    { key: "home" as const, hash: onTheme ? "#top" : "#home", href: withSlash("/") },
+    { key: "plans" as const, hash: onTheme ? "#plans" : "#packages", href: withSlash("/#packages") },
+    { key: "videos" as const, hash: onTheme ? "#experience" : "#videos", href: withSlash("/#videos") },
+    { key: "reviews" as const, hash: "#reviews", href: withSlash("/#reviews") },
+    { key: "help" as const, hash: "", href: withSlash("/help") },
   ];
 
   function go(href: string) {
@@ -44,50 +44,29 @@ export function SiteNav({ look }: SiteNavProps) {
     window.location.href = appPageHref(href, locale);
   }
 
-  useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 50);
-    }
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   const contact = <NavBookingContact onClick={() => setOpen(false)} />;
 
   return (
     <>
-    <header
-      className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-all duration-300",
-        scrolled
-          ? "border-b border-white/10 bg-[#0A0A0F]/75 backdrop-blur-md"
-          : "bg-transparent",
-      )}
-    >
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:h-16 sm:gap-3 sm:px-4">
-        <LiveBrandMark look={currentLook} />
-        <div className="site-bar-contact">
-          <ContactTicker />
-        </div>
-        <div className="site-bar-end">
-          <nav className="hidden items-center gap-8 md:flex">
-            {items.map((item) =>
-              onLanding ? (
+      <header className="ok-nav">
+        <div className="ok-nav-inner">
+          <LiveBrandMark className="ok-brand" look={currentLook} />
+          <nav className="ok-nav-links">
+            {items.map((item) => {
+              const href = onLanding && item.hash ? item.hash : appPageHref(item.href, locale);
+              const on =
+                (item.key === "home" && onHome) ||
+                (item.key === "help" && (pathname.startsWith("/help") || pathname.startsWith("/faq"))) ||
+                (item.key === "videos" && pathname.startsWith("/videos")) ||
+                (item.key === "plans" && pathname.startsWith("/plan"));
+              return (
                 <a
                   key={item.key}
-                  href={item.hash}
-                  className="text-[1.05rem] font-semibold text-[#D4D4DC] hover:text-neon-pink"
-                >
-                  {t(item.key)}
-                </a>
-              ) : (
-                <a
-                  key={item.key}
-                  href={appPageHref(item.href, locale)}
-                  className="text-[1.05rem] font-semibold text-[#D4D4DC] hover:text-neon-pink"
+                  href={href}
+                  className={on ? "ok-nav-link is-on" : "ok-nav-link"}
                   suppressHydrationWarning
                   onClick={(event) => {
+                    if (onLanding && item.hash) return;
                     if (!isFileProtocol()) return;
                     event.preventDefault();
                     go(item.href);
@@ -95,55 +74,48 @@ export function SiteNav({ look }: SiteNavProps) {
                 >
                   {t(item.key)}
                 </a>
-              ),
-            )}
+              );
+            })}
           </nav>
-          <LocaleSwitcher />
-          <a
-            href={appPageHref(withSlash("/booking"), locale)}
-            className="cta-btn nav-cta site-bar-cta hidden md:inline-flex"
-            suppressHydrationWarning
-            onClick={(event) => {
-              if (!isFileProtocol()) return;
-              event.preventDefault();
-              go(withSlash("/booking"));
-            }}
-          >
-            {t("booking")}
-          </a>
-          <button
-            type="button"
-            className="site-bar-menu"
-            aria-label={t("menu")}
-            aria-expanded={open}
-            onClick={() => setOpen((value) => !value)}
-          >
-            {open ? <X className="size-5" /> : <Menu className="size-5" />}
-          </button>
+          <div className="ok-nav-end">
+            <LocaleSwitcher />
+            <a
+              href={appPageHref(withSlash("/booking"), locale)}
+              className="ok-nav-cta"
+              suppressHydrationWarning
+              onClick={(event) => {
+                if (!isFileProtocol()) return;
+                event.preventDefault();
+                go(withSlash("/booking"));
+              }}
+            >
+              {t("booking")}
+            </a>
+            <button
+              type="button"
+              className={open ? "ok-nav-menu is-open" : "ok-nav-menu"}
+              aria-label={t("menu")}
+              aria-expanded={open}
+              onClick={() => setOpen((value) => !value)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+          </div>
         </div>
-      </div>
-
-      {open && (
-        <div className="site-bar-sheet border-t border-white/10 bg-[#0A0A0F]/95 px-4 py-4 backdrop-blur-md">
-          <div className="flex flex-col gap-3">
-            {items.map((item) =>
-              onLanding ? (
+        {open ? (
+          <div className="ok-nav-sheet">
+            {items.map((item) => {
+              const href = onLanding && item.hash ? item.hash : appPageHref(item.href, locale);
+              return (
                 <a
                   key={item.key}
-                  href={item.hash}
-                  className="py-2 text-[#D4D4DC]"
-                  onClick={() => setOpen(false)}
-                >
-                  {t(item.key)}
-                </a>
-              ) : (
-                <a
-                  key={item.key}
-                  href={appPageHref(item.href, locale)}
-                  className="py-2 text-[#D4D4DC]"
+                  href={href}
                   suppressHydrationWarning
                   onClick={(event) => {
                     setOpen(false);
+                    if (onLanding && item.hash) return;
                     if (!isFileProtocol()) return;
                     event.preventDefault();
                     go(item.href);
@@ -151,12 +123,12 @@ export function SiteNav({ look }: SiteNavProps) {
                 >
                   {t(item.key)}
                 </a>
-              ),
-            )}
+              );
+            })}
             {contact}
             <a
               href={appPageHref(withSlash("/booking"), locale)}
-              className="cta-btn nav-cta"
+              className="ok-btn mt-2 justify-center"
               suppressHydrationWarning
               onClick={(event) => {
                 setOpen(false);
@@ -168,10 +140,9 @@ export function SiteNav({ look }: SiteNavProps) {
               {t("booking")}
             </a>
           </div>
-        </div>
-      )}
-    </header>
-    <ToastHost />
+        ) : null}
+      </header>
+      <ToastHost />
     </>
   );
 }
@@ -182,7 +153,8 @@ export function FloatBook() {
   return (
     <a
       href={appPageHref(withSlash("/booking"), locale)}
-      className="fixed right-4 bottom-4 z-[80] inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-pink to-neon-purple px-5 py-3 text-sm font-semibold text-white shadow-[0_0_28px_rgba(255,46,147,0.55)]"
+      className="fixed right-4 bottom-4 z-[80] inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white"
+      style={{ background: "var(--ok-grad)", boxShadow: "0 0 28px rgba(255,0,110,0.45)" }}
       suppressHydrationWarning
       onClick={(event) => {
         if (!isFileProtocol()) return;
