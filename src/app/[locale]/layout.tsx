@@ -49,7 +49,7 @@ export default async function LocaleLayout({
       className={`${geistSans.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-dvh bg-[#F5F5F7] text-[#1D1D1F] antialiased">
+      <body className="min-h-dvh bg-black text-[#F5F5F7] antialiased">
         <script dangerouslySetInnerHTML={{ __html: acidPaletteBootScript() }} />
         <NextIntlClientProvider
           locale={locale}

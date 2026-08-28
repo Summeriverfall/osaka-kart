@@ -31,21 +31,28 @@ export function NeonLanding({ plans, addons, locale, copy }: Props) {
         plans={copy.nav.plans}
         faq={copy.nav.faq}
         calendar={copy.nav.calendar}
+        booking={copy.nav.booking}
       />
 
       <section className="neon-hero">
         <HeroMedia theme="neon" />
         <div className="relative z-10 mx-auto max-w-3xl px-4 text-center">
+          <p className="neon-badge">{copy.hero.rating}</p>
           <HeroTitle
-            className="hero-title neon-text"
+            className="hero-title"
             title={copy.hero.title}
             titleRest={copy.hero.titleRest}
           />
           <p className="hero-sub">{copy.hero.subtitle}</p>
           <HeroTrust />
-          <a href="#plans" className="cta-btn cta-btn-solid mt-8">
-            {copy.hero.cta}
-          </a>
+          <div className="neon-hero-actions">
+            <a href="#book" className="cta-btn cta-btn-solid">
+              {copy.nav.booking}
+            </a>
+            <a href="#plans" className="cta-btn cta-btn-ghost">
+              {copy.hero.cta}
+            </a>
+          </div>
         </div>
         <HeroScroll theme="neon" label={copy.nav.plans} />
       </section>

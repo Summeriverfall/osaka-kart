@@ -5,6 +5,15 @@ html:has(.admin-app) {
   height: 100%;
   overflow: hidden;
   font-family: "Microsoft YaHei", "PingFang SC", "PingFang TC", sans-serif;
+  --neon-pink: #1890ff;
+  --neon-purple: #2563eb;
+  --neon-cyan: #3b82f6;
+  --background: #f5f6f8;
+  --foreground: #111827;
+  --card-surface: #ffffff;
+  --primary: #1890ff;
+  --glow-a: 24 144 255;
+  --glow-b: 37 99 235;
 }
 
 html:has(.admin-app) body {

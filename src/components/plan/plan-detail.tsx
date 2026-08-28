@@ -80,9 +80,9 @@ export async function PlanDetailView({ plan, plans, addons, locale }: PlanDetail
                 {translation.includes.map((item) => (
                   <li
                     key={item}
-                    className="flex items-start gap-2 text-sm text-[#1D1D1F]"
+                    className="flex items-start gap-2 text-sm text-[#F5F5F7]"
                   >
-                    <Check className="mt-0.5 size-4 shrink-0 text-[#1B365D]" />
+                    <Check className="mt-0.5 size-4 shrink-0 text-[#FF2E97]" />
                     {item}
                   </li>
                 ))}

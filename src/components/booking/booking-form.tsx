@@ -128,8 +128,8 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
               className={cn(
                 "w-full rounded-full border px-1.5 py-2 text-[0.62rem] font-black tracking-wide uppercase transition sm:px-2 sm:text-xs sm:tracking-[0.12em]",
                 index === step
-                  ? "border-[#1B365D] bg-[#1B365D] text-white"
-                  : "border-[#D2D2D7] bg-white text-[#6E6E73]",
+                  ? "border-[#FF2E97] bg-[#FF2E97] text-white"
+                  : "border-white/15 bg-[#161625] text-[#A0A0A0]",
               )}
             >
               <span className="sm:hidden">{index + 1}</span>
@@ -145,9 +145,9 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
             <p className="text-xs text-[#9CA3AF]">{t("plan")}</p>
             <h2 className="mt-1 text-xl font-black">{plan.translation.name}</h2>
             <p className="text-neon-pink">{formatJpy(plan.base_price_jpy, locale)}</p>
-            <label className="admin-field mt-3">
-              更换套餐
-              <select className="admin-input" value={plan.slug} onChange={(e) => store.patch({ planSlug: e.target.value, riders: 1 })}>
+            <label className="book-field mt-3">
+              <span>更换套餐</span>
+              <select value={plan.slug} onChange={(e) => store.patch({ planSlug: e.target.value, riders: 1 })}>
                 {plans.map((item) => (
                   <option key={item.id} value={item.slug}>{item.translation.name}</option>
                 ))}
@@ -214,7 +214,7 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
               {["USA", "China", "Japan", "United Kingdom", "Korea", "Taiwan", "Other"].map((item) => <option key={item}>{item}</option>)}
             </select>
           </label>
-          <label className="book-field"><span>特殊要求</span><textarea className="admin-input min-h-24" value={request} onChange={(e) => setRequest(e.target.value)} /></label>
+          <label className="book-field"><span>特殊要求</span><textarea value={request} onChange={(e) => setRequest(e.target.value)} /></label>
           <RideNoteChecks checked={notes} onToggle={(key: NoteKey, on: boolean) => {
             setNotes((prev) => {
               const next = { ...prev, [key]: on };
@@ -237,7 +237,7 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
       </div>
       <div className="flex gap-3">
         {step > 0 ? (
-          <button type="button" className="rounded-full border border-white/15 px-5 py-3" onClick={() => setStep((n) => n - 1)}>返回</button>
+          <button type="button" className="cta-btn cta-btn-ghost px-5 py-3" onClick={() => setStep((n) => n - 1)}>返回</button>
         ) : null}
         <button type="submit" className="cta-btn book-submit flex-1" disabled={step === 3 && !notesOk}>
           {step === 3 ? t("submit") : "Continue"}

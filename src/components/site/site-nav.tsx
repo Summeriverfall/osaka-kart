@@ -77,7 +77,7 @@ export function SiteNav({ look }: SiteNavProps) {
                 <a
                   key={item.key}
                   href={item.hash}
-                  className="text-[1.05rem] font-semibold text-[#F1F1F5] hover:text-neon-pink"
+                  className="text-[1.05rem] font-semibold text-[#D4D4DC] hover:text-neon-pink"
                 >
                   {t(item.key)}
                 </a>
@@ -85,7 +85,7 @@ export function SiteNav({ look }: SiteNavProps) {
                 <a
                   key={item.key}
                   href={appPageHref(item.href, locale)}
-                  className="text-[1.05rem] font-semibold text-[#F1F1F5] hover:text-neon-pink"
+                  className="text-[1.05rem] font-semibold text-[#D4D4DC] hover:text-neon-pink"
                   suppressHydrationWarning
                   onClick={(event) => {
                     if (!isFileProtocol()) return;
@@ -99,6 +99,18 @@ export function SiteNav({ look }: SiteNavProps) {
             )}
           </nav>
           <LocaleSwitcher />
+          <a
+            href={appPageHref(withSlash("/booking"), locale)}
+            className="cta-btn nav-cta site-bar-cta hidden md:inline-flex"
+            suppressHydrationWarning
+            onClick={(event) => {
+              if (!isFileProtocol()) return;
+              event.preventDefault();
+              go(withSlash("/booking"));
+            }}
+          >
+            {t("booking")}
+          </a>
           <button
             type="button"
             className="site-bar-menu"
@@ -119,7 +131,7 @@ export function SiteNav({ look }: SiteNavProps) {
                 <a
                   key={item.key}
                   href={item.hash}
-                  className="py-2 text-[#F1F1F5]"
+                  className="py-2 text-[#D4D4DC]"
                   onClick={() => setOpen(false)}
                 >
                   {t(item.key)}
@@ -128,7 +140,7 @@ export function SiteNav({ look }: SiteNavProps) {
                 <a
                   key={item.key}
                   href={appPageHref(item.href, locale)}
-                  className="py-2 text-[#F1F1F5]"
+                  className="py-2 text-[#D4D4DC]"
                   suppressHydrationWarning
                   onClick={(event) => {
                     setOpen(false);
@@ -142,6 +154,19 @@ export function SiteNav({ look }: SiteNavProps) {
               ),
             )}
             {contact}
+            <a
+              href={appPageHref(withSlash("/booking"), locale)}
+              className="cta-btn nav-cta"
+              suppressHydrationWarning
+              onClick={(event) => {
+                setOpen(false);
+                if (!isFileProtocol()) return;
+                event.preventDefault();
+                go(withSlash("/booking"));
+              }}
+            >
+              {t("booking")}
+            </a>
           </div>
         </div>
       )}

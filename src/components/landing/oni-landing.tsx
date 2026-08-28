@@ -25,6 +25,7 @@ export function OniLanding({ plans, addons, locale, copy }: Props) {
         plans={copy.nav.plans}
         faq={copy.nav.faq}
         calendar={copy.nav.calendar}
+        booking={copy.nav.booking}
       />
       <OniStreet copy={copy} />
       <LandingGallery copy={copy} />

@@ -954,9 +954,9 @@ html {
 }
 
 .book-note {
-  border-radius: 0.2rem 1rem 0.2rem 0.2rem;
-  background: #fff7d6;
-  color: #1a1408;
+  border-radius: 1.5rem;
+  background: #161625;
+  color: #f5f5f7;
 }
 
 .book-note h3,
@@ -1646,10 +1646,6 @@ html:not(:has(.admin-app)) .float-book {
   width: 100%;
   justify-content: center;
   text-align: center;
-  background-image: none;
-  background: #fff;
-  color: #17120f;
-  box-shadow: none;
 }
 
 .shop-contact .cta-phone {
@@ -2105,7 +2101,7 @@ html:not(:has(.admin-app)) .float-book {
   height: auto;
   object-fit: contain;
   object-position: center;
-  background: #efe6d8;
+  background: #12121a;
   display: block;
   margin-top: 2rem;
   border-radius: 0.7rem;
@@ -2244,9 +2240,9 @@ html:not(:has(.admin-app)) .float-book {
 }
 
 .shop-pill.is-on {
-  background: #fff;
-  color: #17120f;
-  border-color: #fff;
+  background: linear-gradient(90deg, #ff2e97, #7b2cbf);
+  color: #fff;
+  border-color: transparent;
   font-weight: 700;
 }
 
@@ -2514,9 +2510,6 @@ html:not(:has(.admin-app)) .float-book {
 
 .shop-contact .cta-btn-ghost {
   justify-content: center;
-  background: rgb(255 255 255 / 6%) !important;
-  color: inherit !important;
-  border: 1px solid rgb(255 255 255 / 28%) !important;
 }
 
 .cta-phone {

@@ -14,9 +14,10 @@ type SiteNavProps = {
   plans: string;
   faq: string;
   calendar: string;
+  booking: string;
 };
 
-export function SiteNav({ theme, experience, plans, faq, calendar }: SiteNavProps) {
+export function SiteNav({ theme, experience, plans, faq, calendar, booking }: SiteNavProps) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -63,6 +64,9 @@ export function SiteNav({ theme, experience, plans, faq, calendar }: SiteNavProp
       <div className="site-bar-end">
         <nav className="site-bar-nav">{links}</nav>
         <LocaleSwitcher />
+        <a href="#book" className="cta-btn nav-cta site-bar-cta hidden md:inline-flex">
+          {booking}
+        </a>
         <button
           type="button"
           className="site-bar-menu"
@@ -77,6 +81,9 @@ export function SiteNav({ theme, experience, plans, faq, calendar }: SiteNavProp
         <div className="site-bar-sheet">
           {links}
           {contact}
+          <a href="#book" className="cta-btn nav-cta" onClick={() => setOpen(false)}>
+            {booking}
+          </a>
         </div>
       ) : null}
     </header>

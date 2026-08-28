@@ -75,7 +75,7 @@ export function PlanSummaryCard({ plan: seedPlan, addons: seedAddons, locale }: 
       <h2 className="mt-3 text-2xl font-black text-[#F1F1F5]">
         {current.translation.name}
       </h2>
-      <p className="neon-text mt-2 text-4xl font-black">
+      <p className="mt-2 text-4xl font-black text-white">
         {formatJpy(current.base_price_jpy, locale)}
         <span className="ml-1 text-sm font-medium text-[#9CA3AF]">
           {t("perPerson")}
@@ -94,7 +94,7 @@ export function PlanSummaryCard({ plan: seedPlan, addons: seedAddons, locale }: 
 
       <div className="mt-6">
         <IncludedAddonsList addons={includedAddons} />
-        <p className="mt-5 text-sm font-semibold text-[#1D1D1F]">{t("addons")}</p>
+        <p className="mt-5 text-sm font-semibold text-white">{t("addons")}</p>
         <ul className="mt-3 space-y-3">
           {addons.map((addon) => {
             const qty = qtyOf(addon.id);
@@ -105,8 +105,8 @@ export function PlanSummaryCard({ plan: seedPlan, addons: seedAddons, locale }: 
                 className={cn(
                   "flex items-center gap-3 rounded-xl border p-2",
                   selected
-                    ? "border-[#1B365D] bg-[#EEF3F8]"
-                    : "border-[#ECECEF]",
+                    ? "border-[#FF2E97] bg-[#1C1228]"
+                    : "border-white/10",
                 )}
               >
                 <img

@@ -72,20 +72,20 @@ export function AddonPicker({ addons, ctaLabel, onCta, sticky = true }: AddonPic
             <article
               key={addon.id}
               className={cn(
-                "rounded-2xl border bg-white p-6 transition duration-200",
+                "rounded-[1.5rem] border bg-[#161625] p-6 transition duration-200",
                 selected
-                  ? "border-[#1B365D] bg-[#EEF3F8] shadow-[0_0_0_3px_rgb(27_54_93_/_12%)]"
-                  : "border-[#ECECEF] hover:border-[#1B365D]/40",
+                  ? "border-[#FF2E97] bg-[#1C1228] shadow-[0_0_0_1px_#FF2E97,0_0_24px_rgb(255_46_151_/_28%)]"
+                  : "border-white/10 hover:border-[#FF2E97]/40",
               )}
             >
-              <div className="mb-4 inline-flex size-12 items-center justify-center rounded-2xl bg-[#1B365D] text-white">
+              <div className="mb-4 inline-flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF2E97] to-[#7B2CBF] text-white">
                 <Icon className="size-6" />
               </div>
-              <h3 className="text-lg font-semibold text-[#1D1D1F]">{addon.name}</h3>
-              <p className="mt-2 min-h-[3rem] text-sm leading-6 text-[#6E6E73]">{addon.description}</p>
-              <p className="mt-4 text-xl font-semibold text-[#1B365D]">
+              <h3 className="text-lg font-semibold text-white">{addon.name}</h3>
+              <p className="mt-2 min-h-[3rem] text-sm leading-6 text-[#A0A0A0]">{addon.description}</p>
+              <p className="mt-4 text-xl font-semibold text-[#FF2E97]">
                 + {formatYenShort(addon.priceJpy)}
-                <span className="ml-1 text-sm font-medium text-[#6E6E73]">{addon.unitLabel}</span>
+                <span className="ml-1 text-sm font-medium text-[#A0A0A0]">{addon.unitLabel}</span>
               </p>
               <div className="mt-5 flex items-center gap-3">
                 <button
@@ -107,11 +107,11 @@ export function AddonPicker({ addons, ctaLabel, onCta, sticky = true }: AddonPic
                   <Plus className="size-3.5" />
                 </button>
                 {selected ? (
-                  <span className="rounded-full bg-[#1B365D] px-2.5 py-1 text-xs font-semibold text-white">
+                  <span className="rounded-full bg-[#FF2E97] px-2.5 py-1 text-xs font-semibold text-white">
                     {t("selectedQty", { n: qty })}
                   </span>
                 ) : addon.maxQty <= 1 ? (
-                  <span className="text-xs text-[#6E6E73]">最多 1</span>
+                  <span className="text-xs text-[#A0A0A0]">最多 1</span>
                 ) : null}
               </div>
             </article>
@@ -121,9 +121,9 @@ export function AddonPicker({ addons, ctaLabel, onCta, sticky = true }: AddonPic
 
       {sticky ? (
         <div className="addon-sticky-bar">
-          <p className="text-sm text-[#6E6E73]">
+          <p className="text-sm text-[#A0A0A0]">
             {t("addonTotal")}
-            <strong className="ml-2 text-lg font-semibold text-[#1D1D1F]">{formatYenShort(extras)}</strong>
+            <strong className="ml-2 text-lg font-semibold text-white">{formatYenShort(extras)}</strong>
           </p>
           <button type="button" className="cta-btn px-6 py-3" onClick={onCta}>
             {ctaLabel}

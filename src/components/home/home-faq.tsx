@@ -42,14 +42,18 @@ export function HomeFaq() {
         <Accordion
           multiple
           defaultValue={list.map((item) => item.id)}
-          className="divide-y divide-white/10 rounded-2xl border border-white/10 bg-[#12121A] px-5"
+          className="space-y-3"
         >
           {list.map((item) => (
-            <AccordionItem key={item.id} value={item.id}>
+            <AccordionItem
+              key={item.id}
+              value={item.id}
+              className="rounded-[1.25rem] border border-white/10 border-b-0 bg-[#161625] px-5"
+            >
               <AccordionTrigger className="text-lg text-[#F1F1F5] hover:no-underline hover:text-[var(--neon-pink)]">
                 {item.q}
               </AccordionTrigger>
-              <AccordionContent className="text-base leading-7 text-gray-200">{item.a}</AccordionContent>
+              <AccordionContent className="text-base leading-7 text-[#A0A0A0]">{item.a}</AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
