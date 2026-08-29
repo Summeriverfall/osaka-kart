@@ -42,7 +42,8 @@
   },
   "PlansHome": {
     "title": "プランを選ぶ",
-    "select": "選択"
+    "select": "選択",
+    "details": "詳細を見る"
   },
   "VideosHome": {
     "title": "実際の走行風景",

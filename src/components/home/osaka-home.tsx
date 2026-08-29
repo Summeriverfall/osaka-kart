@@ -3,10 +3,11 @@
 import { Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { HeroMedia } from "@/components/landing/hero-media";
+import { HeroTrust } from "@/components/landing/hero-trust";
 import { HomeFaq } from "@/components/home/home-faq";
 import { HomePlans } from "@/components/home/home-plans";
 import { HomeVideos } from "@/components/home/home-videos";
-import { FloatBook, SiteNav } from "@/components/site/site-nav";
+import { SiteNav } from "@/components/site/site-nav";
 import { SiteFooter } from "@/components/site/site-footer";
 import { localeText, localizedList, useLiveCms } from "@/lib/live-cms";
 import { appPageHref } from "@/lib/file-href";
@@ -25,6 +26,7 @@ export function OsakaHome({ plans, locale }: OsakaHomeProps) {
   const cta = useTranslations("CtaBand");
   const safety = useTranslations("Safety");
   const reviewsT = useTranslations("ReviewsHome");
+  const shop = useTranslations("Shop");
   const cms = useLiveCms();
   const reviews = localizedList(cms.reviews);
   const reviewTitle = localeText(cms.labels.reviewsTitle, locale, reviewsT("title"));
@@ -45,6 +47,8 @@ export function OsakaHome({ plans, locale }: OsakaHomeProps) {
           </h1>
           <p className="ok-hero-kicker">{gateway("title")}</p>
           <p className="ok-hero-sub">{hero("subtitle")}</p>
+          <HeroTrust />
+          <p className="ok-hero-need">{gateway("need")}</p>
           <div className="ok-hero-stats">
             <span>
               <strong>{hero("ridersCount")}</strong> {hero("ridersLabel")}
@@ -66,7 +70,7 @@ export function OsakaHome({ plans, locale }: OsakaHomeProps) {
       </section>
 
       <HomePlans plans={plans} locale={locale} sectionId="packages" kicker={nav("plans")} />
-      <HomeVideos kicker={nav("videos")} />
+      <HomeVideos kicker={nav("videos")} limit={7} />
 
       <section id="reviews" className="ok-sec ok-sec-alt">
         <div className="ok-sec-wide">
@@ -75,20 +79,42 @@ export function OsakaHome({ plans, locale }: OsakaHomeProps) {
             <h2>{reviewTitle}</h2>
           </header>
           <div className="ok-reviews">
-            {reviews.map((item) => (
-              <article key={item.id} className="ok-review">
-                <p className="ok-stars" aria-hidden>
-                  {Array.from({ length: 5 }).map((_, star) => (
-                    <Star key={star} className="inline size-4 fill-current" />
-                  ))}
-                </p>
-                <blockquote>“{localeText(item.quote, locale)}”</blockquote>
-                <footer>
-                  <strong>{item.name}</strong>
-                  <span> · {item.country}</span>
-                </footer>
-              </article>
-            ))}
+            {reviews.map((item) => {
+              const href = item.url?.trim();
+              const inner = (
+                <>
+                  <p className="ok-stars" aria-hidden>
+                    {Array.from({ length: 5 }).map((_, star) => (
+                      <Star key={star} className="inline size-4 fill-current" />
+                    ))}
+                  </p>
+                  <blockquote>“{localeText(item.quote, locale)}”</blockquote>
+                  <footer>
+                    <strong>{item.name}</strong>
+                    <span> · {item.country}</span>
+                    {item.platform ? <small>{shop("fromReview", { platform: item.platform })}</small> : null}
+                  </footer>
+                </>
+              );
+              if (href) {
+                return (
+                  <a
+                    key={item.id}
+                    className="ok-review"
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {inner}
+                  </a>
+                );
+              }
+              return (
+                <article key={item.id} className="ok-review">
+                  {inner}
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -124,7 +150,6 @@ export function OsakaHome({ plans, locale }: OsakaHomeProps) {
       </section>
 
       <SiteFooter />
-      <FloatBook />
     </div>
   );
 }

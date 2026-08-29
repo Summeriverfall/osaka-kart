@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { HomePlans } from "@/components/home/home-plans";
 import { SiteFooter } from "@/components/site/site-footer";
-import { FloatBook, SiteNav } from "@/components/site/site-nav";
+import { SiteNav } from "@/components/site/site-nav";
 import type { AppLocale } from "@/i18n/routing";
 import { getPlans } from "@/lib/plans/queries";
 
@@ -25,7 +25,6 @@ export default async function PlanListPage({ params }: PageProps) {
         <HomePlans plans={plans} locale={locale} heading={false} />
       </main>
       <SiteFooter />
-      <FloatBook />
     </div>
   );
 }

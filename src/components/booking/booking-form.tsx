@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { formatJpy } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { coverOf } from "@/lib/media";
 import { RideNoteChecks, allNotesChecked, emptyNoteChecks, type NoteKey } from "@/components/notes/ride-notes";
 import { AddonPicker, type AddonCardModel } from "@/components/addons/addon-picker";
 import { IncludedAddonsList } from "@/components/addons/included-addons";
@@ -142,19 +141,19 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
 
       {step === 0 ? (
         <>
-          <div className="ok-pick-grid">
+          <div className="ok-pkg-list">
             {plans.map((item) => (
               <button
                 key={item.id}
                 type="button"
-                className={cn("ok-pick", item.slug === plan.slug && "is-on")}
+                className={cn("ok-pkg-row", item.slug === plan.slug && "is-on")}
                 onClick={() => store.patch({ planSlug: item.slug, riders: 1 })}
               >
-                <img src={coverOf(item)} alt="" />
-                <span>
+                <span className="ok-pkg-row-time">{item.duration_minutes}</span>
+                <span className="ok-pkg-row-copy">
                   <strong>{item.translation.name}</strong>
-                  <em>{formatJpy(item.base_price_jpy, locale)}</em>
                 </span>
+                <span className="ok-pkg-row-price">{formatJpy(item.base_price_jpy, locale)}</span>
               </button>
             ))}
           </div>

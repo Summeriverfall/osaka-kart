@@ -419,7 +419,7 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 16,
+      version: 19,
       skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
@@ -623,6 +623,30 @@ export const useOpsStore = create<OpsState>()(
             removedChannelIds: [],
           };
           state.affiliates = refreshBundledAffiliates(state.affiliates);
+        }
+        if (version < 17 && state.cms?.meetup) {
+          state.cms = {
+            ...state.cms,
+            meetup: { ...state.cms.meetup, mapsUrl: MOCK_CMS.meetup.mapsUrl },
+          };
+        }
+        if (version < 18 && state.cms?.reviews) {
+          state.cms = {
+            ...state.cms,
+            reviews: refreshBundledReviews(MOCK_CMS.reviews, state.cms.reviews).map((item) => {
+              const seed = MOCK_CMS.reviews.find((row) => row.id === item.id);
+              return seed ? { ...item, platform: seed.platform, url: seed.url } : item;
+            }),
+          };
+        }
+        if (version < 19 && state.cms?.reviews) {
+          state.cms = {
+            ...state.cms,
+            reviews: refreshBundledReviews(MOCK_CMS.reviews, state.cms.reviews).map((item) => {
+              const seed = MOCK_CMS.reviews.find((row) => row.id === item.id);
+              return seed ? { ...item, name: seed.name, country: seed.country, platform: seed.platform, url: seed.url } : item;
+            }),
+          };
         }
         delete state.vehicleSlots;
         return state as OpsState;

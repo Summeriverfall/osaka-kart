@@ -42,7 +42,8 @@
   },
   "PlansHome": {
     "title": "Choose Your Plan",
-    "select": "Select"
+    "select": "Select",
+    "details": "View details"
   },
   "VideosHome": {
     "title": "On the street",

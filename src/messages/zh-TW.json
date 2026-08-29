@@ -42,7 +42,8 @@
   },
   "PlansHome": {
     "title": "選擇套餐",
-    "select": "選擇"
+    "select": "選擇",
+    "details": "查看詳情"
   },
   "VideosHome": {
     "title": "現場畫面",

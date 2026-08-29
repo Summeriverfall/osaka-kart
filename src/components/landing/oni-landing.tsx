@@ -1,5 +1,4 @@
 import { PlanShowcase } from "@/components/landing/plan-showcase";
-import { FloatBook } from "@/components/landing/float-book";
 import { LandingCommerce, LandingGallery } from "@/components/landing/landing-commerce";
 import { OniStreet } from "@/components/landing/oni-street";
 import { HtmlTheme } from "@/components/layout/html-theme";
@@ -32,7 +31,6 @@ export function OniLanding({ plans, addons, locale, copy }: Props) {
       </section>
       <LandingCommerce plans={plans} addons={addons} locale={locale} theme="oni" copy={copy} />
       <SiteFooter />
-      <FloatBook theme="oni" label={copy.nav.booking} />
     </div>
   );
 }

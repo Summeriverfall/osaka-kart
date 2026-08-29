@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { PlanDetailView } from "@/components/plan/plan-detail";
 import { SiteFooter } from "@/components/site/site-footer";
-import { FloatBook, SiteNav } from "@/components/site/site-nav";
+import { SiteNav } from "@/components/site/site-nav";
 import type { AppLocale } from "@/i18n/routing";
 import { getAddons, getPlanBySlug, getPlans } from "@/lib/plans/queries";
 import { PLAN_SLUGS } from "@/lib/plans/seed";
@@ -30,7 +30,6 @@ export default async function PlanDetailPage({ params }: PageProps) {
       <SiteNav />
       <PlanDetailView plan={plan} plans={plans} addons={addons} locale={locale} />
       <SiteFooter />
-      <FloatBook />
     </div>
   );
 }

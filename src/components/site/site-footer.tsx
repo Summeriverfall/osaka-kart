@@ -45,7 +45,13 @@ export function SiteFooter() {
             {address ? (
               <div>
                 <span>📍</span>
-                <span>{address}</span>
+                {maps ? (
+                  <a href={maps} target="_blank" rel="noopener noreferrer">
+                    {address}
+                  </a>
+                ) : (
+                  <span>{address}</span>
+                )}
               </div>
             ) : null}
             {walk ? (

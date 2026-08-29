@@ -2,7 +2,7 @@
 
 import { HomeFaq } from "@/components/home/home-faq";
 import { SiteFooter } from "@/components/site/site-footer";
-import { FloatBook, SiteNav } from "@/components/site/site-nav";
+import { SiteNav } from "@/components/site/site-nav";
 import { Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -64,7 +64,6 @@ export function HelpContent() {
       </section>
 
       <SiteFooter />
-      <FloatBook />
     </div>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useAppPathname } from "@/lib/use-app-pathname";
 import { LiveBrandMark } from "@/components/site/live-brand-mark";
@@ -144,26 +143,5 @@ export function SiteNav({ look }: SiteNavProps) {
       </header>
       <ToastHost />
     </>
-  );
-}
-
-export function FloatBook() {
-  const t = useTranslations("Nav");
-  const locale = useLocale();
-  return (
-    <a
-      href={appPageHref(withSlash("/booking"), locale)}
-      className="fixed right-4 bottom-4 z-[80] inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white"
-      style={{ background: "var(--ok-grad)", boxShadow: "0 0 28px rgba(255,0,110,0.45)" }}
-      suppressHydrationWarning
-      onClick={(event) => {
-        if (!isFileProtocol()) return;
-        event.preventDefault();
-        navigateToHref(withSlash("/booking"), locale);
-      }}
-    >
-      <Calendar className="size-4" />
-      {t("booking")}
-    </a>
   );
 }

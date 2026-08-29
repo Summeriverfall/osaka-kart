@@ -42,7 +42,8 @@
   },
   "PlansHome": {
     "title": "플랜 선택",
-    "select": "선택"
+    "select": "선택",
+    "details": "자세히 보기"
   },
   "VideosHome": {
     "title": "현장 영상",

@@ -3,7 +3,6 @@ import { HeroMedia } from "@/components/landing/hero-media";
 import { HeroScroll } from "@/components/landing/hero-scroll";
 import { HeroTitle } from "@/components/landing/hero-title";
 import { HeroTrust } from "@/components/landing/hero-trust";
-import { FloatBook } from "@/components/landing/float-book";
 import { LandingCommerce, LandingGallery } from "@/components/landing/landing-commerce";
 import { PageRails } from "@/components/landing/page-rails";
 import { HtmlTheme } from "@/components/layout/html-theme";
@@ -63,7 +62,6 @@ export function NeonLanding({ plans, addons, locale, copy }: Props) {
 
       <LandingCommerce plans={plans} addons={addons} locale={locale} theme="neon" copy={copy} />
       <SiteFooter />
-      <FloatBook theme="neon" label={copy.nav.booking} />
     </div>
   );
 }
