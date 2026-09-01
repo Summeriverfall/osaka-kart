@@ -78,6 +78,7 @@ type OpsState = {
   patchTemplate: (id: string, patch: Partial<MockEmailTemplate>) => void;
   upsertStore: (store: MockStore) => void;
   addSpecialDate: (row: MockSpecialDate) => void;
+  removeSpecialDate: (row: Pick<MockSpecialDate, "date" | "time" | "storeId">) => void;
   pushLog: (entry: Omit<MockLog, "id" | "time" | "ip"> & { time?: string; ip?: string }) => void;
   commitWebsiteBooking: (input: WebsiteBookingInput) => { ok: boolean; already: boolean; order: MockOrder | null };
   patchCms: (patch: Partial<CmsState>) => void;
@@ -238,6 +239,11 @@ export const useOpsStore = create<OpsState>()(
       removeAddon: (id) =>
         set((state) => ({
           addons: state.addons.filter((item) => item.id !== id),
+          plans: state.plans.map((plan) => ({
+            ...plan,
+            allowedAddonIds: (plan.allowedAddonIds ?? []).filter((item) => item !== id),
+            includedAddonIds: (plan.includedAddonIds ?? []).filter((item) => item !== id),
+          })),
           logs: [makeLog("套餐上下架", `删除附加项 ${id}`), ...state.logs],
         })),
       upsertPlan: (plan) =>
@@ -373,6 +379,18 @@ export const useOpsStore = create<OpsState>()(
           specialDates: [row, ...state.specialDates],
           logs: [makeLog("库存调整", `${row.date} ${row.label}`), ...state.logs],
         })),
+      removeSpecialDate: (row) =>
+        set((state) => ({
+          specialDates: state.specialDates.filter(
+            (item) =>
+              !(
+                item.date === row.date &&
+                (item.time ?? "") === (row.time ?? "") &&
+                storeIdOf(item.storeId) === storeIdOf(row.storeId)
+              ),
+          ),
+          logs: [makeLog("库存调整", `解锁 ${row.date} ${row.time ?? ""}`.trim()), ...state.logs],
+        })),
       pushLog: (entry) =>
         set((state) => ({
           logs: [
@@ -419,7 +437,7 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 19,
+      version: 23,
       skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
@@ -648,11 +666,28 @@ export const useOpsStore = create<OpsState>()(
             }),
           };
         }
+        if (version < 20 && state.cms?.videos) {
+          state.cms = {
+            ...state.cms,
+            videos: state.cms.videos.map((item) => {
+              if (isCustomCmsVideo(item)) return item;
+              if (item.source !== "file") return item;
+              return { ...item, source: "youtube" as const };
+            }),
+          };
+        }
+        if (version < 22) {
+          state.orders = mergeFreshDemoOrders(state.orders ?? []);
+        }
+        if (version < 23) {
+          const have = new Set((state.vehicles ?? []).map((item) => item.id));
+          state.vehicles = [...(state.vehicles ?? []), ...MOCK_VEHICLES.filter((item) => !have.has(item.id))];
+        }
         delete state.vehicleSlots;
         return state as OpsState;
       },
       partialize: (state) => ({
-        orders: state.orders,
+        orders: state.orders.filter((item) => !item.id.startsWith("FK-H-")),
         addons: state.addons,
         plans: state.plans,
         specialDates: state.specialDates,
@@ -735,11 +770,21 @@ export function rehydrateOpsStore() {
   const run = () => {
     useOpsStore.getState().ensureDemoOrders();
   };
-  if (hydrateStarted) {
-    return Promise.resolve(useOpsStore.persist.rehydrate()).then(run);
-  }
+  const safe = () =>
+    Promise.resolve(useOpsStore.persist.rehydrate())
+      .catch(() => {
+        try {
+          localStorage.removeItem(OPS_STORAGE_KEY);
+        } catch {
+          /* private mode */
+        }
+        hydrateStarted = false;
+        return useOpsStore.persist.rehydrate();
+      })
+      .then(run);
+  if (hydrateStarted) return safe();
   hydrateStarted = true;
-  return Promise.resolve(useOpsStore.persist.rehydrate()).then(run);
+  return safe();
 }
 
 export function scheduleOpsRehydrate(urgent = false) {

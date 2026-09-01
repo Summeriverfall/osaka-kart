@@ -73,7 +73,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     syncFromWindow();
     window.addEventListener("popstate", syncFromWindow);
-    return () => window.removeEventListener("popstate", syncFromWindow);
+    window.addEventListener("hashchange", syncFromWindow);
+    return () => {
+      window.removeEventListener("popstate", syncFromWindow);
+      window.removeEventListener("hashchange", syncFromWindow);
+    };
   }, [syncFromWindow]);
 
   if (isLogin) return <div className="admin-app">{children}</div>;

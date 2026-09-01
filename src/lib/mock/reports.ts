@@ -1,7 +1,8 @@
 import { BOOKING_DAYPARTS } from "@/lib/booking/slots";
-import { addDaysIso } from "@/lib/calendar";
+import { addDaysIso, addMonthsIso } from "@/lib/calendar";
 import { adminChannel, adminDaypart, adminGender, adminNation, adminPlanName } from "@/lib/admin/copy";
 import { MOCK_PLANS } from "@/lib/mock/plans";
+import { withAnalyticsHistory } from "@/lib/mock/history-orders";
 import { type MockOrder } from "@/lib/mock/orders";
 
 export const REPORT_CHANNELS = [
@@ -152,7 +153,8 @@ export function reportsFromOrders(
   locale = "zh-TW",
   cuts?: Record<string, number>,
 ) {
-  const scoped = range ? orders.filter((item) => item.date >= range.from && item.date <= range.to) : orders;
+  const pool = withAnalyticsHistory(orders);
+  const scoped = range ? pool.filter((item) => item.date >= range.from && item.date <= range.to) : pool;
   const billed = scoped.filter((item) => item.status === "completed");
   const pending = scoped.filter((item) => item.status === "pending");
   const cancelled = scoped.filter((item) => item.status === "cancelled");
@@ -234,8 +236,8 @@ export function reportsFromOrders(
   const trendSource = days.length ? days : [...new Set(billed.map((item) => item.date))].sort();
   const trend = trendSource.map((iso) => {
     const current = billed.filter((order) => order.date === iso).reduce((sum, order) => sum + order.totalJpy, 0);
-    const prevIso = addDaysIso(iso, -span);
-    const previous = orders
+    const prevIso = span >= 28 ? addMonthsIso(iso, -1) : addDaysIso(iso, -span);
+    const previous = pool
       .filter((order) => order.date === prevIso && order.status === "completed")
       .reduce((sum, order) => sum + order.totalJpy, 0);
     return { day: iso.slice(5), iso, current, previous };

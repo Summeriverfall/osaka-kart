@@ -83,16 +83,38 @@ export function goToAppPath(appPath: string, locale?: string) {
   window.location.href = appPageHref(appPath, localeOf(locale));
 }
 
-/** 后台标签切换：http(s) 只改 URL，不整页刷新。file:// 仍跳到对应 html。 */
+function adminHash(appPath: string) {
+  const tab = (appPath.startsWith("/") ? appPath : `/${appPath}`).replace(/\/+$/, "");
+  return tab.replace(/^\//, "");
+}
+
+/** 绕过 file-boot 对 history.pushState 的劫持，避免本地双击打开时整页刷新。 */
+function nativePushState(url: string) {
+  try {
+    History.prototype.pushState.call(window.history, { adminTab: true }, "", url);
+  } catch {
+    /* file:// 不允许改路径时只改视图 */
+  }
+}
+
+/** 后台标签切换：只改地址栏，不整页刷新。file:// 用 hash，避免再载入另一份 html。 */
 export function pushAppPath(appPath: string, locale?: string) {
   if (typeof window === "undefined") return;
-  const href = appPageHref(appPath, localeOf(locale));
-  if (window.location.href === href) return;
   if (isFileProtocol()) {
-    window.location.href = href;
+    const hash = adminHash(appPath);
+    const here = decodeURIComponent(window.location.hash.replace(/^#\/?/, ""));
+    if (here === hash || here === `${hash}/`) return;
+    const next = new URL(window.location.href);
+    next.hash = hash;
+    nativePushState(next.href);
     return;
   }
-  window.history.pushState({}, "", href);
+  const href = appPageHref(appPath, localeOf(locale));
+  const next = new URL(href, window.location.href);
+  const dest = `${next.pathname}${next.search}${next.hash}`;
+  const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  if (dest === current) return;
+  nativePushState(dest);
 }
 
 export function navigateToHref(href: string, locale?: string) {

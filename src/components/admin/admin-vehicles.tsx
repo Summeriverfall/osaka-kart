@@ -12,6 +12,12 @@ import { useOpsStore } from "@/stores/ops-store";
 import { useStoreData } from "@/lib/use-store-data";
 import { useToastStore } from "@/stores/toast-store";
 
+function splitLogLine(item: string) {
+  const match = item.trim().match(/^(\d{4}-\d{2}-\d{2})\s+(.+)$/);
+  if (!match) return { date: "", text: item };
+  return { date: match[1], text: match[2] };
+}
+
 const BLANK: MockVehicle = {
   id: "",
   code: "",
@@ -151,21 +157,7 @@ export function AdminVehiclesView() {
           </button>
         }
       >
-        <ul className="space-y-2 text-sm text-slate-600">
-          {(logs?.logs ?? []).length ? (logs?.logs ?? []).map((item, index) => (
-            <li key={`${item}-${index}`} className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2">
-              <span>{item}</span>
-              <button
-                type="button"
-                className="shrink-0 text-xs text-rose-600"
-                onClick={() => setLogs((current) => current ? { ...current, logs: current.logs.filter((_, i) => i !== index) } : current)}
-              >
-                {copy.cms.remove}
-              </button>
-            </li>
-          )) : <li className="text-slate-400">{copy.vehicles.logEmpty}</li>}
-        </ul>
-        <div className="mt-3 flex gap-2">
+        <div className="flex gap-2">
           <input
             className="admin-input flex-1"
             value={logDraft}
@@ -182,7 +174,7 @@ export function AdminVehiclesView() {
           />
           <button
             type="button"
-            className="rounded-full border border-slate-200 px-3 py-2 text-sm"
+            className="cta-btn px-4 py-2 text-sm"
             onClick={() => {
               const text = logDraft.trim();
               if (!text || !logs) return;
@@ -193,7 +185,7 @@ export function AdminVehiclesView() {
             {copy.vehicles.logAdd}
           </button>
         </div>
-        <div className="mt-4">
+        <div>
           <p className="text-sm text-slate-600">{b2.photos}</p>
           <p className="mt-1 text-xs text-slate-500">{b2.photosHint}</p>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -240,6 +232,34 @@ export function AdminVehiclesView() {
               />
             </label>
           </div>
+        </div>
+        <div className="vehicle-log-list">
+          <p className="vehicle-log-head">{copy.vehicles.logs}</p>
+          {(logs?.logs ?? []).length ? (
+            <ul>
+              {(logs?.logs ?? []).map((item, index) => {
+                const { date, text } = splitLogLine(item);
+                return (
+                  <li key={`${item}-${index}`} className={date ? undefined : "is-plain"}>
+                    {date ? <time dateTime={date}>{date}</time> : null}
+                    <span>{text}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLogs((current) =>
+                          current ? { ...current, logs: current.logs.filter((_, i) => i !== index) } : current,
+                        )
+                      }
+                    >
+                      {copy.cms.remove}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="vehicle-log-empty">{copy.vehicles.logEmpty}</p>
+          )}
         </div>
       </Modal>
     </div>

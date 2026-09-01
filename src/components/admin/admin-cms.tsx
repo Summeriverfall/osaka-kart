@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { ImagePlus } from "lucide-react";
 import { useLocale } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
@@ -129,8 +130,8 @@ function VideoPositionCard({
           value={video.source}
           onChange={(event) => onChange({ ...video, source: event.target.value as CmsVideo["source"] })}
         >
-          <option value="file">{copy.cms.file}</option>
           <option value="youtube">{copy.cms.youtube}</option>
+          <option value="file">{copy.cms.file}</option>
           <option value="facebook">{copy.cms.facebook}</option>
           <option value="instagram">{copy.cms.instagram}</option>
         </select>
@@ -185,26 +186,27 @@ function VideoPositionCard({
   );
 }
 
+function mediaPreview(value?: string) {
+  const src = value?.trim() ?? "";
+  if (!src) return "";
+  if (src.startsWith("data:") || src.startsWith("blob:") || src.startsWith("http")) return src;
+  return asset(src);
+}
+
 function ImageField({
   label,
   hint,
   value,
   onChange,
   onError,
-  logo,
 }: {
   label: string;
   hint: string;
   value?: string;
   onChange: (next: string) => void;
   onError: (message: string) => void;
-  logo?: boolean;
 }) {
-  const src = value?.trim()
-    ? value.startsWith("data:") || value.startsWith("blob:") || value.startsWith("http")
-      ? value
-      : asset(value)
-    : "";
+  const src = mediaPreview(value);
   return (
     <div>
       <p className="text-sm text-slate-600">{label}</p>
@@ -219,12 +221,75 @@ function ImageField({
           event.target.value = "";
           if (!file) return;
           try {
-            onChange(logo ? await readLocalLogo(file) : await readCmsImage(file));
+            onChange(await readCmsImage(file));
           } catch (error) {
             onError(error instanceof Error ? error.message : "fail");
           }
         }}
       />
+    </div>
+  );
+}
+
+function LogoField({
+  copy,
+  value,
+  onChange,
+  onError,
+}: {
+  copy: ReturnType<typeof adminCopy>;
+  value?: string;
+  onChange: (next: string) => void;
+  onError: (message: string) => void;
+}) {
+  const src = mediaPreview(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function pick(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      onChange(await readLocalLogo(file));
+    } catch (error) {
+      onError(error instanceof Error ? error.message : "fail");
+    }
+  }
+
+  return (
+    <div className="site-logo-card">
+      <div>
+        <p className="text-sm font-semibold text-slate-800">{copy.cms.logo}</p>
+        <p className="mt-1 text-xs leading-relaxed text-slate-500">{copy.cms.logoHint}</p>
+      </div>
+      <div className="site-logo-row">
+        <div className="site-logo-preview" aria-hidden={src ? undefined : true}>
+          {src ? <img src={src} alt="" /> : <span>{copy.cms.logoEmpty}</span>}
+        </div>
+        <button
+          type="button"
+          className="site-logo-drop"
+          onClick={() => inputRef.current?.click()}
+        >
+          <ImagePlus className="size-5 text-blue-600" />
+          <span className="text-sm font-medium text-slate-800">
+            {src ? copy.cms.logoChange : copy.cms.logoUpload}
+          </span>
+          <span className="text-xs text-slate-500">PNG / JPG / WEBP</span>
+        </button>
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={pick}
+      />
+      {src ? (
+        <button type="button" className="site-logo-clear" onClick={() => onChange("")}>
+          {copy.cms.logoRemove}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -357,19 +422,17 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
   if (section === "site") {
     return (
       <div className="space-y-4">
-        <label className="admin-field">{copy.cms.brandName}<input className="admin-input" value={site.brandName} onChange={(event) => setSite({ ...site, brandName: event.target.value })} /></label>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="admin-field">{copy.cms.brandShort}<input className="admin-input" value={site.brandShort} onChange={(event) => setSite({ ...site, brandShort: event.target.value })} /></label>
-          <label className="admin-field">{copy.cms.brandSuffix}<input className="admin-input" value={site.brandSuffix} onChange={(event) => setSite({ ...site, brandSuffix: event.target.value })} /></label>
-        </div>
-        <ImageField
-          logo
-          label={copy.cms.logo}
-          hint={copy.cms.logoHint}
+        <LogoField
+          copy={copy}
           value={site.logo}
           onChange={(logo) => setSite({ ...site, logo })}
           onError={(code) => notify(imageError(code))}
         />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="admin-field">{copy.cms.brandName}<input className="admin-input" value={site.brandName} onChange={(event) => setSite({ ...site, brandName: event.target.value })} /></label>
+          <label className="admin-field">{copy.cms.brandShort}<input className="admin-input" value={site.brandShort} onChange={(event) => setSite({ ...site, brandShort: event.target.value })} /></label>
+          <label className="admin-field">{copy.cms.brandSuffix}<input className="admin-input" value={site.brandSuffix} onChange={(event) => setSite({ ...site, brandSuffix: event.target.value })} /></label>
+        </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="admin-field">{copy.cms.phone}<input className="admin-input" value={site.phone} onChange={(event) => setSite({ ...site, phone: event.target.value })} /></label>
           <label className="admin-field">{copy.cms.email}<input className="admin-input" value={site.email} onChange={(event) => setSite({ ...site, email: event.target.value })} /></label>
@@ -391,7 +454,11 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
             ))}
           </div>
         </div>
-        <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.footerCompany} value={site.footerCompany} onChange={(footerCompany) => setSite({ ...site, footerCompany })} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.footerCompany} value={site.footerCompany} onChange={(footerCompany) => setSite({ ...site, footerCompany })} />
+          </div>
+        </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { patchCms({ site }); notify(copy.cms.saved); }}>{copy.common.save}</button>
           <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => { setSite(MOCK_CMS.site); patchCms({ site: MOCK_CMS.site }); notify(copy.cms.saved); }}>{copy.cms.restore}</button>

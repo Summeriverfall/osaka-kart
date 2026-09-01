@@ -68,9 +68,10 @@ export function AdminDashboardView() {
     [todayIso],
     vehicles,
     vehicleSlots,
-    orders,
+    ordersAll,
     specialDates,
     showingAll ? undefined : storeId,
+    plans,
   );
   const week = weekDays.map((date) => ({
     iso: date,

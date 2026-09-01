@@ -8,7 +8,6 @@ import { AdminLogsView } from "@/components/admin/admin-logs";
 import { AdminOrderDetailView } from "@/components/admin/admin-order-detail";
 import { AdminOrdersView } from "@/components/admin/admin-orders";
 import { AdminPageFrame } from "@/components/admin/admin-page-frame";
-import { AdminAddonsView } from "@/components/admin/admin-addons";
 import { AdminPermissionsView } from "@/components/admin/admin-permissions";
 import { AdminPlansView } from "@/components/admin/admin-plans";
 import { AdminReportsView } from "@/components/admin/admin-reports";
@@ -19,7 +18,7 @@ import { AdminStaffView } from "@/components/admin/admin-staff";
 import { AdminVehiclesView } from "@/components/admin/admin-vehicles";
 import { AdminCmsView } from "@/components/admin/admin-cms";
 import { AdminAffiliatesView } from "@/components/admin/admin-affiliates";
-import { ADMIN_PAGE_META, adminTabFromLocation, BOOKING_HOME, CONTENT_HOME, normalizeAdminTab, REPORT_HOME, SETTINGS_HOME } from "@/lib/admin/nav";
+import { ADMIN_PAGE_META, adminTabFromLocation, normalizeAdminTab } from "@/lib/admin/nav";
 import { b2Copy } from "@/lib/admin/b2-copy";
 import { b3Copy } from "@/lib/admin/b3-copy";
 import { adminCopy } from "@/lib/admin/copy";
@@ -34,7 +33,10 @@ function metaFor(tab: string, locale: string) {
     const id = tab.slice("/admin/orders/".length);
     return { title: copy.orderDetail, lead: copy.orderLead(id) };
   }
-  if (tab === "/admin/addons") return { title: b2.addonsMenu, lead: b2.addonsLead };
+  if (tab === "/admin/addons") {
+    const page = copy.pages["/admin/plans"] ?? ADMIN_PAGE_META["/admin/plans"];
+    return { title: page?.title ?? copy.nav["/admin/plans"] ?? "套餐管理", lead: b2.plansLead };
+  }
   if (tab === "/admin/permissions") return { title: b2.permissions, lead: b2.permissionsLead };
   if (tab === "/admin/settings/refund") return { title: b2.refundPolicy, lead: b2.refundPolicyLead };
   if (tab === "/admin/inventory") {
@@ -73,9 +75,8 @@ function viewFor(tab: string) {
     case "/admin/vehicles":
       return <AdminVehiclesView />;
     case "/admin/plans":
-      return <AdminPlansView />;
     case "/admin/addons":
-      return <AdminAddonsView />;
+      return <AdminPlansView />;
     case "/admin/permissions":
       return (
         <AdminRoleGate allow={["admin", "manager"]}>
@@ -183,12 +184,9 @@ export function AdminWorkspace() {
 
   useEffect(() => {
     const loc = adminTabFromLocation();
-    if (loc === "/admin/bookings") go(BOOKING_HOME);
-    if (loc === "/admin/content") go(CONTENT_HOME);
-    if (loc === "/admin/reports") go(REPORT_HOME);
-    if (loc === "/admin/settings") go(SETTINGS_HOME);
-    if (loc === "/admin/bookings/how") go("/admin/settings/booking");
-    if (loc === "/admin/settings/send" || loc === "/admin/settings/mail") go("/admin/settings/email");
+    if (!loc) return;
+    const next = normalizeAdminTab(loc);
+    if (next !== loc) go(next);
   }, [pathname, go]);
 
   const tab = normalizeAdminTab(override ?? adminTabFromLocation() ?? (pathname || "/admin/dashboard"));

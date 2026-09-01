@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
+import { AddonEditorFields, blankAddon } from "@/components/admin/admin-addon-form";
 import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import { formatYenShort } from "@/lib/format";
 import { coverOf, planImage, planRoute } from "@/lib/media";
+import { type MockAddon } from "@/lib/mock/addons";
 import { MOCK_PLANS, type MockPlan } from "@/lib/mock/plans";
 import { readLocalImage } from "@/lib/read-local-image";
 import { adminCopy } from "@/lib/admin/copy";
@@ -18,6 +20,7 @@ import { useToastStore } from "@/stores/toast-store";
 import { useLocale } from "next-intl";
 
 function toggleAddon(plan: MockPlan, addonId: string): MockPlan {
+  if ((plan.includedAddonIds ?? []).includes(addonId)) return plan;
   const current = plan.allowedAddonIds ?? [];
   const on = current.includes(addonId);
   return {
@@ -26,12 +29,19 @@ function toggleAddon(plan: MockPlan, addonId: string): MockPlan {
   };
 }
 
-function toggleIncluded(plan: MockPlan, addonId: string): MockPlan {
-  const current = plan.includedAddonIds ?? [];
-  const on = current.includes(addonId);
+function setIncluded(plan: MockPlan, addonId: string, on: boolean): MockPlan {
+  const included = new Set(plan.includedAddonIds ?? []);
+  const allowed = new Set(plan.allowedAddonIds ?? []);
+  if (on) {
+    included.add(addonId);
+    allowed.delete(addonId);
+  } else {
+    included.delete(addonId);
+  }
   return {
     ...plan,
-    includedAddonIds: on ? current.filter((id) => id !== addonId) : [...current, addonId],
+    includedAddonIds: [...included],
+    allowedAddonIds: [...allowed],
   };
 }
 
@@ -204,17 +214,26 @@ function PlanImageField({
 
 export function AdminPlansView() {
   const locale = useLocale();
-  const copy = adminCopy(locale).plans;
+  const allCopy = adminCopy(locale);
+  const copy = allCopy.plans;
+  const addonCopy = allCopy.addons;
+  const common = allCopy.common;
   const b2 = b2Copy(locale);
-  const { addons, patchPlan, upsertPlan } = useOpsStore();
+  const { addons, patchPlan, upsertPlan, upsertAddon, removeAddon } = useOpsStore();
   const { plans, storeId } = useStoreData();
   const notify = useToastStore((state) => state.notify);
   const [editing, setEditing] = useState<MockPlan | null>(null);
+  const [addonDraft, setAddonDraft] = useState<MockAddon | null>(null);
+  const [removingAddon, setRemovingAddon] = useState<MockAddon | null>(null);
   const [copyOpen, setCopyOpen] = useState(-1);
   const [copyLang, setCopyLang] = useState<AdminLangKey>(() => adminLangFromLocale(locale));
 
   function openEditor(plan: MockPlan) {
-    setEditing(plan);
+    const included = plan.includedAddonIds ?? [];
+    setEditing({
+      ...plan,
+      allowedAddonIds: (plan.allowedAddonIds ?? []).filter((id) => !included.includes(id)),
+    });
     setCopyOpen(-1);
     setCopyLang(adminLangFromLocale(locale));
   }
@@ -311,6 +330,7 @@ export function AdminPlansView() {
         title={editing?.name ? copy.edit : copy.add}
         wide
         onClose={() => {
+          if (addonDraft || removingAddon) return;
           setEditing(null);
           setCopyOpen(-1);
         }}
@@ -474,35 +494,74 @@ export function AdminPlansView() {
             </label>
 
             <div>
-              <p className="text-sm text-slate-600">{copy.addons}</p>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-slate-600">{copy.addons}</p>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 rounded-full border border-blue-200 px-3 py-1.5 text-xs text-blue-600 hover:bg-blue-50"
+                  onClick={() => setAddonDraft(blankAddon())}
+                >
+                  <Plus className="size-3.5" />
+                  {addonCopy.add}
+                </button>
+              </div>
               <p className="mt-1 text-xs text-slate-500">{copy.addonsHint}</p>
-              <ul className="mt-2 space-y-1">
+              <ul className="mt-2 space-y-2">
                 {addons.map((addon) => {
-                  const allowed = (editing.allowedAddonIds ?? []).includes(addon.id);
                   const included = (editing.includedAddonIds ?? []).includes(addon.id);
+                  const allowed = !included && (editing.allowedAddonIds ?? []).includes(addon.id);
                   return (
-                    <li key={addon.id} className="rounded-xl px-2 py-2 hover:bg-slate-50">
-                      <label className="flex cursor-pointer items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={allowed}
-                          onChange={() => setEditing(toggleAddon(editing, addon.id))}
-                          className="size-4 accent-blue-600"
-                        />
-                        <span className={cn("flex-1 text-sm", allowed ? "text-slate-800" : "text-slate-400")}>
+                    <li key={addon.id} className={cn("plan-addon-row", included && "is-locked")}>
+                      <div className="plan-addon-main">
+                        <span className="plan-addon-ctrl">
+                          <input
+                            type="checkbox"
+                            checked={allowed}
+                            disabled={included}
+                            onChange={() => {
+                              if (included) return;
+                              setEditing(toggleAddon(editing, addon.id));
+                            }}
+                            className="size-4 accent-blue-600 disabled:cursor-not-allowed"
+                          />
+                        </span>
+                        <span className={cn("min-w-0 flex-1 text-sm", allowed || included ? "text-slate-800" : "text-slate-400")}>
                           {addon.name}
                           <span className="ml-2 text-xs text-slate-400">{b2.allowed}</span>
                         </span>
-                        <span className="text-xs text-slate-500">
+                        <span className="shrink-0 text-xs text-slate-500">
                           {formatYenShort(addon.priceJpy)} {addon.unitLabel}
                         </span>
-                      </label>
-                      <div className="mt-2 flex items-center justify-between gap-3 pl-7">
+                        <span className="plan-addon-ops">
+                          <button
+                            type="button"
+                            className="rounded-full border border-slate-200 px-2.5 py-1 text-[11px] hover:border-blue-400"
+                            onClick={() => setAddonDraft(addon)}
+                          >
+                            {common.edit}
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-full border border-slate-200 p-1.5 hover:border-rose-400"
+                            onClick={() => setRemovingAddon(addon)}
+                            aria-label={addonCopy.del}
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </span>
+                      </div>
+                      <div className="plan-addon-inc">
+                        <span className="plan-addon-ctrl">
+                          <NeonToggle
+                            checked={included}
+                            label={b2.included}
+                            onChange={(on) => setEditing(setIncluded(editing, addon.id, on))}
+                          />
+                        </span>
                         <span>
                           <span className="text-xs text-slate-600">{b2.included}</span>
                           <span className="mt-0.5 block text-[11px] text-slate-400">{b2.includedHint}</span>
                         </span>
-                        <NeonToggle checked={included} onChange={() => setEditing(toggleIncluded(editing, addon.id))} />
                       </div>
                     </li>
                   );
@@ -515,6 +574,73 @@ export function AdminPlansView() {
             </div>
           </>
         ) : null}
+      </Modal>
+
+      <Modal
+        open={Boolean(addonDraft)}
+        title={addonDraft?.name ? addonCopy.editTitle : addonCopy.addTitle}
+        layer="nested"
+        onClose={() => setAddonDraft(null)}
+        footer={
+          <button
+            type="button"
+            className="cta-btn px-5 py-2.5"
+            onClick={() => {
+              if (!addonDraft || !editing) return;
+              const isNew = !addons.some((item) => item.id === addonDraft.id);
+              upsertAddon(addonDraft);
+              if (isNew) {
+                setEditing({
+                  ...editing,
+                  allowedAddonIds: [...(editing.allowedAddonIds ?? []), addonDraft.id],
+                });
+              }
+              setAddonDraft(null);
+              notify(addonCopy.saved);
+            }}
+          >
+            {common.save}
+          </button>
+        }
+      >
+        {addonDraft ? <AddonEditorFields addon={addonDraft} onChange={setAddonDraft} /> : null}
+      </Modal>
+
+      <Modal
+        open={Boolean(removingAddon)}
+        title={addonCopy.delAsk}
+        layer="nested"
+        onClose={() => setRemovingAddon(null)}
+        footer={
+          <>
+            <button
+              type="button"
+              className="rounded-full border border-slate-200 px-4 py-2 text-sm"
+              onClick={() => setRemovingAddon(null)}
+            >
+              {addonCopy.think}
+            </button>
+            <button
+              type="button"
+              className="cta-btn px-5 py-2.5"
+              onClick={() => {
+                if (!removingAddon || !editing) return;
+                removeAddon(removingAddon.id);
+                setEditing({
+                  ...editing,
+                  allowedAddonIds: (editing.allowedAddonIds ?? []).filter((id) => id !== removingAddon.id),
+                  includedAddonIds: (editing.includedAddonIds ?? []).filter((id) => id !== removingAddon.id),
+                });
+                setRemovingAddon(null);
+                notify(addonCopy.deleted);
+              }}
+            >
+              {addonCopy.del}
+            </button>
+          </>
+        }
+      >
+        <p className="text-sm text-slate-500">{addonCopy.delLead}</p>
       </Modal>
     </div>
   );

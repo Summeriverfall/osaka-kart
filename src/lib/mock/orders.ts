@@ -174,10 +174,11 @@ export function isRolledDemoOrder(order: MockOrder) {
   return DEMO_ORDER_ID.test(order.id) && !isWebsiteLiveOrder(order);
 }
 
-/** Keep live / 手建订单，按今天重铺演示周，保证仪表盘一直有今日单量。 */
+/** Keep live / 手建订单，按今天补齐演示周。历史单不入库，避免撑爆本地存储。 */
 export function mergeFreshDemoOrders(orders: MockOrder[], today = todayIsoDate()): MockOrder[] {
-  const keep = orders.filter((item) => !isRolledDemoOrder(item));
-  const kept = new Set(keep.map((item) => item.id));
-  const demo = buildWeekDemoOrders(today);
-  return [...keep, ...demo.filter((item) => !kept.has(item.id))];
+  const keep = orders.filter((item) => !isRolledDemoOrder(item) && !item.id.startsWith("FK-H-"));
+  const keepIds = new Set(keep.map((item) => item.id));
+  const existingDemo = new Map(orders.filter(isRolledDemoOrder).map((item) => [item.id, item]));
+  const demo = buildWeekDemoOrders(today).map((item) => existingDemo.get(item.id) ?? item);
+  return [...keep, ...demo.filter((item) => !keepIds.has(item.id))];
 }

@@ -84,8 +84,18 @@ const FILE_BOOT = `<script data-file-boot>(function(){
   location.replace = function(v){ replace(toHtml(v)); };
   var push = history.pushState.bind(history);
   var repl = history.replaceState.bind(history);
-  history.pushState = function(s, t, u){ if (u) { go(u); return; } return push(s, t, u); };
-  history.replaceState = function(s, t, u){ if (u) { go(u); return; } return repl(s, t, u); };
+  history.pushState = function(s, t, u){
+    if (!u) return push(s, t, u);
+    try { return push(s, t, toHtml(u)); } catch (err) {
+      try { return push(s, t, u); } catch (err2) { return; }
+    }
+  };
+  history.replaceState = function(s, t, u){
+    if (!u) return repl(s, t, u);
+    try { return repl(s, t, toHtml(u)); } catch (err) {
+      try { return repl(s, t, u); } catch (err2) { return; }
+    }
+  };
   document.addEventListener("click", function(e){
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     var a = e.target && e.target.closest && e.target.closest("a");

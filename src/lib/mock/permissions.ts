@@ -23,7 +23,7 @@ export const PERM_MODULES: { id: PermModule; parent?: PermModule }[] = [
   { id: "inventory" },
   { id: "vehicles" },
   { id: "plans" },
-  { id: "addons" },
+  { id: "addons", parent: "plans" },
   { id: "content" },
   { id: "affiliates" },
   { id: "reports" },
@@ -126,8 +126,7 @@ export function moduleFromHref(href: string): PermModule {
   if (href.startsWith("/admin/calendar")) return "calendar";
   if (href.startsWith("/admin/inventory")) return "inventory";
   if (href.startsWith("/admin/vehicles")) return "vehicles";
-  if (href.startsWith("/admin/plans")) return "plans";
-  if (href.startsWith("/admin/addons")) return "addons";
+  if (href.startsWith("/admin/plans") || href.startsWith("/admin/addons")) return "plans";
   if (href.startsWith("/admin/content")) return "content";
   if (href.startsWith("/admin/affiliates")) return "affiliates";
   if (href.startsWith("/admin/reports")) return "reports";

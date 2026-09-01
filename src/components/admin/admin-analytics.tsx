@@ -83,7 +83,7 @@ export function AdminAnalyticsView() {
   const b2 = b2Copy(locale);
   const notify = useToastStore((state) => state.notify);
   const today = todayIsoDate();
-  const { orders, storeId, vehicles, vehicleSlots, specialDates } = useStoreData();
+  const { orders, storeId, vehicles, vehicleSlots, specialDates, plans } = useStoreData();
   const channels = useOpsStore((state) => state.settings.channels);
   const patchSettings = useOpsStore((state) => state.patchSettings);
   const [mode, setMode] = useState<CompareMode>("week");
@@ -109,10 +109,10 @@ export function AdminAnalyticsView() {
       day: date.slice(5),
       iso: date,
       rate: Math.round(
-        occupancyRate(date, date, [date], vehicles, vehicleSlots, orders, specialDates, isAllStores(storeId) ? undefined : storeId) * 100,
+        occupancyRate(date, date, [date], vehicles, vehicleSlots, orders, specialDates, isAllStores(storeId) ? undefined : storeId, plans) * 100,
       ),
     }));
-  }, [currentRange, vehicles, vehicleSlots, orders, specialDates, storeId]);
+  }, [currentRange, vehicles, vehicleSlots, orders, specialDates, storeId, plans]);
   const cancelPie = [
     { name: b2.voluntary, value: report.cancelSplit.voluntary, fill: "#94a3b8" },
     { name: b2.noshow, value: report.cancelSplit.noshow, fill: "#f43f5e" },

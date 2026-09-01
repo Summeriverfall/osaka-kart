@@ -46,20 +46,6 @@ export function OrderEditFields({
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <label className="admin-field">
-        {copy.orders.id}
-        <input className="admin-input font-mono" value={order.id} onChange={(event) => set({ id: event.target.value })} />
-      </label>
-      <label className="admin-field">
-        {copy.orders.channel}
-        <select className="admin-input" value={order.channel} onChange={(event) => set({ channel: event.target.value })}>
-          {channelOptions.map((item) => (
-            <option key={item} value={item}>
-              {labelChannel(locale, item, channels)}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="admin-field">
         {copy.orders.date}
         <input className="admin-input" type="date" value={order.date} onChange={(event) => set({ date: event.target.value })} />
       </label>
@@ -71,20 +57,6 @@ export function OrderEditFields({
           value={order.time.slice(0, 5)}
           onChange={(event) => set({ time: event.target.value.slice(0, 5) })}
         />
-      </label>
-      <label className="admin-field">
-        {copy.orders.customerName}
-        <input className="admin-input" value={order.customer} onChange={(event) => set({ customer: event.target.value })} />
-      </label>
-      <label className="admin-field">
-        {copy.orders.nationality}
-        <select className="admin-input" value={order.nationality} onChange={(event) => set({ nationality: event.target.value })}>
-          {nations.map((code) => (
-            <option key={code} value={code}>
-              {code in copy.nation ? adminNation(locale, code) : code}
-            </option>
-          ))}
-        </select>
       </label>
       <label className="admin-field">
         {copy.orders.plan}
@@ -108,16 +80,6 @@ export function OrderEditFields({
         </select>
       </label>
       <label className="admin-field">
-        {copy.orders.status}
-        <select className="admin-input" value={order.status} onChange={(event) => set({ status: event.target.value as OrderStatus })}>
-          {STATUSES.map((item) => (
-            <option key={item} value={item}>
-              {copy.orderStatus[item]}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="admin-field">
         {copy.gender.male}
         <input
           className="admin-input"
@@ -136,6 +98,44 @@ export function OrderEditFields({
           value={order.female}
           onChange={(event) => setPeople(order.male, Number(event.target.value) || 0)}
         />
+      </label>
+      <label className="admin-field">
+        {copy.orders.customerName}
+        <input className="admin-input" value={order.customer} onChange={(event) => set({ customer: event.target.value })} />
+      </label>
+      <label className="admin-field">
+        {copy.orders.nationality}
+        <select className="admin-input" value={order.nationality} onChange={(event) => set({ nationality: event.target.value })}>
+          {nations.map((code) => (
+            <option key={code} value={code}>
+              {code in copy.nation ? adminNation(locale, code) : code}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="admin-field">
+        {copy.orders.channel}
+        <select className="admin-input" value={order.channel} onChange={(event) => set({ channel: event.target.value })}>
+          {channelOptions.map((item) => (
+            <option key={item} value={item}>
+              {labelChannel(locale, item, channels)}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="admin-field">
+        {copy.orders.status}
+        <select className="admin-input" value={order.status} onChange={(event) => set({ status: event.target.value as OrderStatus })}>
+          {STATUSES.map((item) => (
+            <option key={item} value={item}>
+              {copy.orderStatus[item]}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="admin-field">
+        {copy.orders.id}
+        <input className="admin-input font-mono" value={order.id} onChange={(event) => set({ id: event.target.value })} />
       </label>
       <label className="admin-field">
         {copy.orders.amount}

@@ -135,7 +135,7 @@ function video(
   return {
     id,
     slot,
-    source: extra?.source ?? (extra?.file ? "file" : "youtube"),
+    source: extra?.source ?? "youtube",
     youtubeId,
     file: extra?.file,
     poster: extra?.poster,
@@ -161,47 +161,39 @@ export const MOCK_CMS: CmsState = {
   },
   videos: [
     video("hero-main", "hero", L("首頁循環背景", "Hero loop", "ヒーロー映像", "히어로 영상"), "", 0, {
-      source: "file",
       file: "/videos/hero-bg.mp4",
       poster: "/images/hero/poster.webp",
     }),
     video("gallery-main", "gallery", L("夜間道頓堀", "Night Dotonbori", "ナイト道頓堀", "나이트 도톤보리"), "", 1, {
-      source: "file",
       file: "/videos/street-run.mp4",
       poster: "/images/social/yejiankadingche.webp",
     }),
     video("xp-1", "experience", L("難波出發", "Namba start", "難波スタート", "난바 출발"), "", 10, {
-      source: "file",
       file: "/videos/street-run.mp4",
       poster: "/images/social/nanbo.webp",
       startAt: 2,
     }),
     video("xp-2", "experience", L("夜間道頓堀", "Night Dotonbori", "ナイト道頓堀", "나이트 도톤보리"), "", 11, {
-      source: "file",
       file: "/videos/hero-bg.mp4",
       poster: "/images/social/yejiankadingche.webp",
       startAt: 18,
     }),
     video("xp-3", "experience", L("車隊燈光", "Convoy lights", "隊列の光", "대열의 빛"), "", 12, {
-      source: "file",
       file: "/videos/street-run.mp4",
       poster: "/images/social/33.webp",
       startAt: 7,
     }),
     video("xp-4", "experience", L("心齋橋環線", "Shinsaibashi loop", "心斎橋ループ", "신사이바시 루프"), "", 13, {
-      source: "file",
       file: "/videos/hero-bg.mp4",
       poster: "/images/social/22.webp",
       startAt: 48,
     }),
     video("xp-5", "experience", L("通天閣夜跑", "Tsutenkaku night", "通天閣ナイト", "츠텐카쿠 나이트"), "", 14, {
-      source: "file",
       file: "/videos/street-run.mp4",
       poster: "/images/social/tsutenkaku-kart.webp",
       startAt: 13,
     }),
     video("xp-6", "experience", L("大阪城路段", "Osaka Castle stretch", "大阪城区間", "오사카성 구간"), "", 15, {
-      source: "file",
       file: "/videos/hero-bg.mp4",
       poster: "/images/social/yejingtiyan.webp",
       startAt: 108,

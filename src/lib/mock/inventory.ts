@@ -10,6 +10,7 @@ export type MockSlotStock = {
 
 export type MockSpecialDate = {
   date: string;
+  time?: string;
   label: string;
   closed: boolean;
   storeId?: string;

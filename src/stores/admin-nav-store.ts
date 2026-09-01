@@ -21,11 +21,18 @@ export const useAdminNavStore = create<AdminNavState>((set, get) => ({
   setLocale: (locale) => set({ locale }),
   go: (href) => {
     const tab = normalizeAdminTab(href);
+    if (get().tab === tab) {
+      if (typeof window !== "undefined") {
+        const locale = get().locale || document.documentElement.lang || "zh-TW";
+        pushAppPath(tab, locale);
+      }
+      return;
+    }
+    set({ tab });
     if (typeof window !== "undefined") {
       const locale = get().locale || document.documentElement.lang || "zh-TW";
       pushAppPath(tab, locale);
     }
-    set({ tab });
   },
   reset: () => set({ tab: null }),
   syncFromWindow: () => set({ tab: tabFromWindow() }),

@@ -10,6 +10,7 @@ import { blankRole, PERM_MODULES, type MockRole, type PermModule } from "@/lib/m
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 import { storeIdOf } from "@/lib/store-id";
+import { cn } from "@/lib/utils";
 
 function moduleLabel(id: PermModule, locale: string) {
   const map: Record<PermModule, { zh: string; en: string; ja: string }> = {
@@ -82,7 +83,7 @@ export function AdminPermissionsView() {
                 const flags = current.perms[mod.id];
                 return (
                   <li key={mod.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-100 px-3 py-2">
-                    <span className="text-sm font-medium">{moduleLabel(mod.id, locale)}</span>
+                    <span className={cn("text-sm font-medium", mod.parent && "pl-4 text-slate-600")}>{moduleLabel(mod.id, locale)}</span>
                     <span className="flex items-center gap-4 text-xs">
                       <label className="flex items-center gap-2">
                         {b2.permView}

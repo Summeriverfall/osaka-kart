@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { Ban, Check, ChevronRight, Eye, Pencil, Plus, Search } from "lucide-react";
 import { ChannelBadge } from "@/components/admin/channel-badge";
@@ -10,7 +10,7 @@ import { adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/a
 import { b2Copy } from "@/lib/admin/b2-copy";
 import { useAdminAccess } from "@/lib/admin-access";
 import { collectChannelIds, labelChannel, liveChannelIds } from "@/lib/channel-options";
-import { readAdminFocusDate } from "@/lib/admin/focus-date";
+import { consumeAdminFocusAdd, readAdminFocusDate, readAdminFocusTime } from "@/lib/admin/focus-date";
 import { todayIsoDate } from "@/lib/booking/slots";
 import { formatYenShort } from "@/lib/format";
 import { OrderDocs } from "@/components/admin/order-docs";
@@ -150,6 +150,21 @@ export function AdminOrdersView() {
   const [cancelTarget, setCancelTarget] = useState<MockOrder | null>(null);
   const [cancelKind, setCancelKind] = useState<OrderCancelKind>("voluntary");
   const today = todayIsoDate();
+
+  useEffect(() => {
+    const time = readAdminFocusTime();
+    const date = readAdminFocusDate();
+    if (date) {
+      setFrom(date);
+      setTo(date);
+    }
+    if (consumeAdminFocusAdd() && date) {
+      setEditingFromId("");
+      setEditing({ ...EMPTY, date, time: time || "10:00", storeId });
+    }
+    // 库存页带入的日期 / 建单，只在进入列表时读一次
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const rows = useMemo(() => {
     const filtered = storeOrders.filter((item) => {

@@ -13,6 +13,8 @@ import { MOCK_PLANS, type MockPlan } from "@/lib/mock/plans";
 import type { MockSpecialDate } from "@/lib/mock/inventory";
 import type { MockSettings, MockStore } from "@/lib/mock/settings";
 import type { MockVehicle } from "@/lib/mock/vehicles";
+import { summarizeFleetSlot, slotBookableLeft } from "@/lib/fleet-inventory";
+import type { MockOrder } from "@/lib/mock/orders";
 import { vehicleIdsForStore } from "@/lib/ops-inventory";
 import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 import { DEFAULT_STORE_ID, storeIdOf } from "@/lib/store-id";
@@ -300,15 +302,15 @@ export function liveSlotRemaining(
   vehicles: MockVehicle[],
   specialDates: MockSpecialDate[],
   storeId = DEFAULT_STORE_ID,
+  orders: MockOrder[] = [],
+  plans: MockPlan[] = MOCK_PLANS,
 ) {
   if (!iso || !time) return 0;
   if (dateClosed(iso, specialDates, storeId)) return 0;
-  const ids = new Set(vehicleIdsForStore(vehicles, storeId));
-  const cells = slots.filter(
-    (cell) => cell.date === iso && cell.time === time && ids.has(cell.vehicleId),
+  if (!vehicles.length) return fallbackSlotRemaining(iso, time);
+  return slotBookableLeft(
+    summarizeFleetSlot(iso, time, vehicles, slots, orders, specialDates, storeId, plans),
   );
-  if (!cells.length) return fallbackSlotRemaining(iso, time);
-  return cells.reduce((sum, cell) => sum + (cell.closed ? 0 : cell.remaining), 0);
 }
 
 export function liveDayRemaining(
@@ -317,10 +319,15 @@ export function liveDayRemaining(
   vehicles: MockVehicle[],
   specialDates: MockSpecialDate[],
   storeId = DEFAULT_STORE_ID,
+  orders: MockOrder[] = [],
+  plans: MockPlan[] = MOCK_PLANS,
 ) {
   const times = Array.from(new Set(slots.filter((cell) => cell.date === iso).map((cell) => cell.time)));
   const list = times.length ? times : ["10:00", "11:30", "13:00", "14:30", "16:00", "17:30", "19:00"];
-  return Math.max(0, ...list.map((time) => liveSlotRemaining(iso, time, slots, vehicles, specialDates, storeId)));
+  return Math.max(
+    0,
+    ...list.map((time) => liveSlotRemaining(iso, time, slots, vehicles, specialDates, storeId, orders, plans)),
+  );
 }
 
 export function liveDayStatus(
@@ -353,9 +360,11 @@ export function liveSlotStatus(
   vehicles: MockVehicle[],
   specialDates: MockSpecialDate[],
   storeId = DEFAULT_STORE_ID,
+  orders: MockOrder[] = [],
+  plans: MockPlan[] = MOCK_PLANS,
 ): DayStatus {
   if (iso < minIso || iso > maxIso) return "closed";
-  const left = liveSlotRemaining(iso, time, slots, vehicles, specialDates, storeId);
+  const left = liveSlotRemaining(iso, time, slots, vehicles, specialDates, storeId, orders, plans);
   if (left <= 0) return "closed";
   if (left <= 2) return "ask";
   if (left <= 4) return "busy";
@@ -366,19 +375,21 @@ export function useLiveInventory(storeId = DEFAULT_STORE_ID) {
   const vehicleSlots = useOpsStore((state) => state.vehicleSlots);
   const specialDates = useOpsStore((state) => state.specialDates);
   const vehicles = useOpsStore((state) => state.vehicles);
+  const orders = useOpsStore((state) => state.orders);
+  const plans = useOpsStore((state) => state.plans);
 
   return useMemo(() => {
     const remaining = (iso: string, time: string) =>
-      liveSlotRemaining(iso, time, vehicleSlots, vehicles, specialDates, storeId);
+      liveSlotRemaining(iso, time, vehicleSlots, vehicles, specialDates, storeId, orders, plans);
     const dayLeft = (iso: string) =>
-      liveDayRemaining(iso, vehicleSlots, vehicles, specialDates, storeId);
+      liveDayRemaining(iso, vehicleSlots, vehicles, specialDates, storeId, orders, plans);
     return {
       remaining,
       dayRemaining: dayLeft,
       dayStatus: (iso: string, minIso: string, maxIso: string) =>
         liveDayStatus(iso, minIso, maxIso, vehicleSlots, vehicles, specialDates, storeId),
       slotStatus: (iso: string, time: string, minIso: string, maxIso: string) =>
-        liveSlotStatus(iso, time, minIso, maxIso, vehicleSlots, vehicles, specialDates, storeId),
+        liveSlotStatus(iso, time, minIso, maxIso, vehicleSlots, vehicles, specialDates, storeId, orders, plans),
       riderCap: (date: string, time: string) => (date && time ? remaining(date, time) : 0),
       clampRiders: (riders: number, date: string, time: string) => {
         const cap = date && time ? remaining(date, time) : 0;
@@ -386,7 +397,7 @@ export function useLiveInventory(storeId = DEFAULT_STORE_ID) {
         return Math.min(Math.max(Math.floor(riders) || 1, 1), cap);
       },
     };
-  }, [vehicleSlots, specialDates, vehicles, storeId]);
+  }, [vehicleSlots, specialDates, vehicles, storeId, orders, plans]);
 }
 
 export function enabledPayMethods(settings: MockSettings): PayMethod[] {

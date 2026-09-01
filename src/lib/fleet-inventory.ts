@@ -1,9 +1,10 @@
 import { BOOKING_SLOTS } from "@/lib/booking/slots";
-import { storeIdOf } from "@/lib/store-id";
+import { isAllStores, storeIdOf } from "@/lib/store-id";
 import type { MockOrder } from "@/lib/mock/orders";
+import { MOCK_PLANS, type MockPlan } from "@/lib/mock/plans";
 import type { MockSpecialDate } from "@/lib/mock/inventory";
 import type { MockVehicle } from "@/lib/mock/vehicles";
-import type { OccupancyTone, VehicleSlotCell } from "@/lib/mock/vehicle-timeline";
+import { timelineTicks, type OccupancyTone, type VehicleSlotCell } from "@/lib/mock/vehicle-timeline";
 
 export type FleetCell = {
   date: string;
@@ -12,18 +13,170 @@ export type FleetCell = {
   left: number;
   booked: number;
   riders: number;
+  races: number;
+  buffer: boolean;
+  depart: boolean;
   closed: boolean;
+  closedKind?: "day" | "slot" | "hours";
   oversold: boolean;
   tone: OccupancyTone;
 };
 
-const BOOKABLE = new Set<string>(BOOKING_SLOTS);
+const DEPART_TICKS = new Set<string>(BOOKING_SLOTS);
 
-export function fleetTone(cell: Pick<FleetCell, "closed" | "left" | "total" | "oversold">): OccupancyTone {
+export const RACE_BUFFER_MIN = 0;
+export const MAX_CONCURRENT_RACES = 2;
+export const STAFF_KARTS = 2;
+export const GUEST_CAP = 8;
+export const TICK_MIN = 30;
+
+export function guestCapacity(kartsReady: number) {
+  if (kartsReady <= 0) return 0;
+  if (kartsReady <= STAFF_KARTS) return kartsReady;
+  return Math.min(GUEST_CAP, kartsReady - STAFF_KARTS);
+}
+
+const OPEN_TICKS = new Set(timelineTicks());
+
+function fleetStoreId(storeId?: string) {
+  if (!storeId || isAllStores(storeId)) return "";
+  return storeIdOf(storeId);
+}
+
+export function parseClockMinutes(time: string) {
+  const hour = Number(time.slice(0, 2)) || 0;
+  const minute = Number(time.slice(3, 5)) || 0;
+  return hour * 60 + minute;
+}
+
+export function orderDurationMinutes(order: Pick<MockOrder, "planSlug" | "planName">, plans: MockPlan[] = MOCK_PLANS) {
+  const plan = plans.find((item) => item.slug === order.planSlug);
+  if (plan?.durationMinutes) return plan.durationMinutes;
+  const match = order.planName.match(/(\d+)\s*分钟|(\d+)\s*min|(\d+)\s*分/i);
+  return Number(match?.[1] || match?.[2] || match?.[3]) || 60;
+}
+
+export function formatClockMinutes(mins: number) {
+  const wrapped = ((mins % (24 * 60)) + 24 * 60) % (24 * 60);
+  return `${String(Math.floor(wrapped / 60)).padStart(2, "0")}:${String(wrapped % 60).padStart(2, "0")}`;
+}
+
+export function isDepartTick(time: string) {
+  return DEPART_TICKS.has(time);
+}
+
+export function fleetSpanKey(cell: FleetCell) {
+  if (cell.closed) return cell.closedKind === "slot" ? "lock" : "closed";
+  return [cell.left, cell.total, cell.races, cell.buffer ? 1 : 0, cell.oversold ? 1 : 0].join(":");
+}
+
+export function mergeFleetSpans(cells: FleetCell[]) {
+  const spans: { cell: FleetCell; times: string[] }[] = [];
+  for (const cell of cells) {
+    const last = spans.at(-1);
+    if (last && fleetSpanKey(last.cell) === fleetSpanKey(cell)) {
+      last.times.push(cell.time);
+      continue;
+    }
+    spans.push({ cell, times: [cell.time] });
+  }
+  return spans;
+}
+
+export function spanEndClock(times: string[]) {
+  const last = times[times.length - 1] ?? times[0] ?? "00:00";
+  return formatClockMinutes(parseClockMinutes(last) + TICK_MIN);
+}
+
+function raceWindow(order: Pick<MockOrder, "time" | "planSlug" | "planName">, plans: MockPlan[], buffer = false) {
+  const start = parseClockMinutes(order.time);
+  const duration = orderDurationMinutes(order, plans);
+  const pad = buffer ? RACE_BUFFER_MIN : 0;
+  return { from: start - pad, to: start + duration + pad };
+}
+
+export type FleetHold = {
+  order: MockOrder;
+  kind: "race" | "buffer";
+  duration: number;
+  karts: number;
+  start: string;
+  end: string;
+  holdStart: string;
+  holdEnd: string;
+};
+
+export function describeHolds(
+  date: string,
+  time: string,
+  orders: MockOrder[],
+  plans: MockPlan[] = MOCK_PLANS,
+  storeId?: string,
+): FleetHold[] {
+  return occupyingOrders(date, time, orders, plans, storeId, false).map((order) => {
+    const race = raceWindow(order, plans, false);
+    const hold = raceWindow(order, plans, true);
+    const inRace = tickOverlaps(parseClockMinutes(time), race.from, race.to);
+    return {
+      order,
+      kind: inRace ? "race" : "buffer",
+      duration: orderDurationMinutes(order, plans),
+      karts: Math.max(0, order.riders),
+      start: formatClockMinutes(race.from),
+      end: formatClockMinutes(race.to),
+      holdStart: formatClockMinutes(hold.from),
+      holdEnd: formatClockMinutes(hold.to),
+    };
+  });
+}
+
+function tickOverlaps(tickStart: number, from: number, to: number) {
+  return tickStart < to && tickStart + TICK_MIN > from;
+}
+
+function isActiveRace(order: MockOrder, date: string, storeId?: string) {
+  if (order.date !== date || order.status === "cancelled") return false;
+  const sid = fleetStoreId(storeId);
+  if (sid && storeIdOf(order.storeId) !== sid) return false;
+  return true;
+}
+
+export function occupyingOrders(
+  date: string,
+  time: string,
+  orders: MockOrder[],
+  plans: MockPlan[] = MOCK_PLANS,
+  storeId?: string,
+  buffer = false,
+) {
+  const tick = parseClockMinutes(time);
+  return orders.filter((order) => {
+    if (!isActiveRace(order, date, storeId)) return false;
+    const window = raceWindow(order, plans, buffer);
+    return tickOverlaps(tick, window.from, window.to);
+  });
+}
+
+export function fleetTone(
+  cell: Pick<FleetCell, "closed" | "left" | "total" | "oversold" | "races">,
+): OccupancyTone {
   if (cell.closed || cell.total <= 0) return "idle";
   if (cell.oversold || cell.left <= 0) return "full";
-  if (cell.left / cell.total <= 0.35) return "tight";
+  if (cell.left <= 2 || cell.left / cell.total <= 0.35) return "tight";
   return "free";
+}
+
+function dateClosedForStore(row: MockSpecialDate, date: string, sid: string) {
+  if (row.date !== date || !row.closed) return false;
+  if (row.time) return false;
+  if (!sid) return !row.storeId;
+  return !row.storeId || storeIdOf(row.storeId) === sid;
+}
+
+function slotClosedForStore(row: MockSpecialDate, date: string, time: string, sid: string) {
+  if (row.date !== date || !row.closed || row.time !== time) return false;
+  if (!sid) return !row.storeId;
+  return !row.storeId || storeIdOf(row.storeId) === sid;
 }
 
 export function summarizeFleetSlot(
@@ -34,28 +187,28 @@ export function summarizeFleetSlot(
   orders: MockOrder[],
   specialDates: MockSpecialDate[],
   storeId?: string,
+  plans: MockPlan[] = MOCK_PLANS,
 ): FleetCell {
-  const sid = storeId ? storeIdOf(storeId) : "";
-  const pool = sid
-    ? vehicles.filter((item) => storeIdOf(item.storeId) === sid)
-    : vehicles;
+  const sid = fleetStoreId(storeId);
+  const pool = sid ? vehicles.filter((item) => storeIdOf(item.storeId) === sid) : vehicles;
   const available = pool.filter((item) => item.status === "available");
-  const total = available.length;
-  const dayClosed = specialDates.some(
-    (row) => row.date === date && row.closed && (!sid || storeIdOf(row.storeId) === sid || !row.storeId),
+  const closedIds = new Set(
+    slots
+      .filter((cell) => cell.date === date && cell.time === time && cell.closed)
+      .map((cell) => cell.vehicleId),
   );
-  const bookable = BOOKABLE.has(time);
-  const riders = orders
-    .filter(
-      (order) =>
-        order.date === date &&
-        order.time === time &&
-        order.status !== "cancelled" &&
-        (!sid || storeIdOf(order.storeId) === sid),
-    )
-    .reduce((sum, order) => sum + Math.max(0, order.riders), 0);
+  const kartsReady = available.filter((item) => !closedIds.has(item.id)).length;
+  const total = guestCapacity(kartsReady);
+  const dayClosed = specialDates.some((row) => dateClosedForStore(row, date, sid));
+  const slotClosed = specialDates.some((row) => slotClosedForStore(row, date, time, sid));
+  const racing = occupyingOrders(date, time, orders, plans, storeId, false);
+  const booked = racing.reduce((sum, order) => sum + Math.max(0, order.riders), 0);
+  const riders = booked;
+  const races = racing.length;
+  const buffer = false;
+  const depart = isDepartTick(time);
 
-  if (!bookable || dayClosed || total === 0) {
+  if (!OPEN_TICKS.has(time) || dayClosed || slotClosed || total === 0) {
     return {
       date,
       time,
@@ -63,25 +216,39 @@ export function summarizeFleetSlot(
       left: 0,
       booked: 0,
       riders,
+      races,
+      buffer,
+      depart,
       closed: true,
+      closedKind: dayClosed ? "day" : slotClosed ? "slot" : "hours",
       oversold: false,
       tone: "idle",
     };
   }
 
-  const ids = new Set(available.map((item) => item.id));
-  const cells = slots.filter((cell) => cell.date === date && cell.time === time && ids.has(cell.vehicleId));
-  const open = cells.filter((cell) => !cell.closed);
-  const source = open.length ? open : cells;
-  const left = source.length
-    ? source.filter((cell) => cell.remaining > 0).length
-    : Math.max(0, total - riders);
-  const cap = source.length || total;
-  const booked = Math.max(0, cap - left);
-  const oversold = riders > cap || booked > cap;
-  const row = { date, time, total: cap, left, booked, riders, closed: false, oversold, tone: "free" as OccupancyTone };
+  const left = Math.max(0, total - booked);
+  const oversold = booked > total;
+  const row: FleetCell = {
+    date,
+    time,
+    total,
+    left,
+    booked,
+    riders,
+    races,
+    buffer,
+    depart,
+    closed: false,
+    oversold,
+    tone: "free",
+  };
   row.tone = fleetTone(row);
   return row;
+}
+
+export function slotBookableLeft(cell: FleetCell) {
+  if (cell.closed) return 0;
+  return cell.left;
 }
 
 export function occupancyRate(
@@ -93,16 +260,17 @@ export function occupancyRate(
   orders: MockOrder[],
   specialDates: MockSpecialDate[],
   storeId?: string,
+  plans: MockPlan[] = MOCK_PLANS,
 ) {
   let booked = 0;
   let capacity = 0;
   for (const date of days) {
     if (date < from || date > to) continue;
-    for (const time of BOOKING_SLOTS) {
-      const cell = summarizeFleetSlot(date, time, vehicles, slots, orders, specialDates, storeId);
+    for (const time of OPEN_TICKS) {
+      const cell = summarizeFleetSlot(date, time, vehicles, slots, orders, specialDates, storeId, plans);
       if (cell.closed || cell.total <= 0) continue;
       capacity += cell.total;
-      booked += Math.min(cell.total, cell.booked || cell.riders);
+      booked += Math.min(cell.total, cell.booked);
     }
   }
   if (!capacity) return 0;

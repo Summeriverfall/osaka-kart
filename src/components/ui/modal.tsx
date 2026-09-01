@@ -12,18 +12,21 @@ type ModalProps = {
   footer?: React.ReactNode;
   wide?: boolean;
   top?: boolean;
+  layer?: "base" | "nested";
 };
 
-export function Modal({ open, title, onClose, children, footer, wide, top }: ModalProps) {
+export function Modal({ open, title, onClose, children, footer, wide, top, layer = "base" }: ModalProps) {
   useEffect(() => {
     if (!open) return;
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
+      if (event.key !== "Escape") return;
+      event.stopImmediatePropagation();
+      onClose();
     }
-    window.addEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKey, true);
     document.body.style.overflow = "hidden";
     return () => {
-      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keydown", onKey, true);
       document.body.style.overflow = "";
     };
   }, [open, onClose]);
@@ -33,7 +36,8 @@ export function Modal({ open, title, onClose, children, footer, wide, top }: Mod
   return (
     <div
       className={cn(
-        "fixed inset-0 z-[90] flex justify-center bg-black/80 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+        "admin-modal-overlay fixed inset-0 flex justify-center bg-black/80 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+        layer === "nested" ? "z-[100]" : "z-[90]",
         top ? "items-start pt-[max(1rem,env(safe-area-inset-top))] sm:pt-10" : "items-center sm:p-4",
       )}
       onClick={onClose}

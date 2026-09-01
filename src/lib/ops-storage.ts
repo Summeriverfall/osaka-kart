@@ -78,35 +78,68 @@ async function hydrateCms(state: OpsPersist) {
   return migrated;
 }
 
+function isHistoryOrderId(value: unknown) {
+  if (!value || typeof value !== "object" || !("id" in value)) return false;
+  return String((value as { id?: unknown }).id ?? "").startsWith("FK-H-");
+}
+
+function stripHistoryOrders(state: OpsPersist) {
+  const orders = state.orders;
+  if (!Array.isArray(orders)) return false;
+  const next = orders.filter((item) => !isHistoryOrderId(item));
+  if (next.length === orders.length) return false;
+  state.orders = next;
+  return true;
+}
+
 export const opsPersistStorage: PersistStorage<OpsPersist> = {
   getItem: async (name) => {
     if (typeof window === "undefined") return null;
     const raw = localStorage.getItem(name);
     if (!raw) return null;
+    if (raw.length > 2_500_000) {
+      try {
+        localStorage.removeItem(name);
+      } catch {
+        /* private mode */
+      }
+      return null;
+    }
     try {
       const parsed = JSON.parse(raw) as StorageValue<OpsPersist>;
       const state = (parsed.state ?? {}) as OpsPersist;
+      const strippedHistory = stripHistoryOrders(state);
       const migratedPlans = await hydratePlans(state);
       const migratedCms = await hydrateCms(state);
       parsed.state = state;
-      if (migratedPlans || migratedCms) {
-        localStorage.setItem(name, JSON.stringify({
-          ...parsed,
-          state: {
-            ...state,
-            plans: (state.plans ?? []).map(slimPlanImages),
-            cms: state.cms ? slimCms(state.cms) : state.cms,
-          },
-        }));
+      if (strippedHistory || migratedPlans || migratedCms) {
+        try {
+          localStorage.setItem(name, JSON.stringify({
+            ...parsed,
+            state: {
+              ...state,
+              plans: (state.plans ?? []).map(slimPlanImages),
+              cms: state.cms ? slimCms(state.cms) : state.cms,
+            },
+          }));
+        } catch {
+          /* quota：读盘已剥掉历史单，写回失败也不挡后台 */
+        }
       }
       return parsed;
     } catch {
+      try {
+        localStorage.removeItem(name);
+      } catch {
+        /* private mode */
+      }
       return null;
     }
   },
   setItem: async (name, value) => {
     if (typeof window === "undefined") return;
     const state = { ...(value.state ?? {}) } as OpsPersist;
+    stripHistoryOrders(state);
     const plans = Array.isArray(state.plans) ? state.plans : [];
     try {
       await stashPlanImages(plans);
@@ -119,7 +152,11 @@ export const opsPersistStorage: PersistStorage<OpsPersist> = {
     if (Array.isArray(state.logs) && state.logs.length > 200) {
       state.logs = state.logs.slice(0, 200);
     }
-    localStorage.setItem(name, JSON.stringify({ ...value, state }));
+    try {
+      localStorage.setItem(name, JSON.stringify({ ...value, state }));
+    } catch {
+      /* quota */
+    }
   },
   removeItem: (name) => {
     if (typeof window === "undefined") return;

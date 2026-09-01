@@ -12,7 +12,6 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { href: "/admin/inventory", label: "库存管理", roles: ["admin", "manager", "staff"] },
   { href: "/admin/vehicles", label: "车辆管理", roles: ["admin", "manager", "staff"] },
   { href: "/admin/plans", label: "套餐管理", roles: ["admin", "manager", "staff"] },
-  { href: "/admin/addons", label: "附加项管理", roles: ["admin", "manager", "staff"] },
   { href: "/admin/content", label: "内容管理", roles: ["admin", "manager", "staff"] },
   { href: "/admin/affiliates", label: "推广代理", roles: ["admin", "manager", "staff"] },
   { href: "/admin/reports", label: "财务报表", roles: ["admin"] },
@@ -60,10 +59,10 @@ export const ADMIN_PAGE_META: Record<string, { title: string; lead: string }> = 
   "/admin/bookings": { title: "订单列表", lead: "列表处理订单。点状态可直接改，不必进详情。" },
   "/admin/orders": { title: "订单列表", lead: "列表处理订单。点状态可直接改，不必进详情。" },
   "/admin/calendar": { title: "日历", lead: "月 / 周 / 日看订单分布。点日期更新下方列表，点色块打开订单详情。" },
-  "/admin/inventory": { title: "库存管理", lead: "按日期 × 时段查看可用车辆总数。" },
+  "/admin/inventory": { title: "库存管理", lead: "点格子看占车详情，可建单或锁定时段。" },
   "/admin/vehicles": { title: "车辆管理", lead: "10 辆车。维修中的会从当日库存扣除。" },
-  "/admin/plans": { title: "套餐管理", lead: "编辑前台卡片：标题图、说明图、介绍与亮点，以及价格、时长和内置附加项。" },
-  "/admin/addons": { title: "附加项管理", lead: "独立管理附加项：名称、价格、描述、数量上限和上下架。" },
+  "/admin/plans": { title: "套餐管理", lead: "编辑套餐卡片、价格和时长。附加项在套餐编辑里添加、删除，并用开关标记内置项。" },
+  "/admin/addons": { title: "套餐管理", lead: "附加项已并入套餐编辑。" },
   "/admin/content": { title: "视频管理", lead: "管理前台各处视频。可上传本地文件，或贴 YouTube 链接。" },
   "/admin/content/videos": { title: "视频管理", lead: "管理前台各处视频。可上传本地文件，或贴 YouTube 链接。" },
   "/admin/content/reviews": { title: "用户评价", lead: "对应前台「用户评价」。可改文案、姓名与照片。" },
@@ -146,6 +145,8 @@ export function adminTabFromHref(href: string) {
 
 export function adminTabFromLocation() {
   if (typeof window === "undefined") return null;
+  const hash = decodeURIComponent(window.location.hash.replace(/^#\/?/, ""));
+  if (hash.startsWith("admin")) return adminTabFromHref(`/${hash}`);
   return adminTabFromHref(window.location.pathname);
 }
 
@@ -155,6 +156,7 @@ export function normalizeAdminTab(href: string) {
   if (tab === "/admin/content") return CONTENT_HOME;
   if (tab === "/admin/reports") return REPORT_HOME;
   if (tab === "/admin/settings") return SETTINGS_HOME;
+  if (tab === "/admin/addons") return "/admin/plans";
   if (tab === "/admin/bookings/how") return "/admin/settings/booking";
   if (tab === "/admin/settings/send" || tab === "/admin/settings/mail") return "/admin/settings/email";
   return tab;
