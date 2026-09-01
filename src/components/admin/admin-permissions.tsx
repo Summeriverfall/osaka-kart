@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import { Modal } from "@/components/ui/modal";
+import { adminCopy } from "@/lib/admin/copy";
 import { b2Copy } from "@/lib/admin/b2-copy";
 import { useAdminAccess } from "@/lib/admin-access";
 import { blankRole, PERM_MODULES, type MockRole, type PermModule } from "@/lib/mock/permissions";
@@ -34,6 +35,12 @@ function moduleLabel(id: PermModule, locale: string) {
   return map[id].zh;
 }
 
+function roleLabel(item: MockRole, locale: string) {
+  if (locale.startsWith("ja")) return item.nameJa || item.name;
+  if (locale.startsWith("en")) return item.nameEn || item.name;
+  return item.name;
+}
+
 function cloneRole(row: MockRole): MockRole {
   return {
     ...row,
@@ -41,9 +48,52 @@ function cloneRole(row: MockRole): MockRole {
   };
 }
 
+function RolePicker({
+  roles,
+  value,
+  locale,
+  removeLabel,
+  onChange,
+  onDelete,
+}: {
+  roles: MockRole[];
+  value: string;
+  locale: string;
+  removeLabel: string;
+  onChange: (id: string) => void;
+  onDelete: (row: MockRole) => void;
+}) {
+  return (
+    <ul className="role-pick-menu is-static" role="listbox">
+      {roles.map((item) => {
+        const custom = !item.builtin;
+        return (
+          <li key={item.id} className={cn("role-pick-row", item.id === value && "is-on")}>
+            <button
+              type="button"
+              className="role-pick-name"
+              role="option"
+              aria-selected={item.id === value}
+              onClick={() => onChange(item.id)}
+            >
+              {roleLabel(item, locale)}
+            </button>
+            {custom ? (
+              <button type="button" className="cta-btn-danger role-pick-del" onClick={() => onDelete(item)}>
+                {removeLabel}
+              </button>
+            ) : null}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export function AdminPermissionsView() {
   const locale = useLocale();
   const b2 = b2Copy(locale);
+  const copy = adminCopy(locale);
   const { isAdmin, isManager, record } = useAdminAccess();
   const roles = useOpsStore((state) => state.roles);
   const staff = useOpsStore((state) => state.staff);
@@ -54,9 +104,8 @@ export function AdminPermissionsView() {
   const [roleId, setRoleId] = useState(roles[0]?.id ?? "role-admin");
   const [draft, setDraft] = useState<MockRole | null>(null);
   const [working, setWorking] = useState<MockRole | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<MockRole | null>(null);
   const locked = Boolean(working?.builtin === "admin");
-  const canDelete = Boolean(working && !working.builtin);
 
   useEffect(() => {
     const row = roles.find((item) => item.id === roleId) ?? roles[0];
@@ -80,15 +129,15 @@ export function AdminPermissionsView() {
     notify(b2.permSaved);
   }
 
-  function deleteWorking() {
-    if (!working || working.builtin) {
+  function deletePending() {
+    if (!pendingDelete || pendingDelete.builtin) {
       notify(b2.builtinNoDelete);
       return;
     }
     const fallback = roles.find((item) => item.id === "role-staff")?.id ?? roles[0]?.id;
-    removeRole(working.id);
-    setConfirmDelete(false);
-    setRoleId(fallback ?? "role-staff");
+    removeRole(pendingDelete.id);
+    if (roleId === pendingDelete.id) setRoleId(fallback ?? "role-staff");
+    setPendingDelete(null);
     notify(b2.roleDeleted);
   }
 
@@ -106,34 +155,17 @@ export function AdminPermissionsView() {
               {b2.newRole}
             </button>
           </div>
-          <div className="mt-4 flex flex-wrap items-end gap-2">
-            <label className="admin-field min-w-[12rem] flex-1">
-              {b2.roleName}
-              <select className="admin-input" value={roleId} onChange={(event) => setRoleId(event.target.value)}>
-                {roles.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {locale.startsWith("ja") ? item.nameJa : locale.startsWith("en") ? item.nameEn : item.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button
-              type="button"
-              className="cta-btn-danger shrink-0"
-              disabled={!canDelete}
-              title={canDelete ? b2.deleteRole : b2.builtinNoDelete}
-              onClick={() => {
-                if (!canDelete) {
-                  notify(b2.builtinNoDelete);
-                  return;
-                }
-                setConfirmDelete(true);
-              }}
-            >
-              {b2.deleteRole}
-            </button>
+          <div className="admin-field mt-4">
+            <span className="mb-1 block">{b2.roleName}</span>
+            <RolePicker
+              roles={roles}
+              value={roleId}
+              locale={locale}
+              removeLabel={copy.common.remove}
+              onChange={setRoleId}
+              onDelete={setPendingDelete}
+            />
           </div>
-          {!canDelete ? <p className="mt-2 text-xs text-slate-400">{b2.builtinNoDelete}</p> : null}
           {working ? (
             <ul className="mt-4 space-y-2">
               {PERM_MODULES.map((mod) => {
@@ -182,30 +214,11 @@ export function AdminPermissionsView() {
               })}
             </ul>
           ) : null}
-          {working ? (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-              <button
-                type="button"
-                className="cta-btn-danger"
-                disabled={!canDelete}
-                title={canDelete ? b2.deleteRole : b2.builtinNoDelete}
-                onClick={() => {
-                  if (!canDelete) {
-                    notify(b2.builtinNoDelete);
-                    return;
-                  }
-                  setConfirmDelete(true);
-                }}
-              >
-                {b2.deleteRole}
+          {working && !locked ? (
+            <div className="mt-4 flex justify-end">
+              <button type="button" className="cta-btn px-5 py-2.5 text-sm" onClick={saveWorking}>
+                {b2.savePerms}
               </button>
-              {locked ? (
-                <span className="text-xs text-slate-400">{b2.builtinNoDelete}</span>
-              ) : (
-                <button type="button" className="cta-btn px-5 py-2.5 text-sm" onClick={saveWorking}>
-                  {b2.savePerms}
-                </button>
-              )}
             </div>
           ) : null}
         </section>
@@ -299,11 +312,11 @@ export function AdminPermissionsView() {
       </Modal>
 
       <Modal
-        open={confirmDelete}
+        open={Boolean(pendingDelete)}
         title={b2.deleteRole}
-        onClose={() => setConfirmDelete(false)}
+        onClose={() => setPendingDelete(null)}
         footer={
-          <button type="button" className="cta-btn px-5 py-2.5" onClick={deleteWorking}>
+          <button type="button" className="cta-btn px-5 py-2.5" onClick={deletePending}>
             {b2.deleteRole}
           </button>
         }
