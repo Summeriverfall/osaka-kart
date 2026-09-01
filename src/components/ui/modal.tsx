@@ -51,7 +51,7 @@ export function Modal({ open, title, onClose, children, footer, wide, top, layer
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-5 flex items-start justify-between gap-3">
-          <h2 className="min-w-0 text-base font-black leading-snug break-words text-white sm:text-xl">{title}</h2>
+          <h2 className="min-w-0 text-base font-semibold leading-snug break-words text-white">{title}</h2>
           <button
             type="button"
             className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-white transition hover:border-neon-pink hover:shadow-[0_0_16px_rgb(255_46_147_/_40%)]"

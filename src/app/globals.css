@@ -700,7 +700,9 @@ html[lang="ja"] .gateway-main h1 {
   border-radius: 0.75rem;
   background: #fff;
   color: #111827;
-  padding: 0.7rem 0.85rem;
+  padding: 0.42rem 0.7rem;
+  font-size: 0.8125rem;
+  line-height: 1.35;
 }
 
 .admin-app .admin-input:focus {

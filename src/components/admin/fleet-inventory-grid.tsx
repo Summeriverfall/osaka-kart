@@ -245,6 +245,7 @@ export function FleetInventoryGrid() {
                   key={store.id}
                   type="button"
                   className={cn("ib-btn", focusStore === store.id && "is-on")}
+                  aria-pressed={focusStore === store.id}
                   onClick={() => {
                     setFocusStore(store.id);
                     setPicked(null);

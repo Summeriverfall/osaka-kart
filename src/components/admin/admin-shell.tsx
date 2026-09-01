@@ -22,7 +22,7 @@ import { scheduleOpsRehydrate } from "@/stores/ops-store";
 import { ToastHost } from "@/components/ui/toast-host";
 
 function isAdminLoginPath(pathname: string) {
-  return /(?:^|\/)admin\/login(?:\/|$|\/index\.html)/.test(pathname);
+  return /(?:^|\/)admin\/(?:(?:en|ja|zh-TW|ko)\/)?login(?:\/|$|\/index\.html)/.test(pathname);
 }
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

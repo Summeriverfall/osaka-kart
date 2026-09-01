@@ -48,7 +48,14 @@ export function AdminOrderDetailView({ id }: { id: string }) {
   );
 
   if (!order) {
-    return <p className="text-sm text-slate-500">{copy.orders.empty}</p>;
+    return (
+      <div className="space-y-4">
+        <button type="button" className="text-sm text-blue-600" onClick={() => go("/admin/orders")}>
+          ← {copy.common.back}
+        </button>
+        <p className="text-sm text-slate-500">{copy.orders.empty}</p>
+      </div>
+    );
   }
 
   const seed = plans.find((item) => item.slug === order.planSlug);
@@ -85,6 +92,9 @@ export function AdminOrderDetailView({ id }: { id: string }) {
 
   return (
     <div className="space-y-4">
+      <button type="button" className="text-sm text-blue-600" onClick={() => go("/admin/orders")}>
+        ← {copy.common.back}
+      </button>
       <div className="rounded-2xl border border-slate-200 bg-white p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>

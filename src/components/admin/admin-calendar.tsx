@@ -102,7 +102,7 @@ export function AdminCalendarView() {
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-slate-600">{formatYenShort(order.totalJpy)}</span>
                       <StatusBadge status={order.status} />
-                      <span className="text-xs text-blue-600">{copy.calendar.drill}</span>
+                      <span className="cal-day-drill">{copy.calendar.drill}</span>
                     </div>
                   </button>
                 </li>

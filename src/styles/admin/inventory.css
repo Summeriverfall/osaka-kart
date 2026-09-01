@@ -679,7 +679,10 @@
   align-items: center;
 }
 
-.fleet-toolbar .ib-btn {
+.fleet-toolbar .ib-btn,
+.fleet-stores .ib-btn,
+.fleet-drawer .ib-btn,
+.fleet-holds .ib-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -689,12 +692,23 @@
   border-radius: 999px;
   padding: 0.4rem 0.85rem;
   font-size: 0.82rem;
+  cursor: pointer;
 }
 
 .fleet-toolbar .ib-btn.is-on,
-.fleet-toolbar .ib-btn:hover {
+.fleet-toolbar .ib-btn:hover,
+.fleet-stores .ib-btn:hover,
+.fleet-drawer .ib-btn:hover,
+.fleet-holds .ib-btn:hover {
   border-color: #1890ff;
   color: #1890ff;
+}
+
+.fleet-stores .ib-btn.is-on {
+  border-color: #1890ff;
+  background: #e6f4ff;
+  color: #1890ff;
+  font-weight: 600;
 }
 
 .fleet-toolbar .ib-btn.fleet-only-days {

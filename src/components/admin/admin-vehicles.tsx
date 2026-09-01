@@ -174,7 +174,7 @@ export function AdminVehiclesView() {
           />
           <button
             type="button"
-            className="cta-btn px-4 py-2 text-sm"
+            className="cta-btn shrink-0"
             onClick={() => {
               const text = logDraft.trim();
               if (!text || !logs) return;

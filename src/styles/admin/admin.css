@@ -25,6 +25,14 @@ html:has(.admin-app) body {
   font-family: "Microsoft YaHei", "PingFang SC", "PingFang TC", sans-serif;
 }
 
+@media (min-width: 481px) {
+  html:has(.admin-app) input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  html:has(.admin-app) select,
+  html:has(.admin-app) textarea {
+    font-size: 0.8125rem !important;
+  }
+}
+
 .admin-app {
   color-scheme: light;
   background: #f5f6f8;
@@ -71,6 +79,74 @@ html:has(.admin-app) body {
   background-color: #eef2ff !important;
 }
 
+/* 表格/列表里可点的纯文字，做成小按钮，避免看起来不像能点 */
+.admin-app button.text-blue-600:not([class*="border"]):not(.cta-btn),
+.admin-app button.text-sky-600:not([class*="border"]),
+.admin-app button.text-rose-600:not([class*="border"]):not([class*="absolute"]),
+.admin-app button.text-slate-500:not([class*="border"]):not(.cta-btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.admin-app button.text-blue-600:not([class*="border"]):not(.cta-btn) {
+  border-color: #bfdbfe;
+  color: #2563eb;
+}
+
+.admin-app button.text-blue-600:not([class*="border"]):not(.cta-btn):hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.admin-app button.text-sky-600:not([class*="border"]) {
+  border-color: #bae6fd;
+  color: #0284c7;
+}
+
+.admin-app button.text-sky-600:not([class*="border"]):hover {
+  background: #f0f9ff;
+  border-color: #7dd3fc;
+}
+
+.admin-app button.text-rose-600:not([class*="border"]):not([class*="absolute"]) {
+  border-color: #fecdd3;
+  color: #e11d48;
+}
+
+.admin-app button.text-rose-600:not([class*="border"]):not([class*="absolute"]):hover {
+  background: #fff1f2;
+  border-color: #fda4af;
+}
+
+.admin-app button.text-slate-500:not([class*="border"]):not(.cta-btn):hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+.admin-app .cal-day-drill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #bfdbfe;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #2563eb;
+}
+
 .admin-app .bg-white\/10 {
   background-color: #eef2ff !important;
 }
@@ -95,6 +171,9 @@ html:has(.admin-app) body {
   background: #fff;
   color: #111827;
   border-color: #d1d5db;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  padding: 0.42rem 0.7rem;
 }
 
 .admin-app .admin-input:focus {
@@ -664,14 +743,23 @@ html:has(.admin-app) body {
 
 .admin-app .site-logo-clear {
   justify-self: start;
-  border: 0;
-  background: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e7eb;
+  background: #fff;
   color: #64748b;
-  font-size: 0.75rem;
-  padding: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  cursor: pointer;
 }
 
 .admin-app .site-logo-clear:hover {
+  border-color: #fecdd3;
+  background: #fff1f2;
   color: #e11d48;
 }
 
@@ -702,7 +790,7 @@ html:has(.admin-app) body {
   padding: 0.7rem 0;
   border-bottom: 1px solid #f1f5f9;
   color: #334155;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   line-height: 1.45;
 }
 
@@ -722,15 +810,21 @@ html:has(.admin-app) body {
 }
 
 .admin-app .vehicle-log-list li > button {
-  border: 0;
-  background: none;
-  color: #94a3b8;
-  font-size: 0.75rem;
-  padding: 0;
+  border: 1px solid #fecdd3;
+  background: #fff;
+  color: #e11d48;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  cursor: pointer;
 }
 
 .admin-app .vehicle-log-list li > button:hover {
-  color: #e11d48;
+  background: #fff1f2;
+  border-color: #fda4af;
+  color: #be123c;
 }
 
 .admin-app .vehicle-log-empty {
@@ -744,12 +838,34 @@ html:has(.admin-app) body {
   border-color: #e5e7eb !important;
   box-shadow: 0 24px 60px rgb(15 23 42 / 16%) !important;
   color: #111827;
+  font-size: 0.8125rem;
 }
 
 .admin-app .admin-modal-panel h2,
 .admin-app .admin-modal-panel button[aria-label="Close"] {
   color: #111827 !important;
   border-color: #e5e7eb !important;
+}
+
+.admin-app .admin-modal-panel h2 {
+  font-size: 1rem !important;
+  font-weight: 650 !important;
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
+.admin-app .admin-modal-panel .text-sm {
+  font-size: 0.8125rem;
+}
+
+.admin-app .admin-modal-panel .text-xs {
+  font-size: 0.72rem;
+}
+
+.admin-app .admin-modal-panel .cta-btn {
+  min-height: 2rem !important;
+  padding: 0.32rem 0.75rem !important;
+  font-size: 0.75rem !important;
 }
 
 .admin-app .inventory-board {

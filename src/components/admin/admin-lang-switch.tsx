@@ -2,7 +2,7 @@
 
 import { adminCopy } from "@/lib/admin/copy";
 import { appPageHref } from "@/lib/file-href";
-import { normalizeAdminTab } from "@/lib/admin/nav";
+import { adminTabFromLocation, normalizeAdminTab } from "@/lib/admin/nav";
 import { cn } from "@/lib/utils";
 import { usePathname } from "@/i18n/navigation";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
@@ -17,7 +17,8 @@ export function AdminLangSwitch({ locale, path }: { locale: string; path?: strin
   const tab = useAdminNavStore((state) => state.tab);
   const pathname = usePathname() ?? "";
   const copy = adminCopy(locale);
-  const dest = normalizeAdminTab(path || tab || pathname || "/admin/dashboard");
+  const raw = path || tab || adminTabFromLocation() || pathname || "/admin/dashboard";
+  const dest = /(?:^|\/)login(?:\/|$)/.test(raw) ? "/admin/login" : normalizeAdminTab(raw);
 
   return (
     <nav className="admin-lang-switch" aria-label="Language">
