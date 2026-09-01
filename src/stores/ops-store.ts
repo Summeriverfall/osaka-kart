@@ -73,6 +73,7 @@ type OpsState = {
   upsertStaff: (row: MockStaff) => void;
   patchStaff: (id: string, patch: Partial<MockStaff>) => void;
   upsertRole: (row: MockRole) => void;
+  removeRole: (id: string) => void;
   upsertAffiliate: (row: MockAffiliate) => void;
   patchAffiliate: (id: string, patch: Partial<MockAffiliate>) => void;
   patchTemplate: (id: string, patch: Partial<MockEmailTemplate>) => void;
@@ -355,6 +356,18 @@ export const useOpsStore = create<OpsState>()(
           roles: replaceById(state.roles, row),
           logs: [makeLog("员工变更", `保存角色 ${row.name}`), ...state.logs],
         })),
+      removeRole: (id) =>
+        set((state) => {
+          const row = state.roles.find((item) => item.id === id);
+          if (!row || row.builtin) return state;
+          return {
+            roles: state.roles.filter((item) => item.id !== id),
+            staff: state.staff.map((person) =>
+              person.roleId === id ? { ...person, roleId: "role-staff", role: "staff" as const } : person,
+            ),
+            logs: [makeLog("员工变更", `删除角色 ${row.name}`), ...state.logs],
+          };
+        }),
       upsertAffiliate: (row) =>
         set((state) => ({
           affiliates: replaceById(state.affiliates, row),

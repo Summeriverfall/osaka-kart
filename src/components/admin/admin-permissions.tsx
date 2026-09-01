@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import { Modal } from "@/components/ui/modal";
@@ -34,6 +34,13 @@ function moduleLabel(id: PermModule, locale: string) {
   return map[id].zh;
 }
 
+function cloneRole(row: MockRole): MockRole {
+  return {
+    ...row,
+    perms: Object.fromEntries(PERM_MODULES.map((mod) => [mod.id, { ...row.perms[mod.id] }])) as MockRole["perms"],
+  };
+}
+
 export function AdminPermissionsView() {
   const locale = useLocale();
   const b2 = b2Copy(locale);
@@ -41,17 +48,49 @@ export function AdminPermissionsView() {
   const roles = useOpsStore((state) => state.roles);
   const staff = useOpsStore((state) => state.staff);
   const upsertRole = useOpsStore((state) => state.upsertRole);
+  const removeRole = useOpsStore((state) => state.removeRole);
   const patchStaff = useOpsStore((state) => state.patchStaff);
   const notify = useToastStore((state) => state.notify);
   const [roleId, setRoleId] = useState(roles[0]?.id ?? "role-admin");
   const [draft, setDraft] = useState<MockRole | null>(null);
-  const current = roles.find((item) => item.id === roleId) ?? roles[0];
+  const [working, setWorking] = useState<MockRole | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const locked = Boolean(working?.builtin === "admin");
+  const canDelete = Boolean(working && !working.builtin);
+
+  useEffect(() => {
+    const row = roles.find((item) => item.id === roleId) ?? roles[0];
+    setWorking(row ? cloneRole(row) : null);
+  }, [roleId, roles]);
 
   const mine = useMemo(() => {
     if (isAdmin) return staff.filter((item) => item.role !== "admin");
     const sid = storeIdOf(record?.storeId);
     return staff.filter((item) => item.role === "staff" && storeIdOf(item.storeId) === sid);
   }, [isAdmin, staff, record?.storeId]);
+
+  function saveWorking() {
+    if (!working?.name.trim()) return;
+    upsertRole({
+      ...working,
+      name: working.name.trim(),
+      nameEn: working.nameEn.trim() || working.name.trim(),
+      nameJa: working.nameJa.trim() || working.name.trim(),
+    });
+    notify(b2.permSaved);
+  }
+
+  function deleteWorking() {
+    if (!working || working.builtin) {
+      notify(b2.builtinNoDelete);
+      return;
+    }
+    const fallback = roles.find((item) => item.id === "role-staff")?.id ?? roles[0]?.id;
+    removeRole(working.id);
+    setConfirmDelete(false);
+    setRoleId(fallback ?? "role-staff");
+    notify(b2.roleDeleted);
+  }
 
   if (!isAdmin && !isManager) {
     return <p className="text-sm text-slate-500">{b2.permissionsLead}</p>;
@@ -63,9 +102,16 @@ export function AdminPermissionsView() {
         <section className="rounded-2xl border border-slate-200 bg-white p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold">{b2.permissions}</h2>
-            <button type="button" className="cta-btn px-4 py-2 text-sm" onClick={() => setDraft(blankRole())}>
-              {b2.newRole}
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              {canDelete ? (
+                <button type="button" className="text-xs text-rose-600" onClick={() => setConfirmDelete(true)}>
+                  {b2.deleteRole}
+                </button>
+              ) : null}
+              <button type="button" className="cta-btn px-4 py-2 text-sm" onClick={() => setDraft(blankRole())}>
+                {b2.newRole}
+              </button>
+            </div>
           </div>
           <label className="admin-field mt-4">
             {b2.roleName}
@@ -77,10 +123,10 @@ export function AdminPermissionsView() {
               ))}
             </select>
           </label>
-          {current ? (
+          {working ? (
             <ul className="mt-4 space-y-2">
               {PERM_MODULES.map((mod) => {
-                const flags = current.perms[mod.id];
+                const flags = working.perms[mod.id];
                 return (
                   <li key={mod.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-100 px-3 py-2">
                     <span className={cn("text-sm font-medium", mod.parent && "pl-4 text-slate-600")}>{moduleLabel(mod.id, locale)}</span>
@@ -90,16 +136,15 @@ export function AdminPermissionsView() {
                         <input
                           type="checkbox"
                           checked={flags.view}
-                          disabled={Boolean(current.builtin === "admin")}
+                          disabled={locked}
                           onChange={(event) => {
-                            const next = {
-                              ...current,
+                            setWorking({
+                              ...working,
                               perms: {
-                                ...current.perms,
+                                ...working.perms,
                                 [mod.id]: { ...flags, view: event.target.checked, edit: event.target.checked ? flags.edit : false },
                               },
-                            };
-                            upsertRole(next);
+                            });
                           }}
                         />
                       </label>
@@ -108,16 +153,15 @@ export function AdminPermissionsView() {
                         <input
                           type="checkbox"
                           checked={flags.edit}
-                          disabled={Boolean(current.builtin === "admin")}
+                          disabled={locked}
                           onChange={(event) => {
-                            const next = {
-                              ...current,
+                            setWorking({
+                              ...working,
                               perms: {
-                                ...current.perms,
+                                ...working.perms,
                                 [mod.id]: { view: event.target.checked || flags.view, edit: event.target.checked },
                               },
-                            };
-                            upsertRole(next);
+                            });
                           }}
                         />
                       </label>
@@ -126,6 +170,13 @@ export function AdminPermissionsView() {
                 );
               })}
             </ul>
+          ) : null}
+          {working && !locked ? (
+            <div className="mt-4 flex justify-end">
+              <button type="button" className="cta-btn px-5 py-2.5 text-sm" onClick={saveWorking}>
+                {b2.savePerms}
+              </button>
+            </div>
           ) : null}
         </section>
       ) : null}
@@ -175,8 +226,14 @@ export function AdminPermissionsView() {
             className="cta-btn px-5 py-2.5"
             onClick={() => {
               if (!draft?.name.trim()) return;
-              upsertRole(draft);
-              setRoleId(draft.id);
+              const saved = {
+                ...draft,
+                name: draft.name.trim(),
+                nameEn: draft.nameEn.trim() || draft.name.trim(),
+                nameJa: draft.nameJa.trim() || draft.name.trim(),
+              };
+              upsertRole(saved);
+              setRoleId(saved.id);
               setDraft(null);
               notify(b2.permSaved);
             }}
@@ -209,6 +266,19 @@ export function AdminPermissionsView() {
             </ul>
           </>
         ) : null}
+      </Modal>
+
+      <Modal
+        open={confirmDelete}
+        title={b2.deleteRole}
+        onClose={() => setConfirmDelete(false)}
+        footer={
+          <button type="button" className="cta-btn px-5 py-2.5" onClick={deleteWorking}>
+            {b2.deleteRole}
+          </button>
+        }
+      >
+        <p className="text-sm text-slate-500">{b2.deleteRoleAsk}</p>
       </Modal>
     </div>
   );
