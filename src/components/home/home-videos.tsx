@@ -5,7 +5,7 @@ import { Play, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import { CmsVideoMedia } from "@/components/site/cms-video-media";
-import { youtubeThumb } from "@/lib/cms-text";
+import { asset } from "@/lib/asset";
 import { cmsBySlot, localeText, resolveCmsVideo, useLiveCms } from "@/lib/live-cms";
 import type { CmsVideo } from "@/lib/mock/cms";
 
@@ -49,9 +49,14 @@ export function HomeVideos({ limit, kicker }: { limit?: number; kicker?: string 
         </header>
 
         {featured ? (
-          <article className="ok-vid mb-6">
-            <div className="aspect-video bg-black">
-              <CmsVideoMedia video={featured} controls className="h-full w-full" />
+          <button type="button" className="ok-vid mb-6 w-full text-left" onClick={() => openClip(featured)}>
+            <div className="relative aspect-video overflow-hidden bg-black">
+              <img
+                src={resolveCmsVideo(featured)?.poster ?? asset("/images/hero/poster.webp")}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+              <Play className="absolute top-1/2 left-1/2 size-14 -translate-x-1/2 -translate-y-1/2 text-white drop-shadow-lg" />
             </div>
             <div className="ok-vid-body">
               <p className="font-semibold">{localeText(featured.title, locale)}</p>
@@ -61,7 +66,7 @@ export function HomeVideos({ limit, kicker }: { limit?: number; kicker?: string 
                 </span>
               ) : null}
             </div>
-          </article>
+          </button>
         ) : null}
 
         <div className="ok-vids">
@@ -76,11 +81,12 @@ export function HomeVideos({ limit, kicker }: { limit?: number; kicker?: string 
                 onClick={() => openClip(clip)}
               >
                 <div className="relative overflow-hidden bg-black">
-                  {media?.kind === "youtube" ? (
-                    <img src={youtubeThumb(media.id)} alt="" />
-                  ) : (
-                    <img src={media?.poster} alt="" />
-                  )}
+                  <img
+                    src={media?.poster ?? asset("/images/hero/poster.webp")}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <Play className="absolute top-1/2 left-1/2 size-12 -translate-x-1/2 -translate-y-1/2 text-white drop-shadow-lg" />
                 </div>
                 <div className="ok-vid-body">

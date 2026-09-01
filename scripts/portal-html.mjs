@@ -61,7 +61,7 @@ export function portalHtml({ prefix = "out/", local = true } = {}) {
       <p class="lead">${lead}</p>
       <div class="row">
         <a class="btn front" href="${href("zh-TW")}">打开前台</a>
-        <a class="btn admin" href="${href("zh-TW/admin/login")}">打开后台</a>
+        <a class="btn admin" href="${href("admin/zh-TW/login")}">打开后台</a>
       </div>
       <h2>外观</h2>
       <div class="looks">

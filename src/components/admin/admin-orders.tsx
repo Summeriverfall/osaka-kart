@@ -134,8 +134,9 @@ export function AdminOrdersView() {
   const { upsertOrder, patchOrder, setOrderStatus, templates, settings, affiliates } = useOpsStore();
   const { orders: storeOrders, storeId, plans } = useStoreData();
   const notify = useToastStore((state) => state.notify);
-  const [from, setFrom] = useState(() => readAdminFocusDate());
-  const [to, setTo] = useState(() => readAdminFocusDate());
+  const today = todayIsoDate();
+  const [from, setFrom] = useState(() => readAdminFocusDate() || today);
+  const [to, setTo] = useState(() => readAdminFocusDate() || today);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<OrderStatus | "all">("all");
   const [channel, setChannel] = useState<string>("all");
@@ -149,7 +150,6 @@ export function AdminOrdersView() {
   const [refundNote, setRefundNote] = useState("");
   const [cancelTarget, setCancelTarget] = useState<MockOrder | null>(null);
   const [cancelKind, setCancelKind] = useState<OrderCancelKind>("voluntary");
-  const today = todayIsoDate();
 
   useEffect(() => {
     const time = readAdminFocusTime();

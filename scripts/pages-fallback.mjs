@@ -23,12 +23,12 @@ const adminRedirect = `<!doctype html>
 <html lang="zh-TW">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="refresh" content="0;url=../zh-TW/admin/login/index.html" />
-    <link rel="canonical" href="../zh-TW/admin/login/index.html" />
+    <meta http-equiv="refresh" content="0;url=zh-TW/login/index.html" />
+    <link rel="canonical" href="zh-TW/login/index.html" />
     <title>Future Kart Admin</title>
   </head>
   <body>
-    <a href="../zh-TW/admin/login/index.html">打开后台</a>
+    <a href="zh-TW/login/index.html">打开后台</a>
   </body>
 </html>
 `;

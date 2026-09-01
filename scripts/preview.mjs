@@ -55,5 +55,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(port, () => {
-  console.log(`静态页已就绪：http://localhost:${port}/zh-TW/admin/login/`);
+  console.log(`静态页已就绪：http://localhost:${port}/admin/zh-TW/login/`);
 });

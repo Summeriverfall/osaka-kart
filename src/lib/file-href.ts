@@ -2,6 +2,25 @@ import { withSlash } from "@/lib/paths";
 
 const LOCALES = ["en", "ja", "zh-TW", "ko"] as const;
 
+function isLocaleSeg(value: string) {
+  return (LOCALES as readonly string[]).includes(value);
+}
+
+/** 前台 `/{locale}/...`，后台 `/admin/{locale}/...`。已带语言前缀的路径原样返回。 */
+export function withAppLocale(appPath: string, locale: string) {
+  const normalized = withSlash(appPath.startsWith("/") ? appPath : `/${appPath}`);
+  if (LOCALES.some((item) => normalized === `/${item}/` || normalized.startsWith(`/${item}/`))) {
+    return normalized;
+  }
+  if (normalized === "/admin/" || normalized.startsWith("/admin/")) {
+    const after = normalized.slice("/admin/".length);
+    const first = after.split("/")[0];
+    if (first && isLocaleSeg(first)) return normalized;
+    return withSlash(`/admin/${locale}/${after}`);
+  }
+  return withSlash(`/${locale}${normalized === "/" ? "/" : normalized}`);
+}
+
 export function isFileProtocol() {
   return typeof window !== "undefined" && window.location.protocol === "file:";
 }
@@ -11,6 +30,14 @@ export function fileSiteRoot() {
   const url = new URL(window.location.href);
   let path = decodeURIComponent(url.pathname).replace(/\\/g, "/");
   if (/\/index\.html$/i.test(path)) path = path.replace(/\/index\.html$/i, "/");
+  const adminLocale = path.match(/\/admin\/(en|ja|zh-TW|ko)\//);
+  if (adminLocale) {
+    const index = path.lastIndexOf("/admin/");
+    url.pathname = `${path.slice(0, index)}/`;
+    url.search = "";
+    url.hash = "";
+    return url.href;
+  }
   for (const locale of LOCALES) {
     const needle = `/${locale}/`;
     const index = path.lastIndexOf(needle);
@@ -57,11 +84,7 @@ export function toFileHref(href: string, locale?: string) {
     .replace(/index\.html$/i, "")
     .replace(/index\.txt$/i, "");
   if (!path.startsWith("/")) path = `/${path}`;
-  if (path === "/") path = `/${lang}/`;
-
-  const hasLocale = LOCALES.some((item) => path === `/${item}` || path.startsWith(`/${item}/`));
-  if (!hasLocale) path = `/${lang}${path}`;
-  if (!path.endsWith("/")) path = `${path}/`;
+  path = withAppLocale(path, lang);
 
   return `${fileSiteRoot()}${path.replace(/^\//, "")}index.html${query}${hash}`;
 }
@@ -71,10 +94,7 @@ export function appPageHref(appPath: string, locale = "zh-TW") {
     return toFileHref(appPath, locale);
   }
   const normalized = withSlash(appPath.startsWith("/") ? appPath : `/${appPath}`);
-  const locPath =
-    LOCALES.some((item) => normalized === `/${item}/` || normalized.startsWith(`/${item}/`))
-      ? normalized
-      : `/${locale}${normalized === "/" ? "/" : normalized}`;
+  const locPath = withAppLocale(normalized, locale);
   const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   return `${base}${locPath}`;
 }
@@ -139,6 +159,11 @@ export function navigateToHref(href: string, locale?: string) {
 export function fileAppPathname() {
   if (typeof window === "undefined" || !isFileProtocol()) return null;
   const path = decodeURIComponent(window.location.pathname).replace(/\\/g, "/");
+  const admin = path.match(/\/admin\/(en|ja|zh-TW|ko)\/(.*)$/);
+  if (admin) {
+    const rest = admin[2].replace(/index\.html$/i, "").replace(/\/+$/, "");
+    return rest ? `/admin/${rest}` : "/admin";
+  }
   for (const locale of LOCALES) {
     const needle = `/${locale}/`;
     const index = path.lastIndexOf(needle);

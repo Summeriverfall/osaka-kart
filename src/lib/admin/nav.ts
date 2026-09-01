@@ -131,6 +131,8 @@ export function isReportPath(href: string) {
   return href === "/admin/reports" || href.startsWith("/admin/reports/");
 }
 
+const ADMIN_LOCALES = ["en", "ja", "zh-TW", "ko"] as const;
+
 export function adminTabFromHref(href: string) {
   const path = decodeURIComponent((href.split("#")[0] ?? "").split("?")[0] ?? "")
     .replace(/\\/g, "/")
@@ -138,7 +140,9 @@ export function adminTabFromHref(href: string) {
     .replace(/\/$/, "");
   const match = path.match(/\/admin(?:\/(.*))?$/);
   if (!match) return null;
-  const rest = (match[1] ?? "").replace(/\/$/, "");
+  const segs = (match[1] ?? "").split("/").filter(Boolean);
+  if (segs[0] && (ADMIN_LOCALES as readonly string[]).includes(segs[0])) segs.shift();
+  const rest = segs.join("/");
   if (!rest) return "/admin/dashboard";
   return `/admin/${rest}`;
 }

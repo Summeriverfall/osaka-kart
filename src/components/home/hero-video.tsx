@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type HeroVideoProps = {
   src: string;
@@ -13,9 +13,12 @@ type HeroVideoProps = {
 
 function skipHeavyVideo() {
   if (typeof window === "undefined") return false;
-  const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+  const conn = (navigator as Navigator & {
+    connection?: { saveData?: boolean; effectiveType?: string; downlink?: number };
+  }).connection;
   if (conn?.saveData) return true;
-  if (conn?.effectiveType === "slow-2g" || conn?.effectiveType === "2g") return true;
+  if (conn?.effectiveType === "slow-2g" || conn?.effectiveType === "2g" || conn?.effectiveType === "3g") return true;
+  if (typeof conn?.downlink === "number" && conn.downlink > 0 && conn.downlink < 1.5) return true;
   return Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
 }
 
@@ -28,7 +31,30 @@ export function HeroVideo({
   eager = false,
 }: HeroVideoProps) {
   const ref = useRef<HTMLVideoElement>(null);
-  const active = eager && !skipHeavyVideo();
+  const [armed, setArmed] = useState(eager);
+
+  useEffect(() => {
+    if (eager || skipHeavyVideo()) return;
+    let idleId = 0;
+    let timeoutId = 0;
+    const arm = () => {
+      const start = () => setArmed(true);
+      if ("requestIdleCallback" in window) {
+        idleId = window.requestIdleCallback(start, { timeout: 2500 });
+        return;
+      }
+      timeoutId = window.setTimeout(start, 900);
+    };
+    if (document.readyState === "complete") arm();
+    else window.addEventListener("load", arm, { once: true });
+    return () => {
+      window.removeEventListener("load", arm);
+      if (idleId) window.cancelIdleCallback(idleId);
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
+  }, [eager]);
+
+  const active = armed && !skipHeavyVideo();
 
   useEffect(() => {
     const video = ref.current;

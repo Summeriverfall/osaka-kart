@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { DEFAULT_STORE_ID, isAllStores, storeIdOf } from "@/lib/store-id";
 import { useStoreScope } from "@/lib/store-scope";
-import { withAnalyticsHistory } from "@/lib/mock/history-orders";
 import { type MockPlan } from "@/lib/mock/plans";
 import { useOpsStore } from "@/stores/ops-store";
 
@@ -27,10 +26,9 @@ export function useStoreData() {
   );
   const vehicleIds = useMemo(() => new Set(vehicles.map((item) => item.id)), [vehicles]);
   const orders = useMemo(() => {
-    const scoped = isAllStores(storeId)
+    return isAllStores(storeId)
       ? ordersAll
       : ordersAll.filter((item) => storeIdOf(item.storeId) === storeId);
-    return withAnalyticsHistory(scoped, storeId);
   }, [ordersAll, storeId]);
   const staff = useMemo(
     () => (isAllStores(storeId) ? staffAll : staffAll.filter((item) => storeIdOf(item.storeId) === storeId)),

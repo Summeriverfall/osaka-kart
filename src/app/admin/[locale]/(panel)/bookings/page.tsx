@@ -1,11 +1,11 @@
-import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import type { AppLocale } from "@/i18n/routing";
+import { AdminRedirect } from "@/components/admin/admin-redirect";
 
 type PageProps = { params: Promise<{ locale: AppLocale }> };
 
-export default async function AdminReportsRedirect({ params }: PageProps) {
+export default async function AdminBookingsRedirect({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
-  redirect(`/${locale}/admin/reports/overview/`);
+  return <AdminRedirect locale={locale} to="/admin/orders" />;
 }

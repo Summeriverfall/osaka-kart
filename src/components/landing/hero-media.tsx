@@ -34,8 +34,7 @@ export function HeroMedia({ theme, plain }: HeroMediaProps) {
           startAt={hero.startAt}
           poster={poster}
           className="absolute inset-0 z-[1] h-full w-full object-cover"
-          preload="metadata"
-          eager
+          preload="none"
         />
       ) : null}
 

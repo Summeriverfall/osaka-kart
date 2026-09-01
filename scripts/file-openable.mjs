@@ -37,8 +37,13 @@ function prefixFor(file) {
 const FILE_BOOT = `<script data-file-boot>(function(){
   if (location.protocol !== "file:") return;
   var LOCALES = ["en","ja","zh-TW","ko"];
+  function hasLocalePrefix(rel){
+    return LOCALES.some(function(item){ return rel === item || rel.indexOf(item + "/") === 0; });
+  }
   function root(){
     var href = location.href.split("#")[0].split("?")[0].replace(/\\\\/g,"/");
+    var adminIdx = href.search(/\\/admin\\/(en|ja|zh-TW|ko)\\//);
+    if (adminIdx >= 0) return href.slice(0, adminIdx + 1);
     for (var i=0;i<LOCALES.length;i++){
       var n = "/" + LOCALES[i] + "/";
       var idx = href.lastIndexOf(n);
@@ -51,14 +56,19 @@ const FILE_BOOT = `<script data-file-boot>(function(){
     var s = String(url);
     if (s.charAt(0) === "#" || /^(mailto:|tel:|javascript:|https?:)/i.test(s)) return s;
     s = s.replace(/index\\.txt/gi, "index.html");
+    var adminLoc = s.match(/\\/admin\\/(en|ja|zh-TW|ko)\\/[^\\s]*/);
     var loc = s.match(/\\/(en|ja|zh-TW|ko)\\/[^\\s]*/);
     var lang = document.documentElement.lang || "zh-TW";
     var rel;
     if (s.charAt(0) === "/" || /^[A-Za-z]:\\//.test(s) || /^file:\\/\\/\\/[A-Za-z]:\\/(en|ja|zh-TW|ko)\\//i.test(s)) {
-      if (loc) rel = loc[0].replace(/^\\//, "");
+      if (adminLoc) rel = adminLoc[0].replace(/^\\//, "");
+      else if (loc) rel = loc[0].replace(/^\\//, "");
       else {
         rel = s.replace(/^[A-Za-z]:\\//, "").replace(/^file:\\/\\/\\/[A-Za-z]:\\//i, "").replace(/^\\//, "");
-        if (!LOCALES.some(function(item){ return rel === item || rel.indexOf(item + "/") === 0; })) {
+        if (rel === "admin" || rel.indexOf("admin/") === 0) {
+          var rest = rel === "admin" ? "" : rel.slice(6);
+          if (!hasLocalePrefix(rest)) rel = "admin/" + lang.replace(/^\\//, "") + (rest ? "/" + rest : "");
+        } else if (!hasLocalePrefix(rel)) {
           rel = lang.replace(/^\\//, "") + "/" + rel;
         }
       }
@@ -114,6 +124,13 @@ function rewriteHtml(content, prefix) {
     .replace(/(["'(])\/_next\//g, `$1${prefix}_next/`)
     .replace(/(["'(])\/favicon\.ico/g, `$1${prefix}favicon.ico`)
     .replace(/(\s(?:src|poster|href)=["'])\/(images|videos)\//g, `$1${prefix}$2/`)
+    .replace(
+      /(\shref=["'])\/admin\/(en|ja|zh-TW|ko)(\/[^"'?#]*)?(\?[^"'#]*)?(#[^"']*)?(["'])/g,
+      (_, start, loc, rest = "/", query = "", hash = "", end) => {
+        const page = `admin/${loc}${rest || "/"}`.replace(/\/?$/, "/");
+        return `${start}${prefix}${page}index.html${query}${hash}${end}`;
+      },
+    )
     .replace(
       /(\shref=["'])\/(en|ja|zh-TW|ko)(\/[^"'?#]*)?(\?[^"'#]*)?(#[^"']*)?(["'])/g,
       (_, start, loc, rest = "/", query = "", hash = "", end) => {
@@ -185,7 +202,7 @@ for (const file of files) {
   }
 }
 
-writeLauncher(path.join(out, "打开后台.html"), "打开 Future Kart 后台", "zh-TW/admin/login/index.html");
+writeLauncher(path.join(out, "打开后台.html"), "打开 Future Kart 后台", "admin/zh-TW/login/index.html");
 writeLauncher(path.join(out, "打开前台.html"), "打开 Future Kart 前台", "zh-TW/index.html");
 
 function copyReadableStyles() {
@@ -215,7 +232,7 @@ function copyReadableStyles() {
     oni.css     街道
 
 后台（给店员用）
-  zh-TW/admin/ （登录在 admin/login）
+  admin/zh-TW/ （登录在 admin/zh-TW/login）
   快捷入口：打开后台.html
   可读样式：styles/admin/
     admin.css       操作台
