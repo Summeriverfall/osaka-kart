@@ -39,8 +39,9 @@ export function HeroVideo({
     let timeoutId = 0;
     const arm = () => {
       const start = () => setArmed(true);
-      if ("requestIdleCallback" in window) {
-        idleId = window.requestIdleCallback(start, { timeout: 2500 });
+      const ric = window.requestIdleCallback;
+      if (typeof ric === "function") {
+        idleId = ric(start, { timeout: 2500 });
         return;
       }
       timeoutId = window.setTimeout(start, 900);
@@ -49,8 +50,8 @@ export function HeroVideo({
     else window.addEventListener("load", arm, { once: true });
     return () => {
       window.removeEventListener("load", arm);
-      if (idleId) window.cancelIdleCallback(idleId);
-      if (timeoutId) window.clearTimeout(timeoutId);
+      window.cancelIdleCallback?.(idleId);
+      window.clearTimeout(timeoutId);
     };
   }, [eager]);
 
