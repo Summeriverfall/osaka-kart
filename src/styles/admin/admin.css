@@ -409,6 +409,24 @@ html:has(.admin-app) body {
   -webkit-tap-highlight-color: rgb(37 99 235 / 18%);
 }
 
+.admin-app .admin-lang-chip .lang-short {
+  display: none;
+}
+
+.admin-app .admin-lang-chip .lang-full {
+  display: inline;
+}
+
+@media (max-width: 767px) {
+  .admin-app .admin-lang-chip .lang-short {
+    display: inline;
+  }
+
+  .admin-app .admin-lang-chip .lang-full {
+    display: none;
+  }
+}
+
 .admin-app .admin-lang-switch,
 .admin-app .admin-lang-chip {
   pointer-events: auto;

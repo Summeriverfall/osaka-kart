@@ -121,13 +121,30 @@ const FILE_BOOT = `<script data-file-boot>(function(){
 
 function rewriteHtml(content, prefix) {
   let html = content
+    .replace(/\/osaka-kart\/_next\//g, `${prefix}_next/`)
     .replace(/(["'(])\/_next\//g, `$1${prefix}_next/`)
+    .replace(/(["'(])\/osaka-kart\/favicon\.ico/g, `$1${prefix}favicon.ico`)
     .replace(/(["'(])\/favicon\.ico/g, `$1${prefix}favicon.ico`)
+    .replace(/(\s(?:src|poster|href)=["'])\/osaka-kart\/(images|videos)\//g, `$1${prefix}$2/`)
     .replace(/(\s(?:src|poster|href)=["'])\/(images|videos)\//g, `$1${prefix}$2/`)
+    .replace(
+      /(\shref=["'])\/osaka-kart\/admin\/(en|ja|zh-TW|ko)(\/[^"'?#]*)?(\?[^"'#]*)?(#[^"']*)?(["'])/g,
+      (_, start, loc, rest = "/", query = "", hash = "", end) => {
+        const page = `admin/${loc}${rest || "/"}`.replace(/\/?$/, "/");
+        return `${start}${prefix}${page}index.html${query}${hash}${end}`;
+      },
+    )
     .replace(
       /(\shref=["'])\/admin\/(en|ja|zh-TW|ko)(\/[^"'?#]*)?(\?[^"'#]*)?(#[^"']*)?(["'])/g,
       (_, start, loc, rest = "/", query = "", hash = "", end) => {
         const page = `admin/${loc}${rest || "/"}`.replace(/\/?$/, "/");
+        return `${start}${prefix}${page}index.html${query}${hash}${end}`;
+      },
+    )
+    .replace(
+      /(\shref=["'])\/osaka-kart\/(en|ja|zh-TW|ko)(\/[^"'?#]*)?(\?[^"'#]*)?(#[^"']*)?(["'])/g,
+      (_, start, loc, rest = "/", query = "", hash = "", end) => {
+        const page = `${loc}${rest || "/"}`.replace(/\/?$/, "/");
         return `${start}${prefix}${page}index.html${query}${hash}${end}`;
       },
     )
@@ -148,7 +165,9 @@ function rewriteHtml(content, prefix) {
 }
 
 function rewriteCss(content) {
-  return content.replace(/\/_next\/static\//g, "../");
+  return content
+    .replace(/\/osaka-kart\/_next\/static\//g, "../")
+    .replace(/\/_next\/static\//g, "../");
 }
 
 const webpackPublicPath = `r.p=(function(){try{var s=document.currentScript&&document.currentScript.src;if(!s){var n=document.querySelectorAll("script[src]");for(var i=n.length-1;i>=0;i--){if(n[i].src&&n[i].src.indexOf("static/chunks/")!==-1){s=n[i].src;break}}}if(!s)return"./";return s.replace(/static\\/chunks\\/[^/]+$/,"")}catch(e){return"./"}})()`;
@@ -195,8 +214,11 @@ for (const file of files) {
     }
   } else if (ext === ".js" && file.includes(`${path.sep}chunks${path.sep}`)) {
     const before = fs.readFileSync(file, "utf8");
-    if (before.includes('r.p="/_next/"')) {
-      fs.writeFileSync(file, before.replace('r.p="/_next/"', webpackPublicPath));
+    if (before.includes('r.p="/osaka-kart/_next/"') || before.includes('r.p="/_next/"')) {
+      fs.writeFileSync(
+        file,
+        before.replace('r.p="/osaka-kart/_next/"', webpackPublicPath).replace('r.p="/_next/"', webpackPublicPath),
+      );
       jsCount += 1;
     }
   }

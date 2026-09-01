@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import { Modal } from "@/components/ui/modal";
-import { adminCopy } from "@/lib/admin/copy";
 import { b2Copy } from "@/lib/admin/b2-copy";
 import { useAdminAccess } from "@/lib/admin-access";
 import { blankRole, PERM_MODULES, type MockRole, type PermModule } from "@/lib/mock/permissions";
@@ -93,7 +92,6 @@ function RolePicker({
 export function AdminPermissionsView() {
   const locale = useLocale();
   const b2 = b2Copy(locale);
-  const copy = adminCopy(locale);
   const { isAdmin, isManager, record } = useAdminAccess();
   const roles = useOpsStore((state) => state.roles);
   const staff = useOpsStore((state) => state.staff);
@@ -161,7 +159,7 @@ export function AdminPermissionsView() {
               roles={roles}
               value={roleId}
               locale={locale}
-              removeLabel={copy.common.remove}
+              removeLabel={b2.deleteRole}
               onChange={setRoleId}
               onDelete={setPendingDelete}
             />

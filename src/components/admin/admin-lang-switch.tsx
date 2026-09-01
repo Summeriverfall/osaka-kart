@@ -34,8 +34,8 @@ export function AdminLangSwitch({ locale, path }: { locale: string; path?: strin
               if (on) event.preventDefault();
             }}
           >
-            <span className="md:hidden">{item.short}</span>
-            <span className="hidden md:inline">{copy[item.key]}</span>
+            <span className="lang-short">{item.short}</span>
+            <span className="lang-full">{copy[item.key]}</span>
           </a>
         );
       })}
