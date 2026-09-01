@@ -102,27 +102,38 @@ export function AdminPermissionsView() {
         <section className="rounded-2xl border border-slate-200 bg-white p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold">{b2.permissions}</h2>
-            <div className="flex flex-wrap items-center gap-2">
-              {canDelete ? (
-                <button type="button" className="text-xs text-rose-600" onClick={() => setConfirmDelete(true)}>
-                  {b2.deleteRole}
-                </button>
-              ) : null}
-              <button type="button" className="cta-btn px-4 py-2 text-sm" onClick={() => setDraft(blankRole())}>
-                {b2.newRole}
-              </button>
-            </div>
+            <button type="button" className="cta-btn px-4 py-2 text-sm" onClick={() => setDraft(blankRole())}>
+              {b2.newRole}
+            </button>
           </div>
-          <label className="admin-field mt-4">
-            {b2.roleName}
-            <select className="admin-input" value={roleId} onChange={(event) => setRoleId(event.target.value)}>
-              {roles.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {locale.startsWith("ja") ? item.nameJa : locale.startsWith("en") ? item.nameEn : item.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="mt-4 flex flex-wrap items-end gap-2">
+            <label className="admin-field min-w-[12rem] flex-1">
+              {b2.roleName}
+              <select className="admin-input" value={roleId} onChange={(event) => setRoleId(event.target.value)}>
+                {roles.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {locale.startsWith("ja") ? item.nameJa : locale.startsWith("en") ? item.nameEn : item.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              className="cta-btn-danger shrink-0"
+              disabled={!canDelete}
+              title={canDelete ? b2.deleteRole : b2.builtinNoDelete}
+              onClick={() => {
+                if (!canDelete) {
+                  notify(b2.builtinNoDelete);
+                  return;
+                }
+                setConfirmDelete(true);
+              }}
+            >
+              {b2.deleteRole}
+            </button>
+          </div>
+          {!canDelete ? <p className="mt-2 text-xs text-slate-400">{b2.builtinNoDelete}</p> : null}
           {working ? (
             <ul className="mt-4 space-y-2">
               {PERM_MODULES.map((mod) => {
@@ -171,11 +182,30 @@ export function AdminPermissionsView() {
               })}
             </ul>
           ) : null}
-          {working && !locked ? (
-            <div className="mt-4 flex justify-end">
-              <button type="button" className="cta-btn px-5 py-2.5 text-sm" onClick={saveWorking}>
-                {b2.savePerms}
+          {working ? (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+              <button
+                type="button"
+                className="cta-btn-danger"
+                disabled={!canDelete}
+                title={canDelete ? b2.deleteRole : b2.builtinNoDelete}
+                onClick={() => {
+                  if (!canDelete) {
+                    notify(b2.builtinNoDelete);
+                    return;
+                  }
+                  setConfirmDelete(true);
+                }}
+              >
+                {b2.deleteRole}
               </button>
+              {locked ? (
+                <span className="text-xs text-slate-400">{b2.builtinNoDelete}</span>
+              ) : (
+                <button type="button" className="cta-btn px-5 py-2.5 text-sm" onClick={saveWorking}>
+                  {b2.savePerms}
+                </button>
+              )}
             </div>
           ) : null}
         </section>
