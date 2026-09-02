@@ -12,6 +12,8 @@ import { useToastStore } from "@/stores/toast-store";
 import { storeIdOf } from "@/lib/store-id";
 import { cn } from "@/lib/utils";
 
+type PermPane = "roles" | "staff";
+
 function moduleLabel(id: PermModule, locale: string) {
   const map: Record<PermModule, { zh: string; en: string; ja: string }> = {
     dashboard: { zh: "仪表盘", en: "Dashboard", ja: "ダッシュボード" },
@@ -99,11 +101,16 @@ export function AdminPermissionsView() {
   const removeRole = useOpsStore((state) => state.removeRole);
   const patchStaff = useOpsStore((state) => state.patchStaff);
   const notify = useToastStore((state) => state.notify);
+  const [pane, setPane] = useState<PermPane>(isAdmin ? "roles" : "staff");
   const [roleId, setRoleId] = useState(roles[0]?.id ?? "role-admin");
   const [draft, setDraft] = useState<MockRole | null>(null);
   const [working, setWorking] = useState<MockRole | null>(null);
   const [pendingDelete, setPendingDelete] = useState<MockRole | null>(null);
   const locked = Boolean(working?.builtin === "admin");
+
+  useEffect(() => {
+    if (!isAdmin) setPane("staff");
+  }, [isAdmin]);
 
   useEffect(() => {
     const row = roles.find((item) => item.id === roleId) ?? roles[0];
@@ -140,21 +147,47 @@ export function AdminPermissionsView() {
   }
 
   if (!isAdmin && !isManager) {
-    return <p className="text-sm text-slate-500">{b2.permissionsLead}</p>;
+    return <p className="admin-page-lead">{b2.permissionsLead}</p>;
   }
 
+  const showRoles = isAdmin && pane === "roles";
+  const showStaff = pane === "staff" || !isAdmin;
+
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+    <div className="perm-page">
       {isAdmin ? (
-        <section className="rounded-2xl border border-slate-200 bg-white p-5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-semibold">{b2.permissions}</h2>
-            <button type="button" className="cta-btn px-4 py-2 text-sm" onClick={() => setDraft(blankRole())}>
+        <div className="perm-tabs" role="tablist" aria-label={b2.permissions}>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={pane === "roles"}
+            className={cn("perm-tab", pane === "roles" && "is-on")}
+            onClick={() => setPane("roles")}
+          >
+            {b2.rolePermsTab}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={pane === "staff"}
+            className={cn("perm-tab", pane === "staff" && "is-on")}
+            onClick={() => setPane("staff")}
+          >
+            {b2.staffPermsTab}
+          </button>
+        </div>
+      ) : null}
+
+      {showRoles ? (
+        <section className="perm-card">
+          <div className="perm-card-head">
+            <p className="perm-hint">{b2.rolePermsLead}</p>
+            <button type="button" className="cta-btn" onClick={() => setDraft(blankRole())}>
               {b2.newRole}
             </button>
           </div>
-          <div className="admin-field mt-4">
-            <span className="mb-1 block">{b2.roleName}</span>
+          <div className="admin-field perm-roles">
+            <span className="perm-label">{b2.roleName}</span>
             <RolePicker
               roles={roles}
               value={roleId}
@@ -165,19 +198,26 @@ export function AdminPermissionsView() {
             />
           </div>
           {working ? (
-            <ul className="mt-4 space-y-2">
-              {PERM_MODULES.map((mod) => {
-                const flags = working.perms[mod.id];
-                return (
-                  <li key={mod.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-100 px-3 py-2">
-                    <span className={cn("text-sm font-medium", mod.parent && "pl-4 text-slate-600")}>{moduleLabel(mod.id, locale)}</span>
-                    <span className="flex items-center gap-4 text-xs">
-                      <label className="flex items-center gap-2">
-                        {b2.permView}
+            <table className="perm-table">
+              <thead>
+                <tr>
+                  <th>{b2.permModCol}</th>
+                  <th>{b2.permView}</th>
+                  <th>{b2.permEdit}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {PERM_MODULES.map((mod) => {
+                  const flags = working.perms[mod.id];
+                  return (
+                    <tr key={mod.id}>
+                      <td>{moduleLabel(mod.id, locale)}</td>
+                      <td>
                         <input
                           type="checkbox"
                           checked={flags.view}
                           disabled={locked}
+                          aria-label={`${moduleLabel(mod.id, locale)} ${b2.permView}`}
                           onChange={(event) => {
                             setWorking({
                               ...working,
@@ -188,13 +228,13 @@ export function AdminPermissionsView() {
                             });
                           }}
                         />
-                      </label>
-                      <label className="flex items-center gap-2">
-                        {b2.permEdit}
+                      </td>
+                      <td>
                         <input
                           type="checkbox"
                           checked={flags.edit}
                           disabled={locked}
+                          aria-label={`${moduleLabel(mod.id, locale)} ${b2.permEdit}`}
                           onChange={(event) => {
                             setWorking({
                               ...working,
@@ -205,16 +245,16 @@ export function AdminPermissionsView() {
                             });
                           }}
                         />
-                      </label>
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           ) : null}
           {working && !locked ? (
-            <div className="mt-4 flex justify-end">
-              <button type="button" className="cta-btn px-5 py-2.5 text-sm" onClick={saveWorking}>
+            <div className="perm-save">
+              <button type="button" className="cta-btn" onClick={saveWorking}>
                 {b2.savePerms}
               </button>
             </div>
@@ -222,40 +262,42 @@ export function AdminPermissionsView() {
         </section>
       ) : null}
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 className="font-semibold">{b2.assignStaff}</h2>
-        <ul className="mt-4 space-y-3">
-          {mine.map((person) => (
-            <li key={person.id} className="rounded-xl border border-slate-100 p-3">
-              <p className="text-sm font-medium">{person.name}</p>
-              <p className="text-xs text-slate-500">{person.email}</p>
-              <label className="admin-field mt-2">
-                {b2.roleName}
-                <select
-                  className="admin-input"
-                  value={person.roleId ?? (person.role === "staff" ? "role-staff" : "role-manager")}
-                  onChange={(event) => {
-                    const nextRole = roles.find((item) => item.id === event.target.value);
-                    patchStaff(person.id, {
-                      roleId: event.target.value,
-                      role: nextRole?.builtin === "manager" ? "manager" : nextRole?.builtin === "admin" ? "admin" : "staff",
-                    });
-                    notify(b2.permSaved);
-                  }}
-                >
-                  {roles
-                    .filter((item) => isAdmin || item.builtin !== "admin")
-                    .map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {locale.startsWith("ja") ? item.nameJa : locale.startsWith("en") ? item.nameEn : item.name}
-                      </option>
-                    ))}
-                </select>
-              </label>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {showStaff ? (
+        <section className="perm-card">
+          <p className="perm-hint">{b2.staffPermsLead}</p>
+          <ul className="perm-staff">
+            {mine.map((person) => (
+              <li key={person.id}>
+                <p className="perm-staff-name">{person.name}</p>
+                <p className="perm-staff-mail">{person.email}</p>
+                <label className="admin-field">
+                  {b2.roleName}
+                  <select
+                    className="admin-input"
+                    value={person.roleId ?? (person.role === "staff" ? "role-staff" : "role-manager")}
+                    onChange={(event) => {
+                      const nextRole = roles.find((item) => item.id === event.target.value);
+                      patchStaff(person.id, {
+                        roleId: event.target.value,
+                        role: nextRole?.builtin === "manager" ? "manager" : nextRole?.builtin === "admin" ? "admin" : "staff",
+                      });
+                      notify(b2.permSaved);
+                    }}
+                  >
+                    {roles
+                      .filter((item) => isAdmin || item.builtin !== "admin")
+                      .map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {locale.startsWith("ja") ? item.nameJa : locale.startsWith("en") ? item.nameEn : item.name}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <Modal
         open={Boolean(draft)}
@@ -264,7 +306,7 @@ export function AdminPermissionsView() {
         footer={
           <button
             type="button"
-            className="cta-btn px-5 py-2.5"
+            className="cta-btn"
             onClick={() => {
               if (!draft?.name.trim()) return;
               const saved = {
@@ -289,10 +331,10 @@ export function AdminPermissionsView() {
               {b2.roleName}
               <input className="admin-input" value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value, nameEn: event.target.value, nameJa: event.target.value })} />
             </label>
-            <ul className="mt-3 space-y-2">
+            <ul className="perm-mods is-modal">
               {PERM_MODULES.map((mod) => (
-                <li key={mod.id} className="flex items-center justify-between text-sm">
-                  <span>{moduleLabel(mod.id, locale)}</span>
+                <li key={mod.id} className="perm-mod">
+                  <span className="perm-mod-name">{moduleLabel(mod.id, locale)}</span>
                   <NeonToggle
                     checked={draft.perms[mod.id].view}
                     onChange={(on) =>
@@ -314,12 +356,12 @@ export function AdminPermissionsView() {
         title={b2.deleteRole}
         onClose={() => setPendingDelete(null)}
         footer={
-          <button type="button" className="cta-btn px-5 py-2.5" onClick={deletePending}>
+          <button type="button" className="cta-btn" onClick={deletePending}>
             {b2.deleteRole}
           </button>
         }
       >
-        <p className="text-sm text-slate-500">{b2.deleteRoleAsk}</p>
+        <p className="perm-hint">{b2.deleteRoleAsk}</p>
       </Modal>
     </div>
   );

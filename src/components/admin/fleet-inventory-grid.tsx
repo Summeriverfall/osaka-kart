@@ -198,77 +198,83 @@ export function FleetInventoryGrid() {
   return (
     <section className={cn("fleet-board", selected && "is-split")}>
       <div className="fleet-main">
-        <div className="fleet-toolbar">
-          <button type="button" className="ib-btn fleet-only-week" onClick={() => setAnchor(addDaysIso(anchor, -7))}>
-            <ChevronLeft className="size-4" /> {b2.prevWeek}
-          </button>
-          <button
-            type="button"
-            className={cn("ib-btn fleet-only-week", anchor === weekStartMonday(today) && "is-on")}
-            onClick={() => setAnchor(weekStartMonday(today))}
-          >
-            {b2.thisWeek}
-          </button>
-          <button type="button" className="ib-btn fleet-only-week" onClick={() => setAnchor(addDaysIso(anchor, 7))}>
-            {b2.nextWeek} <ChevronRight className="size-4" />
-          </button>
-          <button type="button" className="ib-btn fleet-only-days" onClick={() => setTripStart(addDaysIso(tripStart, -3))}>
-            <ChevronLeft className="size-4" /> {b2.prevDays}
-          </button>
-          <button
-            type="button"
-            className={cn("ib-btn fleet-only-days", tripStart === today && "is-on")}
-            onClick={() => setTripStart(today)}
-          >
-            {b2.theseDays}
-          </button>
-          <button type="button" className="ib-btn fleet-only-days" onClick={() => setTripStart(addDaysIso(tripStart, 3))}>
-            {b2.nextDays} <ChevronRight className="size-4" />
-          </button>
-          <button
-            type="button"
-            className={cn("ib-btn", tightOnly && "is-on")}
-            onClick={() => setTightOnly((value) => !value)}
-          >
-            {b2.tightOnly}
-          </button>
-          <p className="fleet-rate">
-            {b2.utilization} {Math.round(rate * 100)}%
-          </p>
-        </div>
-
-        {canSwitch && isAllStores(storeId) ? (
-          <>
-            <div className="fleet-stores">
-              {stores.map((store) => (
-                <button
-                  key={store.id}
-                  type="button"
-                  className={cn("ib-btn", focusStore === store.id && "is-on")}
-                  aria-pressed={focusStore === store.id}
-                  onClick={() => {
-                    setFocusStore(store.id);
-                    setPicked(null);
-                  }}
-                >
-                  {adminStoreName(locale, store.id, store.name)}
-                </button>
-              ))}
+        <div className="fleet-chrome">
+          <div className="fleet-toolbar">
+            <div className="fleet-nav">
+              <button type="button" className="ib-btn fleet-only-week" onClick={() => setAnchor(addDaysIso(anchor, -7))}>
+                <ChevronLeft className="size-4" /> {b2.prevWeek}
+              </button>
+              <button
+                type="button"
+                className={cn("ib-btn fleet-only-week", anchor === weekStartMonday(today) && "is-on")}
+                onClick={() => setAnchor(weekStartMonday(today))}
+              >
+                {b2.thisWeek}
+              </button>
+              <button type="button" className="ib-btn fleet-only-week" onClick={() => setAnchor(addDaysIso(anchor, 7))}>
+                {b2.nextWeek} <ChevronRight className="size-4" />
+              </button>
+              <button type="button" className="ib-btn fleet-only-days" onClick={() => setTripStart(addDaysIso(tripStart, -3))}>
+                <ChevronLeft className="size-4" /> {b2.prevDays}
+              </button>
+              <button
+                type="button"
+                className={cn("ib-btn fleet-only-days", tripStart === today && "is-on")}
+                onClick={() => setTripStart(today)}
+              >
+                {b2.theseDays}
+              </button>
+              <button type="button" className="ib-btn fleet-only-days" onClick={() => setTripStart(addDaysIso(tripStart, 3))}>
+                {b2.nextDays} <ChevronRight className="size-4" />
+              </button>
             </div>
-            <p className="fleet-pick">{b2.pickStore}</p>
-          </>
-        ) : null}
+            <div className="fleet-tools">
+              <button
+                type="button"
+                className={cn("ib-btn", tightOnly && "is-on")}
+                onClick={() => setTightOnly((value) => !value)}
+              >
+                {b2.tightOnly}
+              </button>
+              <p className="fleet-rate">
+                {b2.utilization} {Math.round(rate * 100)}%
+              </p>
+            </div>
+          </div>
 
-        <ul className="fleet-legend">
-          <li><i className="is-free" /> {copy.inventory.free}</li>
-          <li><i className="is-tight" /> {copy.inventory.tight}</li>
-          <li><i className="is-low" /> {copy.inventory.full}</li>
-          <li><i className="is-idle" /> {b2.closed}</li>
-          <li><span className="fleet-legend-dot" /> {b2.raceOne}</li>
-          <li><span className="fleet-legend-dot" /><span className="fleet-legend-dot" /> {b2.raceTwo}</li>
-        </ul>
+          {canSwitch && isAllStores(storeId) ? (
+            <div className="fleet-storebar">
+              <div className="fleet-stores">
+                {stores.map((store) => (
+                  <button
+                    key={store.id}
+                    type="button"
+                    className={cn("ib-btn", focusStore === store.id && "is-on")}
+                    aria-pressed={focusStore === store.id}
+                    onClick={() => {
+                      setFocusStore(store.id);
+                      setPicked(null);
+                    }}
+                  >
+                    {adminStoreName(locale, store.id, store.name)}
+                  </button>
+                ))}
+              </div>
+              <p className="fleet-pick">{b2.pickStore}</p>
+            </div>
+          ) : null}
 
-        {oversell ? <p className="fleet-oversell">{b2.oversell}</p> : null}
+          <ul className="fleet-legend">
+            <li><i className="is-free" /> {copy.inventory.free}</li>
+            <li><i className="is-tight" /> {copy.inventory.tight}</li>
+            <li><i className="is-low" /> {copy.inventory.full}</li>
+            <li><i className="is-idle" /> {b2.closed}</li>
+            <li><span className="fleet-legend-dot" /> {b2.raceOne}</li>
+            <li><span className="fleet-legend-dot" /><span className="fleet-legend-dot" /> {b2.raceTwo}</li>
+          </ul>
+
+          {oversell ? <p className="fleet-oversell">{b2.oversell}</p> : null}
+        </div>
 
         <div className="fleet-scroll">
           <table className="fleet-table is-landscape">
