@@ -4,7 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { WeekTimeline } from "@/components/admin/week-timeline";
+import { AdminShopPills } from "@/components/admin/admin-shop-pills";
 import { adminCopy } from "@/lib/admin/copy";
+import { adminShopOrders } from "@/lib/admin-schedule";
+import { useAdminShopFocus } from "@/lib/admin-shop-focus";
 import {
   addDaysIso,
   addMonths,
@@ -70,18 +73,19 @@ function useThreeDayMode() {
 export function OrderCalendarDrill({ value, view, onView, onChange, onSelectOrder, counts: countsProp, heatFor = "orders" }: Props) {
   const locale = useLocale();
   const copy = adminCopy(locale);
-  const { orders } = useStoreData();
+  const { orders, storeId } = useStoreData();
+  const { focusStore } = useAdminShopFocus();
   const [cursor, setCursor] = useState(() => parseIsoDate(value));
   const [threeStart, setThreeStart] = useState(value);
   const threeDay = useThreeDayMode();
   const cells = useMemo(() => monthCells(cursor), [cursor]);
   const orderCounts = useMemo(() => {
     const map = new Map<string, number>();
-    for (const order of orders) {
+    for (const order of adminShopOrders(orders, storeId, focusStore)) {
       map.set(order.date, (map.get(order.date) ?? 0) + 1);
     }
     return map;
-  }, [orders]);
+  }, [orders, storeId, focusStore]);
   const counts = countsProp ?? orderCounts;
 
   useEffect(() => {
@@ -168,6 +172,8 @@ export function OrderCalendarDrill({ value, view, onView, onChange, onSelectOrde
           </button>
         </div>
       </div>
+
+      <AdminShopPills className="mb-4" />
 
       {view === "month" ? (
         <>

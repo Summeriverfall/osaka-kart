@@ -11,6 +11,8 @@ import { adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/a
 import { liveChannelIds } from "@/lib/channel-options";
 import { formatYenShort } from "@/lib/format";
 import { type MockOrder, type OrderStatus } from "@/lib/mock/orders";
+import { bookBlockedText } from "@/lib/admin/b2-copy";
+import { inventoryBlockForOrder, resolveOrderStoreId } from "@/lib/fleet-inventory";
 import { sendStatusMail } from "@/lib/ops-notify";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
@@ -48,6 +50,7 @@ export function OrderDetailModal({
     const id = next.id.trim() || fromId;
     const male = Math.max(0, next.male);
     const female = Math.max(0, next.female);
+    const state = useOpsStore.getState();
     const saved: MockOrder = {
       ...next,
       id,
@@ -56,10 +59,23 @@ export function OrderDetailModal({
       riders: male + female,
       time: next.time.slice(0, 5),
       totalJpy: Math.max(0, next.totalJpy),
+      storeId: resolveOrderStoreId(next.storeId, order?.storeId),
     };
-    const taken = useOpsStore.getState().orders.some((item) => item.id === saved.id && item.id !== fromId);
+    const taken = state.orders.some((item) => item.id === saved.id && item.id !== fromId);
     if (taken) {
       notify(copy.orders.idTaken);
+      return;
+    }
+    const block = inventoryBlockForOrder(
+      { ...saved, id: fromId },
+      state.vehicles,
+      state.vehicleSlots,
+      state.orders,
+      state.specialDates,
+      state.plans,
+    );
+    if (!block.ok) {
+      notify(bookBlockedText(locale, block.reason));
       return;
     }
     const prev = useOpsStore.getState().orders.find((item) => item.id === fromId);

@@ -6,6 +6,8 @@ import { OrderCalendarDrill } from "@/components/admin/order-calendar-drill";
 import { OrderDetailModal } from "@/components/admin/order-detail-modal";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { adminCopy, adminPlanName } from "@/lib/admin/copy";
+import { adminShopOrders } from "@/lib/admin-schedule";
+import { useAdminShopFocus } from "@/lib/admin-shop-focus";
 import { readAdminFocusDate } from "@/lib/admin/focus-date";
 import { todayIsoDate } from "@/lib/booking/slots";
 import { formatYenShort } from "@/lib/format";
@@ -27,15 +29,19 @@ function scrollAdminMainTo(target: HTMLElement, offset = 12) {
 export function AdminCalendarView() {
   const locale = useLocale();
   const copy = adminCopy(locale);
-  const { orders, plans } = useStoreData();
+  const { orders, plans, storeId } = useStoreData();
+  const { focusStore } = useAdminShopFocus();
   const listRef = useRef<HTMLElement>(null);
   const [view, setView] = useState<"month" | "week" | "day">("week");
   const [picked, setPicked] = useState(() => readAdminFocusDate() || todayIsoDate());
   const [detailId, setDetailId] = useState<string | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
   const dayOrders = useMemo(
-    () => orders.filter((item) => item.date === picked).sort((a, b) => a.time.localeCompare(b.time) || a.id.localeCompare(b.id)),
-    [orders, picked],
+    () =>
+      adminShopOrders(orders, storeId, focusStore)
+        .filter((item) => item.date === picked)
+        .sort((a, b) => a.time.localeCompare(b.time) || a.id.localeCompare(b.id)),
+    [orders, storeId, focusStore, picked],
   );
 
   function revealDayList(orderId?: string) {

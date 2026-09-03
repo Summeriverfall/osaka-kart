@@ -43,7 +43,10 @@ export function useStoreData() {
     [slotsAll, vehicleIds, storeId],
   );
   const specialDates = useMemo(
-    () => (isAllStores(storeId) ? specialAll : specialAll.filter((item) => storeIdOf(item.storeId) === storeId)),
+    () =>
+      isAllStores(storeId)
+        ? specialAll
+        : specialAll.filter((item) => !item.storeId || storeIdOf(item.storeId) === storeId),
     [specialAll, storeId],
   );
   const logs = useMemo(

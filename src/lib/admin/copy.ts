@@ -311,6 +311,8 @@ export type AdminCopy = {
     dateTo: string;
     today: string;
     allDates: string;
+    rangeHint: string;
+    rangeClear: string;
     search: string;
     allStatus: string;
     add: string;
@@ -375,6 +377,7 @@ export type AdminCopy = {
     time: string;
     compactHint: string;
     weekHint: string;
+    lock: string;
     minutes: (n: number) => string;
   };
   inventory: {
@@ -1044,6 +1047,8 @@ const zh: AdminCopy = {
     dateTo: "结束日期",
     today: "今天",
     allDates: "全部日期",
+    rangeHint: "点两次选择起止日期",
+    rangeClear: "清除",
     search: "搜索订单号/客户姓名/套餐",
     allStatus: "全部状态",
     add: "添加订单",
@@ -1107,7 +1112,8 @@ const zh: AdminCopy = {
     dayHint: (iso) => `正在查看 ${iso}，下方是该日订单。`,
     time: "时间",
     compactHint: "竖屏每次看三天，点上方箭头换三天。手机横过来可看完整一周。",
-    weekHint: "色块高度等于套餐时长。点击色块打开订单详情，点击日期列可切换下方当天列表。",
+    weekHint: "色块是未取消订单，与库存占用同一批。斜纹是该店锁定／休业。已取消只在下方列表。全部店铺时请先选一门店，三处才会对齐。",
+    lock: "锁定 / 休业",
     minutes: (n) => `${n} 分钟`,
   },
   inventory: {
@@ -1784,6 +1790,8 @@ const en: AdminCopy = {
     dateTo: "To",
     today: "Today",
     allDates: "All dates",
+    rangeHint: "Click twice to set the range",
+    rangeClear: "Clear",
     search: "Search ID / guest / plan",
     allStatus: "All statuses",
     add: "Add order",
@@ -1847,7 +1855,8 @@ const en: AdminCopy = {
     dayHint: (iso) => `Viewing ${iso}. Orders for that day are below.`,
     time: "Time",
     compactHint: "Portrait phones show three days. Rotate for a full week.",
-    weekHint: "Block height matches plan length. Click a block for detail, or a date column for that day’s list.",
+    weekHint: "Blocks are live bookings, same occupancy as inventory. Hatch is a lock or closed day. Cancelled orders stay in the list below. Pick one shop when viewing all stores.",
+    lock: "Locked / closed",
     minutes: (n) => `${n} min`,
   },
   inventory: {
@@ -2524,6 +2533,8 @@ const ja: AdminCopy = {
     dateTo: "終了日",
     today: "今日",
     allDates: "全日付",
+    rangeHint: "2回クリックで期間を指定",
+    rangeClear: "クリア",
     search: "予約番号／氏名／コース",
     allStatus: "全ステータス",
     add: "予約を追加",
@@ -2587,7 +2598,8 @@ const ja: AdminCopy = {
     dayHint: (iso) => `${iso}を表示中。下にその日の予約一覧があります。`,
     time: "時刻",
     compactHint: "縦向きでは3日ずつ。矢印で移動。横向きにすると1週間が見えます。",
-    weekHint: "色付きブロックの高さはプランの所要時間を表しています。選択すると予約詳細を確認でき、日付の列を選択すると下の一覧がその日の予約に切り替わります。",
+    weekHint: "色ブロックは未キャンセル予約で、在庫の占用と同じです。斜線はロック／休業。キャンセルは下の一覧のみ。全店舗では先に店舗を選んでください。",
+    lock: "ロック / 休業",
     minutes: (n) => `${n}分`,
   },
   inventory: {

@@ -291,7 +291,7 @@ function dateClosed(
   storeId: string,
 ) {
   return specialDates.some(
-    (row) => row.date === iso && row.closed && storeIdOf(row.storeId) === storeId,
+    (row) => row.date === iso && row.closed && !row.time && storeIdOf(row.storeId) === storeId,
   );
 }
 

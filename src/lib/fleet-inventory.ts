@@ -168,6 +168,11 @@ export function fleetTone(
   return "free";
 }
 
+export function isStoreDayClosed(date: string, specialDates: MockSpecialDate[], storeId?: string) {
+  const sid = fleetStoreId(storeId);
+  return specialDates.some((row) => dateClosedForStore(row, date, sid));
+}
+
 function dateClosedForStore(row: MockSpecialDate, date: string, sid: string) {
   if (row.date !== date || !row.closed) return false;
   if (row.time) return false;
@@ -179,6 +184,34 @@ function slotClosedForStore(row: MockSpecialDate, date: string, time: string, si
   if (row.date !== date || !row.closed || row.time !== time) return false;
   if (!sid) return !row.storeId;
   return !row.storeId || storeIdOf(row.storeId) === sid;
+}
+
+export function isStoreSlotLocked(date: string, time: string, specialDates: MockSpecialDate[], storeId?: string) {
+  const sid = fleetStoreId(storeId);
+  return specialDates.some((row) => slotClosedForStore(row, date, time, sid));
+}
+
+export type InventoryLockSpan = { from: string; to: string; kind: "day" | "slot" };
+
+export function inventoryLockSpans(date: string, specialDates: MockSpecialDate[], storeId?: string): InventoryLockSpan[] {
+  const ticks = timelineTicks();
+  if (!ticks.length) return [];
+  if (isStoreDayClosed(date, specialDates, storeId)) {
+    const last = ticks[ticks.length - 1];
+    return [{ from: ticks[0], to: formatClockMinutes(parseClockMinutes(last) + TICK_MIN), kind: "day" }];
+  }
+  const spans: InventoryLockSpan[] = [];
+  for (const time of ticks) {
+    if (!isStoreSlotLocked(date, time, specialDates, storeId)) continue;
+    const end = formatClockMinutes(parseClockMinutes(time) + TICK_MIN);
+    const last = spans.at(-1);
+    if (last && last.kind === "slot" && last.to === time) {
+      last.to = end;
+    } else {
+      spans.push({ from: time, to: end, kind: "slot" });
+    }
+  }
+  return spans;
 }
 
 export function summarizeFleetSlot(
@@ -214,7 +247,8 @@ export function summarizeFleetSlot(
   const buffer = false;
   const depart = isDepartTick(time);
 
-  if (!OPEN_TICKS.has(time) || dayClosed || slotClosed || total === 0) {
+  const emptyClosed = races === 0 && (dayClosed || slotClosed || !OPEN_TICKS.has(time) || total === 0);
+  if (emptyClosed) {
     return {
       date,
       time,
@@ -233,7 +267,7 @@ export function summarizeFleetSlot(
     };
   }
 
-  const left = Math.max(0, total - booked);
+  const left = slotClosed || dayClosed ? 0 : Math.max(0, total - booked);
   const oversold = booked > total;
   const row: FleetCell = {
     date,
@@ -283,4 +317,53 @@ export function occupancyRate(
   }
   if (!capacity) return 0;
   return booked / capacity;
+}
+
+export type InventoryBlockReason = "day" | "lock" | "hours" | "guests" | "races";
+
+export function resolveOrderStoreId(storeId?: string, fallback?: string) {
+  const pick = [storeId, fallback].find((id) => id && !isAllStores(id));
+  return storeIdOf(pick);
+}
+
+export function orderCoveredTicks(
+  order: Pick<MockOrder, "time" | "planSlug" | "planName">,
+  plans: MockPlan[] = MOCK_PLANS,
+) {
+  const start = parseClockMinutes(order.time.slice(0, 5));
+  const duration = orderDurationMinutes(order, plans);
+  const ticks: string[] = [];
+  for (let mins = start; mins < start + duration; mins += TICK_MIN) {
+    ticks.push(formatClockMinutes(mins));
+  }
+  return ticks;
+}
+
+export function inventoryBlockForOrder(
+  order: Pick<MockOrder, "id" | "date" | "time" | "riders" | "storeId" | "planSlug" | "planName" | "status">,
+  vehicles: MockVehicle[],
+  slots: VehicleSlotCell[],
+  orders: MockOrder[],
+  specialDates: MockSpecialDate[],
+  plans: MockPlan[] = MOCK_PLANS,
+): { ok: true } | { ok: false; reason: InventoryBlockReason } {
+  if (order.status === "cancelled") return { ok: true };
+  const sid = resolveOrderStoreId(order.storeId);
+  const prev = orders.find((item) => item.id && item.id === order.id);
+  if (isStoreDayClosed(order.date, specialDates, sid) && prev?.date !== order.date) {
+    return { ok: false, reason: "day" };
+  }
+  const prevTicks = prev ? new Set(orderCoveredTicks(prev, plans)) : new Set<string>();
+  const others = orders.filter((item) => item.id !== order.id);
+  const riders = Math.max(0, order.riders);
+  for (const time of orderCoveredTicks(order, plans)) {
+    const cell = summarizeFleetSlot(order.date, time, vehicles, slots, others, specialDates, sid, plans);
+    if (cell.closedKind === "day" && prev?.date !== order.date) return { ok: false, reason: "day" };
+    if (cell.closedKind === "hours" || !OPEN_TICKS.has(time)) return { ok: false, reason: "hours" };
+    if (cell.closedKind === "slot" && !prevTicks.has(time)) return { ok: false, reason: "lock" };
+    if (cell.closed && cell.closedKind !== "day" && cell.closedKind !== "slot") return { ok: false, reason: "hours" };
+    if (cell.races >= MAX_CONCURRENT_RACES) return { ok: false, reason: "races" };
+    if (cell.left < riders) return { ok: false, reason: "guests" };
+  }
+  return { ok: true };
 }

@@ -12,11 +12,12 @@ const ZH = {
   theseDays: "这三天",
   closed: "休业",
   locked: "已锁",
+  timeBusy: "占用",
   tightOnly: "仅看紧张",
   raceOne: "1 单",
   raceTwo: "2 单",
   bufferMark: "缓冲",
-  pickStore: "全店请先选一门店再排车，不要把各店车辆加在一起。",
+  pickStore: "全部店铺时请先选一门店。订单、日历、库存都按该店对齐。",
   slotLeft: "还能接几人",
   slotRaces: "同时几单",
   holdEmpty: "此时段没有预约。",
@@ -32,6 +33,11 @@ const ZH = {
   cancelRangeAsk: (n: number) => `将取消这 ${n} 张未完成订单。确定？`,
   cancelledN: (n: number) => `已取消 ${n} 张订单。`,
   rangeEmpty: "所选时段没有可取消的订单。",
+  bookBlockedDay: "这天已休业，不能建单或改到这天。",
+  bookBlockedLock: "所选时间已锁定，不能建单。",
+  bookBlockedHours: "不在营业时段内。",
+  bookBlockedGuests: "这个时段剩余人数不够。",
+  bookBlockedRaces: "这个时段已并满 2 单。",
   raceFull: "已满 8 人，不能再接",
   closeDrawer: "关闭",
   utilization: "客人占用率",
@@ -104,11 +110,12 @@ const EN: typeof ZH = {
   theseDays: "These 3 days",
   closed: "Closed",
   locked: "Locked",
+  timeBusy: "Taken",
   tightOnly: "Tight only",
   raceOne: "1 booking",
   raceTwo: "2 bookings",
   bufferMark: "Buffer",
-  pickStore: "Pick one shop. Do not add every shop’s karts together.",
+  pickStore: "Pick one shop. Orders, calendar, and inventory all follow that shop.",
   slotLeft: "Guests left",
   slotRaces: "Bookings now",
   holdEmpty: "No booking in this slot.",
@@ -124,6 +131,11 @@ const EN: typeof ZH = {
   cancelRangeAsk: (n: number) => `Cancel these ${n} open bookings?`,
   cancelledN: (n: number) => `Cancelled ${n} bookings.`,
   rangeEmpty: "No open bookings in this range.",
+  bookBlockedDay: "The shop is closed that day.",
+  bookBlockedLock: "That time is locked. Cannot book.",
+  bookBlockedHours: "Outside opening hours.",
+  bookBlockedGuests: "Not enough guest seats left.",
+  bookBlockedRaces: "Already 2 bookings in that slot.",
   raceFull: "8 guests already. Cannot take more.",
   closeDrawer: "Close",
   utilization: "Guest fill rate",
@@ -196,11 +208,12 @@ const JA: typeof ZH = {
   theseDays: "この3日",
   closed: "休業",
   locked: "ロック中",
+  timeBusy: "予約済",
   tightOnly: "逼迫のみ",
   raceOne: "1件",
   raceTwo: "2件",
   bufferMark: "バッファ",
-  pickStore: "全店舗では店舗を1つ選んでください。台数を合算しないでください。",
+  pickStore: "全店舗では店舗を1つ選んでください。予約・カレンダー・在庫がその店に揃います。",
   slotLeft: "まだ受けられる人数",
   slotRaces: "同時の予約",
   holdEmpty: "この時間に予約はありません。",
@@ -216,6 +229,11 @@ const JA: typeof ZH = {
   cancelRangeAsk: (n: number) => `未完了の注文 ${n} 件を取り消します。よろしいですか？`,
   cancelledN: (n: number) => `${n} 件を取り消しました。`,
   rangeEmpty: "この範囲に取り消せる注文はありません。",
+  bookBlockedDay: "その日は休業です。",
+  bookBlockedLock: "その時間はロックされています。",
+  bookBlockedHours: "営業時間外です。",
+  bookBlockedGuests: "残席が足りません。",
+  bookBlockedRaces: "この時間はすでに2件です。",
   raceFull: "すでに8人です。これ以上受けられません。",
   closeDrawer: "閉じる",
   utilization: "お客様の埋まり",
@@ -283,6 +301,15 @@ export function b2Copy(locale: string) {
 }
 
 export type B2Copy = typeof ZH;
+
+export function bookBlockedText(locale: string, reason: "day" | "lock" | "hours" | "guests" | "races") {
+  const b2 = b2Copy(locale);
+  if (reason === "day") return b2.bookBlockedDay;
+  if (reason === "lock") return b2.bookBlockedLock;
+  if (reason === "hours") return b2.bookBlockedHours;
+  if (reason === "guests") return b2.bookBlockedGuests;
+  return b2.bookBlockedRaces;
+}
 
 export function b2Locale(locale: string): Locale {
   if (locale.startsWith("ja")) return "ja";

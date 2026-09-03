@@ -5,12 +5,16 @@ import { useLocale } from "next-intl";
 import { weekdayLabel } from "@/lib/calendar";
 import { formatYenShort } from "@/lib/format";
 import { adminCopy, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
+import { adminScheduleOrders, adminShopOrders } from "@/lib/admin-schedule";
+import { useAdminShopFocus } from "@/lib/admin-shop-focus";
 import { labelChannel } from "@/lib/channel-options";
+import { inventoryLockSpans, orderDurationMinutes } from "@/lib/fleet-inventory";
 import { type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import type { MockPlan } from "@/lib/mock/plans";
 import { TIMELINE_END_HOUR, TIMELINE_START_HOUR } from "@/lib/mock/vehicle-timeline";
 import { cn } from "@/lib/utils";
 import { useOpsStore } from "@/stores/ops-store";
+import { useStoreData } from "@/lib/use-store-data";
 
 const HOUR_H = 56;
 const HOURS = TIMELINE_END_HOUR - TIMELINE_START_HOUR;
@@ -35,24 +39,24 @@ type LaidOut = {
   duration: number;
 };
 
+type LockLaid = {
+  key: string;
+  top: number;
+  height: number;
+  kind: "day" | "slot";
+};
+
 function parseMinutes(time: string) {
   const hour = Number(time.slice(0, 2)) || 0;
   const minute = Number(time.slice(3, 5)) || 0;
   return hour * 60 + minute;
 }
 
-function durationOf(order: MockOrder, plans: MockPlan[]) {
-  const plan = plans.find((item) => item.slug === order.planSlug);
-  if (plan) return plan.durationMinutes;
-  const match = order.planName.match(/(\d+)\s*分钟/);
-  return match ? Number(match[1]) : 60;
-}
-
 function layoutDay(dayOrders: MockOrder[], plans: MockPlan[]): LaidOut[] {
   const items = dayOrders
     .map((order) => {
       const start = parseMinutes(order.time);
-      const duration = durationOf(order, plans);
+      const duration = orderDurationMinutes(order, plans);
       const end = start + duration;
       const top = ((Math.max(start, START_MIN) - START_MIN) / 60) * HOUR_H;
       const visibleEnd = Math.min(end, END_MIN);
@@ -81,6 +85,16 @@ function layoutDay(dayOrders: MockOrder[], plans: MockPlan[]): LaidOut[] {
   });
 }
 
+function layoutLocks(date: string, specialDates: Parameters<typeof inventoryLockSpans>[1], shopId: string): LockLaid[] {
+  return inventoryLockSpans(date, specialDates, shopId).map((span, index) => {
+    const start = parseMinutes(span.from);
+    const end = parseMinutes(span.to);
+    const top = ((Math.max(start, START_MIN) - START_MIN) / 60) * HOUR_H;
+    const height = Math.max(((Math.min(end, END_MIN) - Math.max(start, START_MIN)) / 60) * HOUR_H, 8);
+    return { key: `${date}-${span.kind}-${index}`, top, height, kind: span.kind };
+  });
+}
+
 function statusClass(status: OrderStatus) {
   if (status === "confirmed") return "is-confirmed";
   if (status === "pending") return "is-pending";
@@ -93,13 +107,24 @@ export function WeekTimeline({ value, orders, days, compact = false, onSelectDat
   const copy = adminCopy(locale);
   const plans = useOpsStore((state) => state.plans);
   const channels = useOpsStore((state) => state.settings.channels);
+  const { specialDates, storeId } = useStoreData();
+  const { shopId, focusStore } = useAdminShopFocus();
+  const shopOrders = useMemo(
+    () => adminShopOrders(orders, storeId, focusStore),
+    [orders, storeId, focusStore],
+  );
   const byDate = useMemo(() => {
-    const map = new Map<string, LaidOut[]>();
+    const map = new Map<string, { blocks: LaidOut[]; locks: LockLaid[]; listed: number }>();
     for (const iso of days) {
-      map.set(iso, layoutDay(orders.filter((item) => item.date === iso), plans));
+      const listed = shopOrders.filter((item) => item.date === iso);
+      map.set(iso, {
+        blocks: layoutDay(adminScheduleOrders(listed), plans),
+        locks: layoutLocks(iso, specialDates, shopId),
+        listed: listed.length,
+      });
     }
     return map;
-  }, [orders, days, plans]);
+  }, [shopOrders, days, plans, specialDates, shopId]);
 
   const [tip, setTip] = useState<{ order: MockOrder; duration: number; x: number; y: number } | null>(null);
 
@@ -111,7 +136,7 @@ export function WeekTimeline({ value, orders, days, compact = false, onSelectDat
             <span>{copy.calendar.time}</span>
           </div>
           {days.map((iso) => {
-            const count = byDate.get(iso)?.length ?? 0;
+            const count = byDate.get(iso)?.listed ?? 0;
             const picked = iso === value;
             return (
               <button
@@ -140,7 +165,9 @@ export function WeekTimeline({ value, orders, days, compact = false, onSelectDat
           </div>
 
           {days.map((iso) => {
-            const blocks = byDate.get(iso) ?? [];
+            const day = byDate.get(iso);
+            const blocks = day?.blocks ?? [];
+            const locks = day?.locks ?? [];
             const picked = iso === value;
             return (
               <div
@@ -149,6 +176,14 @@ export function WeekTimeline({ value, orders, days, compact = false, onSelectDat
                 style={{ height: HOURS * HOUR_H }}
                 onClick={() => onSelectDate(iso)}
               >
+                {locks.map((lock) => (
+                  <div
+                    key={lock.key}
+                    className={cn("week-lock", lock.kind === "day" && "is-day")}
+                    style={{ top: lock.top, height: lock.height }}
+                    aria-hidden
+                  />
+                ))}
                 {blocks.map((block) => {
                   const width = `calc((100% - 6px) / ${block.cols})`;
                   const left = `calc(3px + ${block.col} * (100% - 6px) / ${block.cols})`;
@@ -196,12 +231,12 @@ export function WeekTimeline({ value, orders, days, compact = false, onSelectDat
           {copy.orderStatus.pending}
         </li>
         <li>
-          <i className="is-cancelled" />
-          {copy.orderStatus.cancelled}
-        </li>
-        <li>
           <i className="is-completed" />
           {copy.orderStatus.completed}
+        </li>
+        <li>
+          <i className="is-lock" />
+          {copy.calendar.lock}
         </li>
       </ul>
       <p className="week-hint">

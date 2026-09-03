@@ -4,14 +4,19 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { Ban, Check, ChevronRight, Eye, Pencil, Plus, Search } from "lucide-react";
 import { ChannelBadge } from "@/components/admin/channel-badge";
+import { DateRangePicker } from "@/components/admin/date-range-picker";
 import { StatusSelect } from "@/components/admin/status-select";
 import { Modal } from "@/components/ui/modal";
+import { AdminShopPills } from "@/components/admin/admin-shop-pills";
 import { adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
-import { b2Copy } from "@/lib/admin/b2-copy";
+import { adminShopOrders } from "@/lib/admin-schedule";
+import { useAdminShopFocus } from "@/lib/admin-shop-focus";
+import { b2Copy, bookBlockedText } from "@/lib/admin/b2-copy";
 import { useAdminAccess } from "@/lib/admin-access";
 import { collectChannelIds, labelChannel, liveChannelIds } from "@/lib/channel-options";
 import { consumeAdminFocusAdd, readAdminFocusDate, readAdminFocusTime } from "@/lib/admin/focus-date";
 import { todayIsoDate } from "@/lib/booking/slots";
+import { inventoryBlockForOrder, resolveOrderStoreId } from "@/lib/fleet-inventory";
 import { formatYenShort } from "@/lib/format";
 import { OrderDocs } from "@/components/admin/order-docs";
 import { OrderEditFields } from "@/components/admin/order-edit-fields";
@@ -132,7 +137,12 @@ export function AdminOrdersView() {
   const b2 = b2Copy(locale);
   const { canCompleteOrder } = useAdminAccess();
   const { upsertOrder, patchOrder, setOrderStatus, templates, settings, affiliates } = useOpsStore();
-  const { orders: storeOrders, storeId, plans } = useStoreData();
+  const { orders: storeOrders, storeId, plans, vehicles, vehicleSlots, specialDates } = useStoreData();
+  const { shopId, focusStore } = useAdminShopFocus();
+  const scopedOrders = useMemo(
+    () => adminShopOrders(storeOrders, storeId, focusStore),
+    [storeOrders, storeId, focusStore],
+  );
   const notify = useToastStore((state) => state.notify);
   const today = todayIsoDate();
   const [from, setFrom] = useState(() => readAdminFocusDate() || today);
@@ -160,14 +170,14 @@ export function AdminOrdersView() {
     }
     if (consumeAdminFocusAdd() && date) {
       setEditingFromId("");
-      setEditing({ ...EMPTY, date, time: time || "10:00", storeId });
+      setEditing({ ...EMPTY, date, time: time || "10:00", storeId: resolveOrderStoreId(shopId) });
     }
     // 库存页带入的日期 / 建单，只在进入列表时读一次
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const rows = useMemo(() => {
-    const filtered = storeOrders.filter((item) => {
+    const filtered = scopedOrders.filter((item) => {
       if (!orderDateInRange(item.date, from, to)) return false;
       if (status !== "all" && item.status !== status) return false;
       if (channel !== "all" && item.channel !== channel) return false;
@@ -184,16 +194,16 @@ export function AdminOrdersView() {
       return left.localeCompare(right) * dir;
     });
     return sorted;
-  }, [storeOrders, from, to, status, channel, affiliate, query, sortKey, sortDir]);
+  }, [scopedOrders, from, to, status, channel, affiliate, query, sortKey, sortDir]);
 
   const listedChannels = useMemo(
-    () => collectChannelIds(settings.channels, storeOrders.map((item) => item.channel)),
-    [settings.channels, storeOrders],
+    () => collectChannelIds(settings.channels, scopedOrders.map((item) => item.channel)),
+    [settings.channels, scopedOrders],
   );
 
   const datedOrders = useMemo(
-    () => storeOrders.filter((item) => orderDateInRange(item.date, from, to)),
-    [storeOrders, from, to],
+    () => scopedOrders.filter((item) => orderDateInRange(item.date, from, to)),
+    [scopedOrders, from, to],
   );
 
   const channelCounts = useMemo(() => {
@@ -225,7 +235,7 @@ export function AdminOrdersView() {
 
   function openAdd() {
     setEditingFromId("");
-    setEditing({ ...EMPTY, date: to || from || today, storeId });
+    setEditing({ ...EMPTY, date: to || from || today, storeId: resolveOrderStoreId(shopId) });
   }
 
   function save(order: MockOrder) {
@@ -240,11 +250,23 @@ export function AdminOrdersView() {
       riders: male + female,
       time: order.time.slice(0, 5),
       totalJpy: Math.max(0, order.totalJpy),
-      storeId: order.storeId || storeId,
+      storeId: resolveOrderStoreId(order.storeId, shopId),
     };
     const taken = useOpsStore.getState().orders.some((item) => item.id === next.id && item.id !== editingFromId);
     if (taken) {
       notify(copy.orders.idTaken);
+      return;
+    }
+    const block = inventoryBlockForOrder(
+      { ...next, id: editingFromId || next.id },
+      vehicles,
+      vehicleSlots,
+      useOpsStore.getState().orders,
+      specialDates,
+      plans,
+    );
+    if (!block.ok) {
+      notify(bookBlockedText(locale, block.reason));
       return;
     }
     const prev = editingFromId ? useOpsStore.getState().orders.find((item) => item.id === editingFromId) : undefined;
@@ -309,6 +331,7 @@ export function AdminOrdersView() {
 
   return (
     <div className="space-y-4">
+      <AdminShopPills />
       <section className="order-toolbar">
         <div className="order-toolbar-main">
           <label className="order-toolbar-search">
@@ -322,20 +345,14 @@ export function AdminOrdersView() {
             />
           </label>
           <div className="order-toolbar-dates">
-            <input
-              type="date"
-              aria-label={copy.orders.dateFrom}
-              value={from}
-              onChange={(event) => setFrom(event.target.value)}
-            />
-            <span className="order-toolbar-range-mark" aria-hidden>
-              –
-            </span>
-            <input
-              type="date"
-              aria-label={copy.orders.dateTo}
-              value={to}
-              onChange={(event) => setTo(event.target.value)}
+            <DateRangePicker
+              from={from}
+              to={to}
+              today={today}
+              onChange={(nextFrom, nextTo) => {
+                setFrom(nextFrom);
+                setTo(nextTo);
+              }}
             />
             <button
               type="button"

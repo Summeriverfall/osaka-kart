@@ -7,7 +7,8 @@ import { OrderEditFields } from "@/components/admin/order-edit-fields";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Modal } from "@/components/ui/modal";
 import { adminCopy, adminNation, adminOrderStatus, adminPlanName } from "@/lib/admin/copy";
-import { b2Copy } from "@/lib/admin/b2-copy";
+import { b2Copy, bookBlockedText } from "@/lib/admin/b2-copy";
+import { inventoryBlockForOrder, resolveOrderStoreId } from "@/lib/fleet-inventory";
 import { useAdminAccess } from "@/lib/admin-access";
 import { labelChannel, liveChannelIds } from "@/lib/channel-options";
 import { formatYenShort } from "@/lib/format";
@@ -65,6 +66,7 @@ export function AdminOrderDetailView({ id }: { id: string }) {
     const id = next.id.trim() || fromId;
     const male = Math.max(0, next.male);
     const female = Math.max(0, next.female);
+    const state = useOpsStore.getState();
     const saved: MockOrder = {
       ...next,
       id,
@@ -73,10 +75,23 @@ export function AdminOrderDetailView({ id }: { id: string }) {
       riders: male + female,
       time: next.time.slice(0, 5),
       totalJpy: Math.max(0, next.totalJpy),
+      storeId: resolveOrderStoreId(next.storeId, order?.storeId),
     };
-    const taken = useOpsStore.getState().orders.some((item) => item.id === saved.id && item.id !== fromId);
+    const taken = state.orders.some((item) => item.id === saved.id && item.id !== fromId);
     if (taken) {
       notify(copy.orders.idTaken);
+      return;
+    }
+    const block = inventoryBlockForOrder(
+      { ...saved, id: fromId },
+      state.vehicles,
+      state.vehicleSlots,
+      state.orders,
+      state.specialDates,
+      state.plans,
+    );
+    if (!block.ok) {
+      notify(bookBlockedText(locale, block.reason));
       return;
     }
     const prev = useOpsStore.getState().orders.find((item) => item.id === fromId);

@@ -3,20 +3,25 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { AdminShopPills } from "@/components/admin/admin-shop-pills";
 import { OrderEditFields } from "@/components/admin/order-edit-fields";
 import { Modal } from "@/components/ui/modal";
-import { b2Copy } from "@/lib/admin/b2-copy";
-import { adminCopy, adminPlanName, adminStoreName } from "@/lib/admin/copy";
+import { b2Copy, bookBlockedText } from "@/lib/admin/b2-copy";
+import { adminCopy, adminPlanName } from "@/lib/admin/copy";
+import { adminShopOrders } from "@/lib/admin-schedule";
+import { useAdminShopFocus } from "@/lib/admin-shop-focus";
 import { liveChannelIds } from "@/lib/channel-options";
 import { BOOKING_SLOTS, todayIsoDate } from "@/lib/booking/slots";
 import { addDaysIso, eachIso, weekEndSunday, weekStartMonday, weekdayLabel } from "@/lib/calendar";
 import {
   describeHolds,
   formatClockMinutes,
+  inventoryBlockForOrder,
   isDepartTick,
   mergeFleetSpans,
   occupancyRate,
   parseClockMinutes,
+  resolveOrderStoreId,
   summarizeFleetSlot,
   type FleetCell,
   type FleetHold,
@@ -24,7 +29,6 @@ import {
 import { type MockOrder } from "@/lib/mock/orders";
 import { type MockPlan } from "@/lib/mock/plans";
 import { timelineTicks } from "@/lib/mock/vehicle-timeline";
-import { DEFAULT_STORE_ID, isAllStores } from "@/lib/store-id";
 import { cn } from "@/lib/utils";
 import { useAdminAccess } from "@/lib/admin-access";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
@@ -169,12 +173,12 @@ export function FleetInventoryGrid() {
   const notify = useToastStore((state) => state.notify);
   const [anchor, setAnchor] = useState(weekStartMonday(today));
   const [tightOnly, setTightOnly] = useState(false);
-  const [focusStore, setFocusStore] = useState(DEFAULT_STORE_ID);
   const [range, setRange] = useState<SlotRange | null>(null);
   const [dragging, setDragging] = useState(false);
   const [askCancel, setAskCancel] = useState(false);
   const [draft, setDraft] = useState<MockOrder | null>(null);
-  const { vehicles, vehicleSlots, orders, specialDates, storeId, stores, plans, canSwitch } = useStoreData();
+  const { vehicles, vehicleSlots, orders, specialDates, storeId, plans } = useStoreData();
+  const { shopId, focusStore } = useAdminShopFocus();
   const ensureInventory = useOpsStore((state) => state.ensureInventory);
   const addSpecialDate = useOpsStore((state) => state.addSpecialDate);
   const removeSpecialDate = useOpsStore((state) => state.removeSpecialDate);
@@ -183,10 +187,10 @@ export function FleetInventoryGrid() {
   const settings = useOpsStore((state) => state.settings);
 
   const days = useMemo(() => eachIso(anchor, weekEndSunday(anchor)), [anchor]);
-  const gridStore = isAllStores(storeId) ? focusStore : storeId;
+  const gridStore = shopId;
   const liveOrders = useMemo(
-    () => orders.filter((item) => !item.id.startsWith("FK-H-")),
-    [orders],
+    () => adminShopOrders(orders, storeId, focusStore),
+    [orders, storeId, focusStore],
   );
 
   const grid = useMemo(() => {
@@ -297,11 +301,23 @@ export function FleetInventoryGrid() {
       riders: male + female,
       time: draft.time.slice(0, 5),
       totalJpy: Math.max(0, draft.totalJpy),
-      storeId: draft.storeId || gridStore,
+      storeId: resolveOrderStoreId(draft.storeId, gridStore),
     };
     const taken = useOpsStore.getState().orders.some((item) => item.id === next.id);
     if (taken) {
       notify(copy.orders.idTaken);
+      return;
+    }
+    const block = inventoryBlockForOrder(
+      next,
+      vehicles,
+      vehicleSlots,
+      useOpsStore.getState().orders,
+      specialDates,
+      plans,
+    );
+    if (!block.ok) {
+      notify(bookBlockedText(locale, block.reason));
       return;
     }
     upsertOrder(next);
@@ -380,27 +396,7 @@ export function FleetInventoryGrid() {
             </div>
           </div>
 
-          {canSwitch && isAllStores(storeId) ? (
-            <div className="fleet-storebar">
-              <div className="fleet-stores">
-                {stores.map((store) => (
-                  <button
-                    key={store.id}
-                    type="button"
-                    className={cn("ib-btn", focusStore === store.id && "is-on")}
-                    aria-pressed={focusStore === store.id}
-                    onClick={() => {
-                      setFocusStore(store.id);
-                      setRange(null);
-                    }}
-                  >
-                    {adminStoreName(locale, store.id, store.name)}
-                  </button>
-                ))}
-              </div>
-              <p className="fleet-pick">{b2.pickStore}</p>
-            </div>
-          ) : null}
+          <AdminShopPills onChange={() => setRange(null)} />
 
           <ul className="fleet-legend">
             <li><i className="is-free" /> {copy.inventory.free}</li>

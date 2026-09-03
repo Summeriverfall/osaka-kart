@@ -1,12 +1,28 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
 import { adminCopy, adminNation, adminPlanName } from "@/lib/admin/copy";
+import { b2Copy } from "@/lib/admin/b2-copy";
 import { labelChannel } from "@/lib/channel-options";
+import { resolveOrderStoreId, summarizeFleetSlot } from "@/lib/fleet-inventory";
 import { type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import { type MockPlan } from "@/lib/mock/plans";
+import { timelineTicks } from "@/lib/mock/vehicle-timeline";
 import { useOpsStore } from "@/stores/ops-store";
 
 const STATUSES: OrderStatus[] = ["pending", "confirmed", "completed", "cancelled"];
+const TICKS = timelineTicks();
+
+function snapHalfHour(time: string) {
+  const raw = time.slice(0, 5);
+  if (TICKS.includes(raw)) return raw;
+  const hour = Number(raw.slice(0, 2)) || 0;
+  const minute = Number(raw.slice(3, 5)) || 0;
+  const rounded = minute < 15 ? 0 : minute < 45 ? 30 : 60;
+  const mins = hour * 60 + rounded;
+  const next = `${String(Math.floor(mins / 60) % 24).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
+  return TICKS.includes(next) ? next : TICKS[0] ?? "09:00";
+}
 
 export function OrderEditFields({
   order,
@@ -22,9 +38,45 @@ export function OrderEditFields({
   onChange: (next: MockOrder) => void;
 }) {
   const copy = adminCopy(locale);
+  const b2 = b2Copy(locale);
   const channels = useOpsStore((state) => state.settings.channels);
+  const vehicles = useOpsStore((state) => state.vehicles);
+  const vehicleSlots = useOpsStore((state) => state.vehicleSlots);
+  const orders = useOpsStore((state) => state.orders);
+  const specialDates = useOpsStore((state) => state.specialDates);
   const nationKeys = Object.keys(copy.nation);
   const nations = nationKeys.includes(order.nationality) ? nationKeys : [order.nationality, ...nationKeys];
+  const timeValue = snapHalfHour(order.time);
+
+  const timeOptions = useMemo(() => {
+    const others = orders.filter((item) => item.id && item.id !== order.id);
+    const storeId = resolveOrderStoreId(order.storeId);
+    return TICKS.map((time) => {
+      const cell = summarizeFleetSlot(
+        order.date,
+        time,
+        vehicles,
+        vehicleSlots,
+        others,
+        specialDates,
+        storeId,
+        plans,
+      );
+      const locked = Boolean(cell.closed);
+      const busy = !locked && cell.races > 0;
+      return { time, locked, busy, disabled: locked || busy };
+    });
+  }, [order.date, order.id, order.storeId, orders, vehicles, vehicleSlots, specialDates, plans]);
+
+  useEffect(() => {
+    const current = timeOptions.find((slot) => slot.time === timeValue);
+    if (current && !current.disabled) {
+      if (timeValue !== order.time.slice(0, 5)) onChange({ ...order, time: timeValue });
+      return;
+    }
+    const first = timeOptions.find((slot) => !slot.disabled);
+    if (first && first.time !== order.time.slice(0, 5)) onChange({ ...order, time: first.time });
+  }, [order.date, order.storeId, timeOptions]);
 
   function set(patch: Partial<MockOrder>) {
     onChange({ ...order, ...patch });
@@ -51,12 +103,18 @@ export function OrderEditFields({
       </label>
       <label className="admin-field">
         {copy.orders.time}
-        <input
+        <select
           className="admin-input"
-          type="time"
-          value={order.time.slice(0, 5)}
-          onChange={(event) => set({ time: event.target.value.slice(0, 5) })}
-        />
+          value={timeValue}
+          onChange={(event) => set({ time: event.target.value })}
+        >
+          {timeOptions.map((slot) => (
+            <option key={slot.time} value={slot.time} disabled={slot.disabled}>
+              {slot.time}
+              {slot.locked ? ` · ${b2.locked}` : slot.busy ? ` · ${b2.timeBusy}` : ""}
+            </option>
+          ))}
+        </select>
       </label>
       <label className="admin-field">
         {copy.orders.plan}
