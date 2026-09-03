@@ -3,20 +3,26 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { OrderEditFields } from "@/components/admin/order-edit-fields";
+import { Modal } from "@/components/ui/modal";
 import { b2Copy } from "@/lib/admin/b2-copy";
 import { adminCopy, adminPlanName, adminStoreName } from "@/lib/admin/copy";
-import { setAdminFocusSlot } from "@/lib/admin/focus-date";
+import { liveChannelIds } from "@/lib/channel-options";
 import { BOOKING_SLOTS, todayIsoDate } from "@/lib/booking/slots";
 import { addDaysIso, eachIso, weekEndSunday, weekStartMonday, weekdayLabel } from "@/lib/calendar";
 import {
   describeHolds,
+  formatClockMinutes,
   isDepartTick,
   mergeFleetSpans,
   occupancyRate,
-  spanEndClock,
+  parseClockMinutes,
   summarizeFleetSlot,
   type FleetCell,
+  type FleetHold,
 } from "@/lib/fleet-inventory";
+import { type MockOrder } from "@/lib/mock/orders";
+import { type MockPlan } from "@/lib/mock/plans";
 import { timelineTicks } from "@/lib/mock/vehicle-timeline";
 import { DEFAULT_STORE_ID, isAllStores } from "@/lib/store-id";
 import { cn } from "@/lib/utils";
@@ -24,8 +30,11 @@ import { useAdminAccess } from "@/lib/admin-access";
 import { useAdminNavStore } from "@/stores/admin-nav-store";
 import { useOpsStore } from "@/stores/ops-store";
 import { useStoreData } from "@/lib/use-store-data";
+import { useToastStore } from "@/stores/toast-store";
 
 const TICKS = timelineTicks();
+
+type SlotRange = { date: string; start: string; end: string };
 
 function toneClass(cell: FleetCell) {
   if (cell.closed) return "is-idle";
@@ -39,37 +48,98 @@ function closedLabel(cell: FleetCell, b2: ReturnType<typeof b2Copy>) {
   return b2.closed;
 }
 
+function tickSlice(start: string, end: string) {
+  const a = TICKS.indexOf(start);
+  const b = TICKS.indexOf(end);
+  if (a < 0 || b < 0) return [];
+  return TICKS.slice(Math.min(a, b), Math.max(a, b) + 1);
+}
+
+function rangeLabel(range: SlotRange) {
+  const times = tickSlice(range.start, range.end);
+  const first = times[0] ?? range.start;
+  const last = times[times.length - 1] ?? range.end;
+  return `${first}–${formatClockMinutes(parseClockMinutes(last) + 30)}`;
+}
+
+function inRange(range: SlotRange | null, date: string, time: string) {
+  return Boolean(range && range.date === date && tickSlice(range.start, range.end).includes(time));
+}
+
+function planForMinutes(plans: MockPlan[], minutes: number) {
+  if (!plans.length) return undefined;
+  return plans.reduce((best, plan) =>
+    Math.abs(plan.durationMinutes - minutes) < Math.abs(best.durationMinutes - minutes) ? plan : best,
+  );
+}
+
+function emptyDraft(date: string, time: string, storeId: string, plans: MockPlan[], minutes: number): MockOrder {
+  const plan = planForMinutes(plans, minutes) ?? plans[0];
+  return {
+    id: "",
+    customer: "",
+    nationality: "USA",
+    email: "",
+    phone: "",
+    passport: "",
+    planName: plan?.name ?? "",
+    planSlug: plan?.slug ?? "",
+    date,
+    time,
+    riders: 1,
+    male: 1,
+    female: 0,
+    addons: [],
+    totalJpy: plan?.priceJpy ?? 0,
+    channel: "官网",
+    status: "pending",
+    paid: false,
+    note: "",
+    logs: [],
+    storeId,
+  };
+}
+
 function FleetSlotButton({
   cell,
-  times,
-  picked,
+  selected,
   tightOnly,
+  firstClosed,
+  booked,
+  wide,
   b2,
-  onPick,
+  onPointerDown,
+  onPointerEnter,
 }: {
   cell: FleetCell;
-  times: string[];
-  picked: { date: string; time: string } | null;
+  selected: boolean;
   tightOnly: boolean;
+  firstClosed: boolean;
+  booked: boolean;
+  wide: boolean;
   b2: ReturnType<typeof b2Copy>;
-  onPick: (slot: { date: string; time: string }) => void;
+  onPointerDown: (event: React.PointerEvent<HTMLButtonElement>) => void;
+  onPointerEnter: () => void;
 }) {
-  const on = Boolean(picked && picked.date === cell.date && times.includes(picked.time));
   return (
     <button
       type="button"
+      data-fleet-cell={`${cell.date}|${cell.time}`}
       className={cn(
         "fleet-cell",
         toneClass(cell),
         cell.oversold && "is-oversell",
         cell.buffer && !cell.closed && "is-buffer",
         tightOnly && cell.tone === "free" && !cell.closed && "is-dim",
-        on && "is-on",
+        booked && "is-booked",
+        wide && "is-span",
+        selected && "is-on",
       )}
-      onClick={() => onPick({ date: cell.date, time: cell.time })}
+      onPointerDown={onPointerDown}
+      onPointerEnter={onPointerEnter}
     >
       {cell.closed ? (
-        <span>{closedLabel(cell, b2)}</span>
+        firstClosed ? <span>{closedLabel(cell, b2)}</span> : <span className="fleet-cell-blank">·</span>
       ) : (
         <>
           <span className="fleet-num">
@@ -96,21 +166,23 @@ export function FleetInventoryGrid() {
   const today = todayIsoDate();
   const { canEdit } = useAdminAccess();
   const go = useAdminNavStore((state) => state.go);
+  const notify = useToastStore((state) => state.notify);
   const [anchor, setAnchor] = useState(weekStartMonday(today));
-  const [tripStart, setTripStart] = useState(today);
   const [tightOnly, setTightOnly] = useState(false);
   const [focusStore, setFocusStore] = useState(DEFAULT_STORE_ID);
-  const [picked, setPicked] = useState<{ date: string; time: string } | null>(null);
+  const [range, setRange] = useState<SlotRange | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [askCancel, setAskCancel] = useState(false);
+  const [draft, setDraft] = useState<MockOrder | null>(null);
   const { vehicles, vehicleSlots, orders, specialDates, storeId, stores, plans, canSwitch } = useStoreData();
   const ensureInventory = useOpsStore((state) => state.ensureInventory);
   const addSpecialDate = useOpsStore((state) => state.addSpecialDate);
   const removeSpecialDate = useOpsStore((state) => state.removeSpecialDate);
+  const setOrderStatus = useOpsStore((state) => state.setOrderStatus);
+  const upsertOrder = useOpsStore((state) => state.upsertOrder);
+  const settings = useOpsStore((state) => state.settings);
 
   const days = useMemo(() => eachIso(anchor, weekEndSunday(anchor)), [anchor]);
-  const tripDays = useMemo(
-    () => [tripStart, addDaysIso(tripStart, 1), addDaysIso(tripStart, 2)],
-    [tripStart],
-  );
   const gridStore = isAllStores(storeId) ? focusStore : storeId;
   const liveOrders = useMemo(
     () => orders.filter((item) => !item.id.startsWith("FK-H-")),
@@ -126,18 +198,6 @@ export function FleetInventoryGrid() {
     );
   }, [days, vehicles, vehicleSlots, liveOrders, specialDates, gridStore, plans, ensureInventory]);
 
-  const rows = useMemo(() => grid.map((cells) => mergeFleetSpans(cells)), [grid]);
-  const tripGrid = useMemo(
-    () =>
-      tripDays.map((date) =>
-        TICKS.map((time) =>
-          summarizeFleetSlot(date, time, vehicles, vehicleSlots, liveOrders, specialDates, gridStore, plans),
-        ),
-      ),
-    [tripDays, vehicles, vehicleSlots, liveOrders, specialDates, gridStore, plans],
-  );
-  const tripCols = useMemo(() => tripGrid.map((cells) => mergeFleetSpans(cells)), [tripGrid]);
-
   const oversell = grid.some((row) => row.some((cell) => cell.oversold));
   const rate = occupancyRate(
     days[0],
@@ -151,40 +211,131 @@ export function FleetInventoryGrid() {
     plans,
   );
 
-  const selected = picked
-    ? summarizeFleetSlot(picked.date, picked.time, vehicles, vehicleSlots, liveOrders, specialDates, gridStore, plans)
-    : null;
-  const pickedSpan = picked
-    ? rows[days.indexOf(picked.date)]?.find((item) => item.times.includes(picked.time)) ??
-      tripCols[tripDays.indexOf(picked.date)]?.find((item) => item.times.includes(picked.time))
-    : null;
-  const holds = picked ? describeHolds(picked.date, picked.time, liveOrders, plans, gridStore) : [];
-  const slotLocked = Boolean(selected?.closed && selected.closedKind === "slot");
-  const canBook = Boolean(selected && !selected.closed && selected.left > 0);
+  const selectedTimes = useMemo(
+    () => (range ? tickSlice(range.start, range.end) : []),
+    [range],
+  );
+  const selectedCells = useMemo(() => {
+    if (!range) return [];
+    const row = grid[days.indexOf(range.date)];
+    if (!row) return [];
+    return selectedTimes
+      .map((time) => row.find((cell) => cell.time === time))
+      .filter((cell): cell is FleetCell => Boolean(cell));
+  }, [grid, days, range, selectedTimes]);
 
-  function toggleLock() {
-    if (!picked || !canEdit("inventory")) return;
-    if (slotLocked) {
-      removeSpecialDate({ date: picked.date, time: picked.time, storeId: gridStore });
-      return;
+  const startCell = selectedCells[0] ?? null;
+  const holds = useMemo(() => {
+    if (!range) return [] as FleetHold[];
+    const map = new Map<string, FleetHold>();
+    for (const time of selectedTimes) {
+      for (const hold of describeHolds(range.date, time, liveOrders, plans, gridStore)) {
+        map.set(hold.order.id, hold);
+      }
     }
-    addSpecialDate({
-      date: picked.date,
-      time: picked.time,
-      storeId: gridStore,
-      closed: true,
-      label: `${picked.date} ${picked.time}`,
+    return [...map.values()];
+  }, [range, selectedTimes, liveOrders, plans, gridStore]);
+
+  const liveHolds = holds.filter((hold) => hold.order.status !== "cancelled" && hold.order.status !== "completed");
+  const slotLocked = selectedCells.length > 0 && selectedCells.every((cell) => cell.closed && cell.closedKind === "slot");
+  const dayClosed = selectedCells.some((cell) => cell.closedKind === "day" || cell.closedKind === "hours");
+  const canBook = Boolean(startCell && !startCell.closed && startCell.left > 0);
+
+  function pickSpan(date: string, times: string[], extend: boolean) {
+    const first = times[0];
+    const last = times[times.length - 1];
+    if (!first || !last) return;
+    setRange((prev) => {
+      if (!extend || !prev || prev.date !== date) {
+        return { date, start: first, end: last };
+      }
+      const marks = [prev.start, prev.end, first, last]
+        .map((time) => TICKS.indexOf(time))
+        .filter((index) => index >= 0);
+      return {
+        date,
+        start: TICKS[Math.min(...marks)],
+        end: TICKS[Math.max(...marks)],
+      };
     });
   }
 
+  function toggleLock() {
+    if (!range || !canEdit("inventory") || dayClosed) return;
+    for (const time of selectedTimes) {
+      const cell = selectedCells.find((item) => item.time === time);
+      if (cell?.closedKind === "day" || cell?.closedKind === "hours") continue;
+      if (slotLocked) {
+        removeSpecialDate({ date: range.date, time, storeId: gridStore });
+      } else if (!cell?.closed) {
+        addSpecialDate({
+          date: range.date,
+          time,
+          storeId: gridStore,
+          closed: true,
+          label: `${range.date} ${time}`,
+        });
+      }
+    }
+  }
+
   function createOrder() {
-    if (!picked) return;
-    setAdminFocusSlot(picked.date, picked.time, true);
-    go("/admin/orders");
+    if (!range || !startCell) return;
+    setDraft(emptyDraft(range.date, startCell.time, gridStore, plans, selectedTimes.length * 30));
+  }
+
+  function saveDraft() {
+    if (!draft) return;
+    const id = draft.id.trim() || `FK-${Date.now().toString(36).toUpperCase()}`;
+    const male = Math.max(0, draft.male);
+    const female = Math.max(0, draft.female);
+    const next: MockOrder = {
+      ...draft,
+      id,
+      male,
+      female,
+      riders: male + female,
+      time: draft.time.slice(0, 5),
+      totalJpy: Math.max(0, draft.totalJpy),
+      storeId: draft.storeId || gridStore,
+    };
+    const taken = useOpsStore.getState().orders.some((item) => item.id === next.id);
+    if (taken) {
+      notify(copy.orders.idTaken);
+      return;
+    }
+    upsertOrder(next);
+    setDraft(null);
+    notify(copy.orders.saved);
+  }
+
+  function cancelSelected() {
+    if (!canEdit("orders") || liveHolds.length === 0) {
+      notify(b2.rangeEmpty);
+      setAskCancel(false);
+      return;
+    }
+    for (const hold of liveHolds) {
+      setOrderStatus(hold.order.id, "cancelled", { cancelKind: "voluntary" });
+    }
+    notify(b2.cancelledN(liveHolds.length));
+    setAskCancel(false);
   }
 
   useEffect(() => {
-    if (!picked) return;
+    function stopDrag() {
+      setDragging(false);
+    }
+    window.addEventListener("pointerup", stopDrag);
+    window.addEventListener("pointercancel", stopDrag);
+    return () => {
+      window.removeEventListener("pointerup", stopDrag);
+      window.removeEventListener("pointercancel", stopDrag);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!range) return;
     const main = document.querySelector("main");
     const mq = window.matchMedia("(max-width: 960px)");
     if (!main || !mq.matches) return;
@@ -193,39 +344,26 @@ export function FleetInventoryGrid() {
     return () => {
       main.style.overflow = previous;
     };
-  }, [picked]);
+  }, [range]);
 
   return (
-    <section className={cn("fleet-board", selected && "is-split")}>
+    <section className={cn("fleet-board", startCell && "is-split")}>
       <div className="fleet-main">
         <div className="fleet-chrome">
           <div className="fleet-toolbar">
             <div className="fleet-nav">
-              <button type="button" className="ib-btn fleet-only-week" onClick={() => setAnchor(addDaysIso(anchor, -7))}>
+              <button type="button" className="ib-btn" onClick={() => setAnchor(addDaysIso(anchor, -7))}>
                 <ChevronLeft className="size-4" /> {b2.prevWeek}
               </button>
               <button
                 type="button"
-                className={cn("ib-btn fleet-only-week", anchor === weekStartMonday(today) && "is-on")}
+                className={cn("ib-btn", anchor === weekStartMonday(today) && "is-on")}
                 onClick={() => setAnchor(weekStartMonday(today))}
               >
                 {b2.thisWeek}
               </button>
-              <button type="button" className="ib-btn fleet-only-week" onClick={() => setAnchor(addDaysIso(anchor, 7))}>
+              <button type="button" className="ib-btn" onClick={() => setAnchor(addDaysIso(anchor, 7))}>
                 {b2.nextWeek} <ChevronRight className="size-4" />
-              </button>
-              <button type="button" className="ib-btn fleet-only-days" onClick={() => setTripStart(addDaysIso(tripStart, -3))}>
-                <ChevronLeft className="size-4" /> {b2.prevDays}
-              </button>
-              <button
-                type="button"
-                className={cn("ib-btn fleet-only-days", tripStart === today && "is-on")}
-                onClick={() => setTripStart(today)}
-              >
-                {b2.theseDays}
-              </button>
-              <button type="button" className="ib-btn fleet-only-days" onClick={() => setTripStart(addDaysIso(tripStart, 3))}>
-                {b2.nextDays} <ChevronRight className="size-4" />
               </button>
             </div>
             <div className="fleet-tools">
@@ -253,7 +391,7 @@ export function FleetInventoryGrid() {
                     aria-pressed={focusStore === store.id}
                     onClick={() => {
                       setFocusStore(store.id);
-                      setPicked(null);
+                      setRange(null);
                     }}
                   >
                     {adminStoreName(locale, store.id, store.name)}
@@ -276,7 +414,7 @@ export function FleetInventoryGrid() {
           {oversell ? <p className="fleet-oversell">{b2.oversell}</p> : null}
         </div>
 
-        <div className="fleet-scroll">
+        <div className={cn("fleet-scroll", dragging && "is-picking")}>
           <table className="fleet-table is-landscape">
             <colgroup>
               <col className="fleet-col-day" />
@@ -304,67 +442,54 @@ export function FleetInventoryGrid() {
                     <span className="fleet-date">{date.slice(5)}</span>
                     <small>{weekdayLabel(date, locale)}</small>
                   </th>
-                  {rows[dayIndex]?.map((span) => (
-                    <td key={`${span.cell.date}-${span.cell.time}`} colSpan={span.times.length}>
-                      <FleetSlotButton
-                        cell={span.cell}
-                        times={span.times}
-                        picked={picked}
-                        tightOnly={tightOnly}
-                        b2={b2}
-                        onPick={setPicked}
-                      />
-                    </td>
-                  ))}
+                  {(grid[dayIndex] ? mergeFleetSpans(grid[dayIndex]) : []).map((span) => {
+                    const { cell, times } = span;
+                    const selected = times.every((time) => inRange(range, cell.date, time));
+                    const booked = cell.races > 0 && !cell.closed;
+                    return (
+                      <td
+                        key={`${cell.date}-${times[0]}`}
+                        colSpan={times.length}
+                        className={booked ? "is-gap" : undefined}
+                      >
+                        <FleetSlotButton
+                          cell={cell}
+                          selected={selected}
+                          tightOnly={tightOnly}
+                          firstClosed={cell.closed}
+                          booked={booked}
+                          wide={times.length > 1}
+                          b2={b2}
+                          onPointerDown={(event) => {
+                            if (event.button !== 0) return;
+                            event.preventDefault();
+                            setDragging(true);
+                            pickSpan(cell.date, times, false);
+                          }}
+                          onPointerEnter={() => {
+                            if (dragging) pickSpan(cell.date, times, true);
+                          }}
+                        />
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
           </table>
-
-          <div className="fleet-days">
-            {tripDays.map((date, dayIndex) => (
-              <section key={date} className={cn("fleet-day", date === today && "is-today")}>
-                <h3>
-                  <span className="fleet-date">{date.slice(5)}</span>
-                  <small>{weekdayLabel(date, locale)}</small>
-                </h3>
-                <ul>
-                  {tripCols[dayIndex]?.map((span) => (
-                    <li key={`${span.cell.date}-${span.cell.time}`}>
-                      <span className="fleet-day-time">
-                        {span.times[0]}
-                        {span.times.length > 1 ? `–${spanEndClock(span.times)}` : ""}
-                      </span>
-                      <FleetSlotButton
-                        cell={span.cell}
-                        times={span.times}
-                        picked={picked}
-                        tightOnly={tightOnly}
-                        b2={b2}
-                        onPick={setPicked}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
-          </div>
         </div>
       </div>
 
-      {selected && picked ? (
+      {startCell && range ? (
         <>
-        <button type="button" className="fleet-drawer-mask" aria-label={b2.closeDrawer} onClick={() => setPicked(null)} />
+        <button type="button" className="fleet-drawer-mask" aria-label={b2.closeDrawer} onClick={() => setRange(null)} />
         <aside className="fleet-drawer">
           <div className="fleet-drawer-head">
             <div>
-              <p className="fleet-drawer-kicker">{picked.date}</p>
-              <h3>
-                {picked.time}
-                {pickedSpan && pickedSpan.times.length > 1 ? `–${spanEndClock(pickedSpan.times)}` : ""}
-              </h3>
+              <p className="fleet-drawer-kicker">{range.date}</p>
+              <h3>{rangeLabel(range)}</h3>
             </div>
-            <button type="button" className="fleet-drawer-close" onClick={() => setPicked(null)} aria-label={b2.closeDrawer}>
+            <button type="button" className="fleet-drawer-close" onClick={() => setRange(null)} aria-label={b2.closeDrawer}>
               <X className="size-4" />
             </button>
           </div>
@@ -372,15 +497,15 @@ export function FleetInventoryGrid() {
             <div>
               <dt>{b2.slotLeft}</dt>
               <dd>
-                {selected.closed ? closedLabel(selected, b2) : `${selected.left}/${selected.total} ${b2.units}`}
+                {startCell.closed ? closedLabel(startCell, b2) : `${startCell.left}/${startCell.total} ${b2.units}`}
               </dd>
             </div>
             <div>
               <dt>{b2.slotRaces}</dt>
-              <dd>{selected.races}</dd>
+              <dd>{holds.length}</dd>
             </div>
           </dl>
-          {selected.left <= 0 && !selected.closed ? <p className="fleet-drawer-warn">{b2.raceFull}</p> : null}
+          {startCell.left <= 0 && !startCell.closed ? <p className="fleet-drawer-warn">{b2.raceFull}</p> : null}
 
           <ul className="fleet-holds">
             {holds.length === 0 ? <li className="is-empty">{b2.holdEmpty}</li> : null}
@@ -411,7 +536,12 @@ export function FleetInventoryGrid() {
                 {b2.newOrder}
               </button>
             ) : null}
-            {canEdit("inventory") && selected.closedKind !== "day" && selected.closedKind !== "hours" ? (
+            {canEdit("orders") && liveHolds.length > 0 ? (
+              <button type="button" className="ib-btn" onClick={() => setAskCancel(true)}>
+                {b2.cancelRange}
+              </button>
+            ) : null}
+            {canEdit("inventory") && !dayClosed ? (
               <button type="button" className="ib-btn" onClick={toggleLock}>
                 {slotLocked ? b2.unlockSlot : b2.lockSlot}
               </button>
@@ -420,6 +550,46 @@ export function FleetInventoryGrid() {
         </aside>
         </>
       ) : null}
+
+      <Modal
+        open={Boolean(draft)}
+        title={copy.orders.addTitle}
+        onClose={() => setDraft(null)}
+        wide
+        footer={
+          <>
+            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setDraft(null)}>
+              {copy.common.cancel}
+            </button>
+            <button type="button" className="cta-btn px-5 py-2.5" onClick={saveDraft}>
+              {copy.common.save}
+            </button>
+          </>
+        }
+      >
+        {draft ? (
+          <OrderEditFields
+            order={draft}
+            plans={plans}
+            channelOptions={liveChannelIds(settings.channels, draft.channel)}
+            locale={locale}
+            onChange={setDraft}
+          />
+        ) : null}
+      </Modal>
+
+      <Modal
+        open={askCancel}
+        title={b2.cancelRange}
+        onClose={() => setAskCancel(false)}
+        footer={
+          <button type="button" className="cta-btn" onClick={cancelSelected}>
+            {b2.cancelRange}
+          </button>
+        }
+      >
+        <p className="perm-hint">{b2.cancelRangeAsk(liveHolds.length)}</p>
+      </Modal>
     </section>
   );
 }

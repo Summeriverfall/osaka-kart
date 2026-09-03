@@ -20,6 +20,7 @@ export type FleetCell = {
   closedKind?: "day" | "slot" | "hours";
   oversold: boolean;
   tone: OccupancyTone;
+  occupyKey: string;
 };
 
 const DEPART_TICKS = new Set<string>(BOOKING_SLOTS);
@@ -66,8 +67,9 @@ export function isDepartTick(time: string) {
 }
 
 export function fleetSpanKey(cell: FleetCell) {
-  if (cell.closed) return cell.closedKind === "slot" ? "lock" : "closed";
-  return [cell.left, cell.total, cell.races, cell.buffer ? 1 : 0, cell.oversold ? 1 : 0].join(":");
+  if (cell.closed) return `closed:${cell.closedKind ?? "hours"}`;
+  if (!cell.occupyKey) return `open:${cell.time}`;
+  return `booked:${cell.occupyKey}`;
 }
 
 export function mergeFleetSpans(cells: FleetCell[]) {
@@ -161,8 +163,8 @@ export function fleetTone(
   cell: Pick<FleetCell, "closed" | "left" | "total" | "oversold" | "races">,
 ): OccupancyTone {
   if (cell.closed || cell.total <= 0) return "idle";
-  if (cell.oversold || cell.left <= 0) return "full";
-  if (cell.left <= 2 || cell.left / cell.total <= 0.35) return "tight";
+  if (cell.oversold || cell.left <= 0 || cell.races >= 2) return "full";
+  if (cell.races >= 1 || cell.left <= 2 || cell.left / cell.total <= 0.35) return "tight";
   return "free";
 }
 
@@ -205,6 +207,10 @@ export function summarizeFleetSlot(
   const booked = racing.reduce((sum, order) => sum + Math.max(0, order.riders), 0);
   const riders = booked;
   const races = racing.length;
+  const occupyKey = racing
+    .map((order) => order.id)
+    .sort()
+    .join("|");
   const buffer = false;
   const depart = isDepartTick(time);
 
@@ -217,6 +223,7 @@ export function summarizeFleetSlot(
       booked: 0,
       riders,
       races,
+      occupyKey,
       buffer,
       depart,
       closed: true,
@@ -236,6 +243,7 @@ export function summarizeFleetSlot(
     booked,
     riders,
     races,
+    occupyKey,
     buffer,
     depart,
     closed: false,
