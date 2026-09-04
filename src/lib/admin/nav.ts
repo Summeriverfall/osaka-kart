@@ -13,9 +13,9 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { href: "/admin/vehicles", label: "车辆管理", roles: ["admin", "manager", "staff"] },
   { href: "/admin/plans", label: "套餐管理", roles: ["admin", "manager", "staff"] },
   { href: "/admin/content", label: "内容管理", roles: ["admin", "manager", "staff"] },
-  { href: "/admin/affiliates", label: "推广代理", roles: ["admin", "manager", "staff"] },
-  { href: "/admin/reports", label: "财务报表", roles: ["admin"] },
   { href: "/admin/staff", label: "员工管理", roles: ["admin", "manager"] },
+  { href: "/admin/affiliates", label: "推广代理", roles: ["admin", "manager", "staff"] },
+  { href: "/admin/reports", label: "财务报表", roles: ["admin", "manager"] },
   { href: "/admin/permissions", label: "权限配置", roles: ["admin"] },
   { href: "/admin/settings", label: "系统设置", roles: ["admin"] },
   { href: "/admin/site", label: "全站配置", roles: ["admin"] },
@@ -35,8 +35,8 @@ export const ADMIN_CONTENT_NAV: AdminNavItem[] = [
 ];
 
 export const ADMIN_REPORT_NAV: AdminNavItem[] = [
-  { href: "/admin/reports/overview", label: "营收报表", roles: ["admin"] },
-  { href: "/admin/reports/analytics", label: "数据分析", roles: ["admin"] },
+  { href: "/admin/reports/overview", label: "营收报表", roles: ["admin", "manager"] },
+  { href: "/admin/reports/analytics", label: "数据分析", roles: ["admin", "manager"] },
 ];
 
 export const ADMIN_SETTINGS_NAV: AdminNavItem[] = [

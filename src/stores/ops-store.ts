@@ -14,7 +14,7 @@ import {
 import { MOCK_SETTINGS, MOCK_EMAIL_TEMPLATES, MOCK_STORES, refreshBundledChannels, type MockSettings, type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
 import { MOCK_VEHICLES, type MockVehicle } from "@/lib/mock/vehicles";
 import { MOCK_STAFF, type MockStaff } from "@/lib/mock/staff";
-import { MOCK_ROLES, type MockRole } from "@/lib/mock/permissions";
+import { MOCK_ROLES, refreshBuiltinRoles, type MockRole } from "@/lib/mock/permissions";
 import { MOCK_CMS, isCustomCmsVideo, mergeCms, refreshBundledReviews, refreshBundledVideos, type CmsState } from "@/lib/mock/cms";
 import { applySlotPatch, syncOrderInventory } from "@/lib/ops-inventory";
 import { DEFAULT_STORE_ID, storeIdOf } from "@/lib/store-id";
@@ -461,7 +461,7 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 24,
+      version: 25,
       skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
@@ -721,6 +721,9 @@ export const useOpsStore = create<OpsState>()(
             removedChannelIds: state.settings?.removedChannelIds ?? MOCK_SETTINGS.removedChannelIds,
           };
         }
+        if (version < 25) {
+          state.roles = refreshBuiltinRoles(state.roles);
+        }
         delete state.vehicleSlots;
         return state as OpsState;
       },
@@ -761,7 +764,7 @@ export const useOpsStore = create<OpsState>()(
           }),
           orders: mergeFreshDemoOrders(extra.orders ?? current.orders),
           affiliates: refreshBundledAffiliates(extra.affiliates?.length ? extra.affiliates : current.affiliates),
-          roles: extra.roles?.length ? extra.roles : MOCK_ROLES,
+          roles: refreshBuiltinRoles(extra.roles?.length ? extra.roles : MOCK_ROLES),
           settings: {
             ...MOCK_SETTINGS,
             ...extra.settings,

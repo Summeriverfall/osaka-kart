@@ -41,12 +41,14 @@ export function PermTable({
   locked,
   locale,
   b2,
+  allow,
   onChange,
 }: {
   flags: Record<PermModule, PermFlags>;
   locked?: boolean;
   locale: string;
   b2: ReturnType<typeof b2Copy>;
+  allow?: Record<PermModule, PermFlags>;
   onChange: (mod: PermModule, next: PermFlags) => void;
 }) {
   return (
@@ -61,6 +63,7 @@ export function PermTable({
       <tbody>
         {PERM_MODULES.map((mod) => {
           const row = flags[mod.id];
+          const cap = allow?.[mod.id];
           return (
             <tr key={mod.id}>
               <td>{moduleLabel(mod.id, locale)}</td>
@@ -68,7 +71,7 @@ export function PermTable({
                 <input
                   type="checkbox"
                   checked={row.view}
-                  disabled={locked}
+                  disabled={locked || (cap ? !cap.view : false)}
                   aria-label={`${moduleLabel(mod.id, locale)} ${b2.permView}`}
                   onChange={(event) =>
                     onChange(mod.id, { view: event.target.checked, edit: event.target.checked ? row.edit : false })
@@ -79,7 +82,7 @@ export function PermTable({
                 <input
                   type="checkbox"
                   checked={row.edit}
-                  disabled={locked}
+                  disabled={locked || (cap ? !cap.edit : false)}
                   aria-label={`${moduleLabel(mod.id, locale)} ${b2.permEdit}`}
                   onChange={(event) =>
                     onChange(mod.id, { view: event.target.checked || row.view, edit: event.target.checked })

@@ -64,7 +64,6 @@ const STAFF_PERMS = mix(all(false), {
 });
 
 const MANAGER_PERMS = mix(all(true), {
-  reports: { view: false, edit: false },
   settings: { view: false, edit: false },
   site: { view: false, edit: false },
   staff: { view: true, edit: true },
@@ -119,6 +118,52 @@ export function mergePerms(
     next[key] = { ...base[key], ...overrides[key] };
   }
   return next;
+}
+
+export function refreshBuiltinRoles(list?: MockRole[]) {
+  const current = list ?? [];
+  const custom = current.filter((item) => !item.builtin);
+  const byId = new Map(current.map((item) => [item.id, item]));
+  return [
+    ...MOCK_ROLES.map((seed) => {
+      const prev = byId.get(seed.id);
+      if (!prev) return seed;
+      return {
+        ...prev,
+        ...seed,
+        name: prev.name || seed.name,
+        nameEn: prev.nameEn || seed.nameEn,
+        nameJa: prev.nameJa || seed.nameJa,
+        perms: seed.perms,
+      };
+    }),
+    ...custom,
+  ];
+}
+
+export function rankFromBuiltin(builtin?: string | null) {
+  if (builtin === "admin") return 3;
+  if (builtin === "manager") return 2;
+  return 1;
+}
+
+export function rankOfRole(role?: MockRole) {
+  return rankFromBuiltin(role?.builtin);
+}
+
+export function capPermsByActor(
+  flags: Record<PermModule, PermFlags>,
+  actor: Record<PermModule, PermFlags>,
+): Record<PermModule, PermFlags> {
+  return Object.fromEntries(
+    PERM_MODULES.map((mod) => {
+      const want = flags[mod.id] ?? { view: false, edit: false };
+      const mine = actor[mod.id] ?? { view: false, edit: false };
+      const view = Boolean(want.view && mine.view);
+      const edit = Boolean(want.edit && mine.edit && view);
+      return [mod.id, { view, edit }];
+    }),
+  ) as Record<PermModule, PermFlags>;
 }
 
 export function permDiff(

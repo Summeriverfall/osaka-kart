@@ -8,7 +8,15 @@ import { PermTable, roleLabel } from "@/components/admin/perm-table";
 import { adminCopy, adminStaffRole, adminStoreName } from "@/lib/admin/copy";
 import { b2Copy } from "@/lib/admin/b2-copy";
 import { useAdminAccess } from "@/lib/admin-access";
-import { mergePerms, permDiff, type PermFlags, type PermModule } from "@/lib/mock/permissions";
+import {
+  capPermsByActor,
+  mergePerms,
+  permDiff,
+  rankFromBuiltin,
+  rankOfRole,
+  type PermFlags,
+  type PermModule,
+} from "@/lib/mock/permissions";
 import { type MockStaff, type StaffRole } from "@/lib/mock/staff";
 import { useOpsStore } from "@/stores/ops-store";
 import { useStoreData } from "@/lib/use-store-data";
@@ -41,7 +49,7 @@ export function AdminStaffView() {
   const locale = useLocale();
   const copy = adminCopy(locale);
   const b2 = b2Copy(locale);
-  const { isAdmin } = useAdminAccess();
+  const { isAdmin, isManager, perms: actorPerms } = useAdminAccess();
   const { staff, stores, storeId, store } = useStoreData();
   const roles = useOpsStore((state) => state.roles);
   const { upsertStaff, patchStaff } = useOpsStore();
@@ -49,11 +57,23 @@ export function AdminStaffView() {
   const [editing, setEditing] = useState<MockStaff | null>(null);
   const [confirm, setConfirm] = useState<{ id: string; kind: "reset" | "off" } | null>(null);
 
-  const listed = isAdmin ? staff : staff.filter((item) => item.role === "staff");
-  const roleOptions = roles.filter((item) => isAdmin || item.builtin !== "admin");
+  const myRank = isAdmin ? 3 : isManager ? 2 : 1;
+
+  function personRank(person: MockStaff) {
+    const role = roles.find((item) => item.id === roleIdOf(person));
+    return Math.max(rankOfRole(role), rankFromBuiltin(person.role));
+  }
+
+  function canManage(person: MockStaff) {
+    return isAdmin || personRank(person) < myRank;
+  }
+
+  const listed = staff.filter((item) => canManage(item));
+  const roleOptions = roles.filter((item) => isAdmin || rankOfRole(item) < myRank);
 
   function assignRole(person: MockStaff, nextId: string): MockStaff {
     const nextRole = roles.find((item) => item.id === nextId);
+    if (!isAdmin && rankOfRole(nextRole) >= myRank) return person;
     return {
       ...person,
       roleId: nextId,
@@ -65,7 +85,8 @@ export function AdminStaffView() {
   function patchFlags(person: MockStaff, flags: Record<PermModule, PermFlags>): MockStaff {
     const role = roles.find((item) => item.id === roleIdOf(person));
     if (!role) return person;
-    return { ...person, permOverrides: permDiff(role, flags) };
+    const next = isAdmin ? flags : capPermsByActor(flags, actorPerms);
+    return { ...person, permOverrides: permDiff(role, next) };
   }
 
   const editingRole = editing
@@ -150,7 +171,13 @@ export function AdminStaffView() {
             className="cta-btn px-5 py-2.5"
             onClick={() => {
               if (!editing) return;
-              upsertStaff(editing);
+              if (!canManage(editing)) return;
+              const nextRole = roles.find((item) => item.id === roleIdOf(editing));
+              const row =
+                !isAdmin && rankOfRole(nextRole) >= myRank
+                  ? { ...editing, role: "staff" as const, roleId: "role-staff", permOverrides: {} }
+                  : editing;
+              upsertStaff(row);
               setEditing(null);
               notify(copy.staff.saved);
             }}
@@ -209,7 +236,7 @@ export function AdminStaffView() {
               <span>{copy.staff.on}</span>
               <NeonToggle checked={editing.active} onChange={(on) => setEditing({ ...editing, active: on })} />
             </div>
-            {editingFlags && editingRole && editing.role !== "admin" ? (
+            {editingFlags && editingRole && canManage(editing) && editing.role !== "admin" ? (
               <div className="perm-staff-edit">
                 <p className="perm-title">{b2.permCustom}</p>
                 <p className="perm-hint">{b2.permInherit}</p>
@@ -217,6 +244,7 @@ export function AdminStaffView() {
                   flags={editingFlags}
                   locale={locale}
                   b2={b2}
+                  allow={isAdmin ? undefined : actorPerms}
                   onChange={(mod, next) => setEditing(patchFlags(editing, { ...editingFlags, [mod]: next }))}
                 />
               </div>
@@ -235,6 +263,11 @@ export function AdminStaffView() {
             className="cta-btn px-5 py-2.5"
             onClick={() => {
               if (!confirm) return;
+              const target = staff.find((item) => item.id === confirm.id);
+              if (target && !canManage(target)) {
+                setConfirm(null);
+                return;
+              }
               if (confirm.kind === "off") patchStaff(confirm.id, { active: false });
               notify(confirm.kind === "reset" ? copy.staff.resetOk : copy.staff.offOk);
               setConfirm(null);
