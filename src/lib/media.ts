@@ -1,9 +1,11 @@
 import { asset } from "./asset";
 
 export const PLAN_IMAGES: Record<string, string> = {
-  standard: asset("/images/social/nanbo.webp"),
-  "night-run": asset("/images/social/tongtiange.webp"),
+  sunset: asset("/images/social/yejingtiyan.webp"),
+  standard: asset("/images/plans/standard.webp"),
+  "night-run": asset("/images/plans/night-run.webp"),
   "grand-tour": asset("/images/plans/grand-tour.webp"),
+  "vip-night": asset("/images/social/yejiankadingche.webp"),
 };
 
 export function planImage(slug: string) {
@@ -11,9 +13,11 @@ export function planImage(slug: string) {
 }
 
 export const PLAN_ROUTES: Record<string, string> = {
+  sunset: asset("/images/routes/namba-60.webp"),
   standard: asset("/images/routes/namba-60.webp"),
   "night-run": asset("/images/routes/tsutenkaku-90.webp"),
   "grand-tour": asset("/images/routes/osaka-castle-120.webp"),
+  "vip-night": asset("/images/routes/tsutenkaku-90.webp"),
 };
 
 export function planRoute(slug: string) {

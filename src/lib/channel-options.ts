@@ -2,6 +2,10 @@ import { CHANNELS } from "@/lib/mock/orders";
 import type { MockBookChannel } from "@/lib/mock/settings";
 import { adminChannel } from "@/lib/admin/copy";
 
+export function isOfficialChannel(id: string) {
+  return id === "官网";
+}
+
 export function isBuiltinChannel(id: string) {
   return (CHANNELS as readonly string[]).includes(id);
 }

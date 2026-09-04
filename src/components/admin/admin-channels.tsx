@@ -1,19 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Search } from "lucide-react";
 import { useLocale } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import { adminChannel, adminCopy } from "@/lib/admin/copy";
 import { b3Copy } from "@/lib/admin/b3-copy";
-import { isBuiltinChannel } from "@/lib/channel-options";
+import { isBuiltinChannel, isOfficialChannel } from "@/lib/channel-options";
 import { type ChannelKind, type MockBookChannel } from "@/lib/mock/settings";
 import { cn } from "@/lib/utils";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 
-type SortKey = "name" | "kind" | "contact" | "cut" | "status";
+type SortKey = "order" | "name" | "kind" | "contact" | "cut" | "status";
 type StatusFilter = "all" | "on" | "off";
 
 const KINDS: ChannelKind[] = ["ota", "hotel", "social", "direct", "other"];
@@ -31,7 +31,7 @@ function displayName(locale: string, item: MockBookChannel) {
   return item.name?.trim() || item.id;
 }
 
-function blankChannel(): MockBookChannel {
+function blankChannel(sort: number): MockBookChannel {
   return {
     id: `ch-${Date.now().toString(36)}`,
     name: "",
@@ -39,7 +39,12 @@ function blankChannel(): MockBookChannel {
     contact: "",
     enabled: true,
     cut: 0,
+    sort,
   };
+}
+
+function pinned(item: MockBookChannel) {
+  return Boolean(item.locked || isOfficialChannel(item.id));
 }
 
 export function AdminChannelsView() {
@@ -52,12 +57,13 @@ export function AdminChannelsView() {
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<ChannelKind | "all">("all");
   const [status, setStatus] = useState<StatusFilter>("all");
-  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortKey, setSortKey] = useState<SortKey>("order");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [reorder, setReorder] = useState(false);
   const [editing, setEditing] = useState<MockBookChannel | null>(null);
   const [editingIndex, setEditingIndex] = useState<number>(-1);
 
-  const channels = settings.channels ?? [];
+  const channels = useMemo(() => settings.channels ?? [], [settings.channels]);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -72,6 +78,11 @@ export function AdminChannelsView() {
     });
     const indexed = filtered.map((item) => ({ item, index: channels.indexOf(item) }));
     indexed.sort((a, b) => {
+      const pin = Number(pinned(a.item)) - Number(pinned(b.item));
+      if (pin) return -pin;
+      if (sortKey === "order") {
+        return (a.item.sort ?? a.index) - (b.item.sort ?? b.index);
+      }
       const av =
         sortKey === "name"
           ? displayName(locale, a.item)
@@ -102,7 +113,24 @@ export function AdminChannelsView() {
     return indexed;
   }, [channels, query, kind, status, sortKey, sortDir, locale]);
 
+  function toggleReorder() {
+    setReorder((on) => {
+      const next = !on;
+      if (next) {
+        setSortKey("order");
+        setSortDir("asc");
+      }
+      return next;
+    });
+  }
+
   function toggleSort(key: SortKey) {
+    if (reorder) return;
+    if (key === "order") {
+      setSortKey("order");
+      setSortDir("asc");
+      return;
+    }
     if (sortKey === key) setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
     else {
       setSortKey(key);
@@ -112,12 +140,37 @@ export function AdminChannelsView() {
 
   function sortMark(key: SortKey) {
     if (sortKey !== key) return "↕";
+    if (key === "order") return "↑";
     return sortDir === "desc" ? "↓" : "↑";
   }
 
+  function saveList(next: MockBookChannel[]) {
+    patchSettings({
+      channels: next.map((item, index) => ({
+        ...item,
+        locked: pinned(item),
+        enabled: pinned(item) ? true : item.enabled,
+        sort: pinned(item) ? 0 : index,
+      })),
+    });
+  }
+
+  function moveRow(id: string, dir: -1 | 1) {
+    const locked = channels.filter((item) => pinned(item));
+    const rest = channels.filter((item) => !pinned(item));
+    const i = rest.findIndex((item) => item.id === id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= rest.length) return;
+    const next = [...rest];
+    [next[i], next[j]] = [next[j], next[i]];
+    saveList([...locked, ...next]);
+    setSortKey("order");
+  }
+
   function patchRow(index: number, patch: Partial<MockBookChannel>) {
-    const next = channels.map((row, i) => (i === index ? { ...row, ...patch } : row));
-    patchSettings({ channels: next });
+    const current = channels[index];
+    if (!current || pinned(current)) return;
+    saveList(channels.map((row, i) => (i === index ? { ...row, ...patch } : row)));
   }
 
   function saveEditor() {
@@ -132,11 +185,13 @@ export function AdminChannelsView() {
       contact: editing.contact?.trim() ?? "",
       cut: Math.min(1, Math.max(0, Number(editing.cut) || 0)),
       kind: editing.kind ?? "other",
+      locked: pinned(editing),
+      enabled: pinned(editing) ? true : editing.enabled,
     };
     if (editingIndex >= 0) {
-      patchSettings({ channels: channels.map((item, i) => (i === editingIndex ? row : item)) });
+      saveList(channels.map((item, i) => (i === editingIndex ? row : item)));
     } else {
-      patchSettings({ channels: [...channels, row] });
+      saveList([...channels, row]);
     }
     setEditing(null);
     setEditingIndex(-1);
@@ -144,7 +199,7 @@ export function AdminChannelsView() {
   }
 
   function removeRow(item: MockBookChannel) {
-    if (item.locked) return;
+    if (pinned(item)) return;
     const removed = new Set(settings.removedChannelIds ?? []);
     if (isBuiltinChannel(item.id)) removed.add(item.id);
     patchSettings({
@@ -152,6 +207,15 @@ export function AdminChannelsView() {
       removedChannelIds: [...removed],
     });
   }
+
+  function moveable(item: MockBookChannel) {
+    if (!reorder || pinned(item) || sortKey !== "order") return { up: false, down: false };
+    const rest = channels.filter((row) => !pinned(row));
+    const i = rest.findIndex((row) => row.id === item.id);
+    return { up: i > 0, down: i >= 0 && i < rest.length - 1 };
+  }
+
+  const nextSort = Math.max(0, ...channels.map((item) => item.sort ?? 0)) + 1;
 
   return (
     <div className="space-y-4">
@@ -190,7 +254,23 @@ export function AdminChannelsView() {
             <option value="on">{copy.settings.on}</option>
             <option value="off">{copy.settings.off}</option>
           </select>
-          <button type="button" className="cta-btn order-toolbar-add" onClick={() => { setEditing(blankChannel()); setEditingIndex(-1); }}>
+          <button
+            type="button"
+            className={cn("channel-sort-btn", reorder && "is-on")}
+            aria-pressed={reorder}
+            aria-label={b3.reorder}
+            onClick={toggleReorder}
+          >
+            {b3.reorder}
+          </button>
+          <button
+            type="button"
+            className="cta-btn order-toolbar-add"
+            onClick={() => {
+              setEditing(blankChannel(nextSort));
+              setEditingIndex(-1);
+            }}
+          >
             <Plus className="size-4" />
             {copy.settings.addChannel}
           </button>
@@ -202,6 +282,7 @@ export function AdminChannelsView() {
           <thead>
             <tr>
               {([
+                ...(reorder ? [["order", b3.channelOrder] as [SortKey, string]] : []),
                 ["name", copy.settings.channelName],
                 ["kind", b3.channelKind],
                 ["contact", b3.channelContact],
@@ -209,9 +290,13 @@ export function AdminChannelsView() {
                 ["status", b3.channelStatus],
               ] as [SortKey, string][]).map(([key, label]) => (
                 <th key={key}>
-                  <button type="button" className="inline-flex items-center gap-1 font-semibold" onClick={() => toggleSort(key)}>
-                    {label} {sortMark(key)}
-                  </button>
+                  {reorder ? (
+                    label
+                  ) : (
+                    <button type="button" className="inline-flex items-center gap-1 font-semibold" onClick={() => toggleSort(key)}>
+                      {label} {sortMark(key)}
+                    </button>
+                  )}
                 </th>
               ))}
               <th>{copy.common.actions}</th>
@@ -220,36 +305,67 @@ export function AdminChannelsView() {
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-slate-500">{b3.emptyList}</td>
+                <td colSpan={reorder ? 7 : 6} className="py-8 text-center text-slate-500">{b3.emptyList}</td>
               </tr>
             ) : (
-              rows.map(({ item, index }) => (
-                <tr key={item.id} className={item.enabled ? "" : "opacity-50"}>
-                  <td className="font-semibold">{displayName(locale, item)}</td>
-                  <td>{kindLabel(b3, item.kind)}</td>
-                  <td>{item.contact || "—"}</td>
-                  <td>{Number((item.cut * 100).toFixed(1))}%</td>
-                  <td>
-                    {item.locked ? (
-                      <span className="text-xs text-slate-500">{copy.settings.channelLocked}</span>
-                    ) : (
-                      <span className={item.enabled ? "text-xs text-emerald-600" : "text-xs text-slate-500"}>
-                        {item.enabled ? copy.settings.on : copy.settings.off}
-                      </span>
-                    )}
-                  </td>
-                  <td className="space-x-2">
-                    <button type="button" className="text-xs text-blue-600" onClick={() => { setEditing({ ...item }); setEditingIndex(index); }}>
-                      {copy.common.edit}
-                    </button>
-                    {item.locked ? null : (
-                      <button type="button" className="text-xs text-rose-600" onClick={() => removeRow(item)}>
-                        {copy.settings.removeChannel}
+              rows.map(({ item, index }) => {
+                const can = moveable(item);
+                return (
+                  <tr key={item.id} className={item.enabled ? "" : "opacity-50"}>
+                    {reorder ? (
+                      <td>
+                        {pinned(item) ? (
+                          <span className="text-xs text-slate-400">—</span>
+                        ) : (
+                          <span className="inline-flex gap-1">
+                            <button
+                              type="button"
+                              className="rounded border border-slate-200 p-1 text-slate-600 disabled:opacity-30"
+                              aria-label={b3.moveUp}
+                              disabled={!can.up}
+                              onClick={() => moveRow(item.id, -1)}
+                            >
+                              <ChevronUp className="size-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              className="rounded border border-slate-200 p-1 text-slate-600 disabled:opacity-30"
+                              aria-label={b3.moveDown}
+                              disabled={!can.down}
+                              onClick={() => moveRow(item.id, 1)}
+                            >
+                              <ChevronDown className="size-3.5" />
+                            </button>
+                          </span>
+                        )}
+                      </td>
+                    ) : null}
+                    <td className="font-semibold">{displayName(locale, item)}</td>
+                    <td>{kindLabel(b3, item.kind)}</td>
+                    <td>{item.contact || "—"}</td>
+                    <td>{Number((item.cut * 100).toFixed(1))}%</td>
+                    <td>
+                      {pinned(item) ? (
+                        <span className="text-xs text-slate-500">{copy.settings.channelLocked}</span>
+                      ) : (
+                        <span className={item.enabled ? "text-xs text-emerald-600" : "text-xs text-slate-500"}>
+                          {item.enabled ? copy.settings.on : copy.settings.off}
+                        </span>
+                      )}
+                    </td>
+                    <td className="space-x-2">
+                      <button type="button" className="text-xs text-blue-600" onClick={() => { setEditing({ ...item }); setEditingIndex(index); }}>
+                        {copy.common.edit}
                       </button>
-                    )}
-                  </td>
-                </tr>
-              ))
+                      {pinned(item) ? null : (
+                        <button type="button" className="text-xs text-rose-600" onClick={() => removeRow(item)}>
+                          {copy.settings.removeChannel}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -257,31 +373,44 @@ export function AdminChannelsView() {
 
       <div className="grid gap-3 md:hidden">
         {rows.length === 0 ? <p className="text-sm text-slate-500">{b3.emptyList}</p> : null}
-        {rows.map(({ item, index }) => (
-          <article key={item.id} className={cn("rounded-2xl border border-slate-200 bg-white p-4", !item.enabled && "opacity-60")}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-black">{displayName(locale, item)}</p>
-                <p className="mt-1 text-sm text-slate-500">
-                  {kindLabel(b3, item.kind)} · {item.contact || "—"} · {Number((item.cut * 100).toFixed(1))}%
-                </p>
+        {rows.map(({ item, index }) => {
+          const can = moveable(item);
+          return (
+            <article key={item.id} className={cn("rounded-2xl border border-slate-200 bg-white p-4", !item.enabled && "opacity-60")}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-black">{displayName(locale, item)}</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {kindLabel(b3, item.kind)} · {item.contact || "—"} · {Number((item.cut * 100).toFixed(1))}%
+                  </p>
+                </div>
+                {pinned(item) ? null : (
+                  <NeonToggle checked={item.enabled} onChange={(on) => patchRow(index, { enabled: on })} />
+                )}
               </div>
-              {item.locked ? null : (
-                <NeonToggle checked={item.enabled} onChange={(on) => patchRow(index, { enabled: on })} />
-              )}
-            </div>
-            <div className="mt-3 flex gap-3">
-              <button type="button" className="text-xs text-blue-600" onClick={() => { setEditing({ ...item }); setEditingIndex(index); }}>
-                {copy.common.edit}
-              </button>
-              {item.locked ? null : (
-                <button type="button" className="text-xs text-rose-600" onClick={() => removeRow(item)}>
-                  {copy.settings.removeChannel}
+              <div className="mt-3 flex flex-wrap gap-3">
+                {reorder && !pinned(item) ? (
+                  <>
+                    <button type="button" className="text-xs text-slate-600 disabled:opacity-30" disabled={!can.up} onClick={() => moveRow(item.id, -1)}>
+                      {b3.moveUp}
+                    </button>
+                    <button type="button" className="text-xs text-slate-600 disabled:opacity-30" disabled={!can.down} onClick={() => moveRow(item.id, 1)}>
+                      {b3.moveDown}
+                    </button>
+                  </>
+                ) : null}
+                <button type="button" className="text-xs text-blue-600" onClick={() => { setEditing({ ...item }); setEditingIndex(index); }}>
+                  {copy.common.edit}
                 </button>
-              )}
-            </div>
-          </article>
-        ))}
+                {pinned(item) ? null : (
+                  <button type="button" className="text-xs text-rose-600" onClick={() => removeRow(item)}>
+                    {copy.settings.removeChannel}
+                  </button>
+                )}
+              </div>
+            </article>
+          );
+        })}
       </div>
 
       <Modal
@@ -311,7 +440,7 @@ export function AdminChannelsView() {
               <select
                 className="admin-input"
                 value={editing.kind ?? "other"}
-                disabled={Boolean(editing.locked)}
+                disabled={pinned(editing)}
                 onChange={(event) => setEditing({ ...editing, kind: event.target.value as ChannelKind })}
               >
                 {KINDS.map((id) => (
@@ -342,7 +471,7 @@ export function AdminChannelsView() {
                 }}
               />
             </label>
-            {editing.locked ? (
+            {pinned(editing) ? (
               <p className="text-sm text-slate-500">{copy.settings.channelLocked}</p>
             ) : (
               <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">

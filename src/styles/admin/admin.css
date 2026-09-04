@@ -576,6 +576,8 @@ html:has(.admin-app) body {
 }
 
 .admin-app .perm-page {
+  display: grid;
+  gap: 1rem;
   min-width: 0;
 }
 
@@ -618,8 +620,16 @@ html:has(.admin-app) body {
 .admin-app .perm-card {
   background: #fff;
   border: 1px solid #e5e7eb;
-  border-radius: 1rem;
-  padding: 1.2rem 1.3rem 1.4rem;
+  border-radius: 0.9rem;
+  padding: 0.85rem 1rem 1rem;
+}
+
+.admin-app .perm-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #111827;
 }
 
 .admin-app .perm-card-head {
@@ -627,18 +637,122 @@ html:has(.admin-app) body {
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.75rem 1rem;
-  margin-bottom: 1.05rem;
+  gap: 0.5rem 0.85rem;
+  margin-bottom: 0.65rem;
 }
 
 .admin-app .perm-hint {
-  margin: 0;
+  margin: 0.2rem 0 0.65rem;
   max-width: 42rem;
-  font-size: 0.9rem;
-  line-height: 1.65;
+  font-size: 0.8rem;
+  line-height: 1.5;
   color: #64748b;
   text-wrap: wrap;
   word-break: keep-all;
+}
+
+.admin-app .perm-role-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.7rem;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-app .perm-role-chips li {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.admin-app .perm-chip {
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #334155;
+  padding: 0.28rem 0.72rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.admin-app .perm-chip.is-on {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.admin-app .perm-chip-del {
+  border: 0;
+  background: transparent;
+  color: #e11d48;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-app .perm-people {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-app .perm-people th,
+.admin-app .perm-people td {
+  padding: 0.42rem 0.45rem;
+  font-size: 0.86rem;
+  line-height: 1.35;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.admin-app .perm-people th {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.admin-app .perm-people b {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.admin-app .perm-mail {
+  display: block;
+  margin-top: 0.08rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #6b7280;
+}
+
+.admin-app .perm-role-select {
+  min-width: 7.5rem;
+  max-width: 11rem;
+  padding: 0.32rem 0.5rem !important;
+  font-size: 0.82rem !important;
+}
+
+.admin-app .perm-link {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: #2563eb;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-app .perm-extra td {
+  background: #f8fafc;
+  padding: 0.55rem 0.6rem 0.75rem;
+}
+
+.admin-app .perm-extra .perm-hint {
+  margin: 0 0 0.45rem;
 }
 
 .admin-app .perm-label {
@@ -666,12 +780,12 @@ html:has(.admin-app) body {
 
 .admin-app .perm-table th,
 .admin-app .perm-table td {
-  padding: 0.7rem 0.75rem;
-  font-size: 1rem;
-  font-weight: 700;
+  padding: 0.38rem 0.5rem;
+  font-size: 0.86rem;
+  font-weight: 650;
   font-style: normal;
   font-synthesis: none;
-  line-height: 1.4;
+  line-height: 1.35;
   vertical-align: middle;
   text-align: left;
   color: #111827;
@@ -735,7 +849,127 @@ html:has(.admin-app) body {
 .admin-app .perm-save {
   display: flex;
   justify-content: flex-end;
-  margin-top: 1.1rem;
+  margin-top: 0.7rem;
+}
+
+.admin-app .staff-card-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-app .staff-card {
+  min-width: 0;
+  padding: 1.05rem 1.1rem 1.05rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.admin-app .staff-card.is-off {
+  opacity: 0.58;
+}
+
+.admin-app .staff-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.admin-app .staff-card-name {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.admin-app .staff-card-sub {
+  margin: 0.28rem 0 0;
+  color: #64748b;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.admin-app .staff-card-badge {
+  flex: 0 0 auto;
+  display: none;
+  padding: 0.16rem 0.5rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.admin-app .staff-card-badge.is-on {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.admin-app .staff-card-facts {
+  display: none;
+}
+
+.admin-app .staff-card-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+
+.admin-app .staff-pill {
+  padding: 0.28rem 0.7rem;
+  border: 1px solid #93c5fd;
+  border-radius: 999px;
+  background: #fff;
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-app .staff-pill.is-mute {
+  border-color: #cbd5e1;
+  color: #64748b;
+}
+
+@media (min-width: 768px) {
+  .admin-app .staff-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .admin-app .staff-card-badge {
+    display: inline-flex;
+  }
+
+  .admin-app .staff-card-facts {
+    display: grid;
+    gap: 0.45rem 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 0.85rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .admin-app .staff-card-facts dt {
+    color: #94a3b8;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  .admin-app .staff-card-facts dd {
+    margin: 0.12rem 0 0;
+    color: #334155;
+    font-size: 0.8rem;
+    font-weight: 600;
+    word-break: break-all;
+  }
+
+  .admin-app .staff-card-facts > div:last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 .admin-app .perm-staff {
@@ -773,6 +1007,16 @@ html:has(.admin-app) body {
 
 .admin-app .perm-mods.is-modal {
   margin-top: 0.85rem;
+}
+
+.admin-app .perm-staff-edit {
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.admin-app .perm-staff-edit .perm-table {
+  width: 100%;
 }
 
 .admin-app .admin-locale-field {
@@ -1536,6 +1780,47 @@ html:has(.admin-app) body {
   background: #fff;
   color: #0f172a;
   font-size: 0.8125rem;
+}
+
+.admin-app .channel-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5rem;
+  padding: 0 0.95rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.6rem;
+  background: #f8fafc;
+  color: #94a3b8;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0.58;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    color 0.15s,
+    opacity 0.15s;
+}
+
+.admin-app .channel-sort-btn:hover {
+  border-color: #cbd5e1;
+  color: #64748b;
+  opacity: 0.82;
+}
+
+.admin-app .channel-sort-btn.is-on {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+  opacity: 1;
+}
+
+.admin-app .channel-sort-btn.is-on:hover {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+  color: #fff;
 }
 
 .admin-app .order-toolbar-add.cta-btn {

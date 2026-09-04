@@ -4,7 +4,7 @@ import { MOCK_ADDONS, type MockAddon } from "@/lib/mock/addons";
 import { MOCK_LOGS, type LogType, type MockLog } from "@/lib/mock/logs";
 import { MOCK_ORDERS, buildWeekDemoOrders, isWebsiteLiveOrder, mergeFreshDemoOrders, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import { MOCK_AFFILIATES, findAffiliateByCode, refreshBundledAffiliates, type MockAffiliate } from "@/lib/mock/affiliates";
-import { MOCK_PLANS, type MockPlan } from "@/lib/mock/plans";
+import { MOCK_PLANS, mergePlansWithSeed, type MockPlan } from "@/lib/mock/plans";
 import { MOCK_SPECIAL_DATES, type MockSpecialDate } from "@/lib/mock/inventory";
 import {
   buildVehicleTimeline,
@@ -19,6 +19,7 @@ import { MOCK_CMS, isCustomCmsVideo, mergeCms, refreshBundledReviews, refreshBun
 import { applySlotPatch, syncOrderInventory } from "@/lib/ops-inventory";
 import { DEFAULT_STORE_ID, storeIdOf } from "@/lib/store-id";
 import { OPS_STORAGE_KEY, loadPersistedSlots, opsPersistStorage, savePersistedSlots } from "@/lib/ops-storage";
+import { confirmDueOrders } from "@/lib/order-settle";
 
 export type WebsiteBookingInput = {
   ref: string;
@@ -85,6 +86,7 @@ type OpsState = {
   patchCms: (patch: Partial<CmsState>) => void;
   ensureInventory: () => void;
   ensureDemoOrders: () => void;
+  settleDueOrders: () => void;
 };
 
 function readSlots(state: { vehicleSlots: VehicleSlotCell[]; vehicles: MockVehicle[]; orders: MockOrder[] }, buildIfMissing: boolean) {
@@ -445,12 +447,21 @@ export const useOpsStore = create<OpsState>()(
         }),
       ensureDemoOrders: () =>
         set((state) => ({
-          orders: mergeFreshDemoOrders(state.orders),
+          orders: confirmDueOrders(mergeFreshDemoOrders(state.orders)).orders,
         })),
+      settleDueOrders: () =>
+        set((state) => {
+          const { orders, changed } = confirmDueOrders(state.orders);
+          if (!changed) return state;
+          return {
+            orders,
+            logs: [makeLog("订单修改", `过点自动确认 ${changed} 单`, undefined, "系统", "系统"), ...state.logs],
+          };
+        }),
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 23,
+      version: 24,
       skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
@@ -696,6 +707,20 @@ export const useOpsStore = create<OpsState>()(
           const have = new Set((state.vehicles ?? []).map((item) => item.id));
           state.vehicles = [...(state.vehicles ?? []), ...MOCK_VEHICLES.filter((item) => !have.has(item.id))];
         }
+        if (version < 24) {
+          state.plans = mergePlansWithSeed(state.plans);
+          state.orders = mergeFreshDemoOrders(state.orders ?? []);
+          state.settings = {
+            ...MOCK_SETTINGS,
+            ...state.settings,
+            channels: refreshBundledChannels(
+              MOCK_SETTINGS.channels,
+              state.settings?.channels,
+              state.settings?.removedChannelIds,
+            ),
+            removedChannelIds: state.settings?.removedChannelIds ?? MOCK_SETTINGS.removedChannelIds,
+          };
+        }
         delete state.vehicleSlots;
         return state as OpsState;
       },
@@ -722,28 +747,7 @@ export const useOpsStore = create<OpsState>()(
           ...extra,
           vehicleSlots: current.vehicleSlots,
           logs: extra.logs ?? current.logs,
-          plans: (extra.plans ?? current.plans).map((row) => {
-            const seed =
-              MOCK_PLANS.find((item) => item.id === row.id) ??
-              MOCK_PLANS.find((item) => item.slug === row.slug);
-            if (!seed) return row;
-            return {
-              ...seed,
-              ...row,
-              coverImage: row.coverImage,
-              detailImage: row.detailImage,
-              description: row.description,
-              descriptionEn: row.descriptionEn,
-              descriptionJa: row.descriptionJa || seed.descriptionJa,
-              descriptionKo: row.descriptionKo,
-              highlights: row.highlights,
-              highlightsEn: row.highlightsEn,
-              highlightsJa: row.highlightsJa?.length ? row.highlightsJa : seed.highlightsJa,
-              highlightsKo: row.highlightsKo,
-              includesJa: row.includesJa?.length ? row.includesJa : seed.includesJa,
-              includesEn: row.includesEn?.length ? row.includesEn : seed.includesEn,
-            };
-          }),
+          plans: mergePlansWithSeed(extra.plans ?? current.plans),
           addons: (extra.addons ?? current.addons).map((row) => {
             const seed = MOCK_ADDONS.find((item) => item.id === row.id) ?? MOCK_ADDONS.find((item) => item.slug === row.slug);
             if (!seed) return row;
@@ -782,6 +786,7 @@ let hydrateScheduled = false;
 export function rehydrateOpsStore() {
   const run = () => {
     useOpsStore.getState().ensureDemoOrders();
+    useOpsStore.getState().settleDueOrders();
   };
   const safe = () =>
     Promise.resolve(useOpsStore.persist.rehydrate())

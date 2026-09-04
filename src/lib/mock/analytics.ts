@@ -86,7 +86,7 @@ function inRange(date: string, range: DateRange) {
 }
 
 function billedOf(orders: MockOrder[]) {
-  return orders.filter((item) => item.status === "completed");
+  return orders.filter((item) => item.status === "confirmed" || item.status === "completed");
 }
 
 function summarize(orders: MockOrder[], cuts: Record<string, number>): AnalyticsKpi {
@@ -111,7 +111,7 @@ function dailyMap(orders: MockOrder[]) {
   for (const item of orders) {
     const row = map.get(item.date) ?? { bookings: 0, revenue: 0 };
     row.bookings += 1;
-    if (item.status === "completed") row.revenue += item.totalJpy;
+    if (item.status === "confirmed" || item.status === "completed") row.revenue += item.totalJpy;
     map.set(item.date, row);
   }
   return map;

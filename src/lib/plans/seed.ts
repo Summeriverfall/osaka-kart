@@ -5,9 +5,11 @@ import type {
   PlanWithTranslation,
 } from "./types";
 
+const SUNSET_ID = "a0000000-0000-4000-8000-000000000000";
 const STANDARD_ID = "a1111111-1111-4111-8111-111111111111";
 const NIGHT_ID = "a2222222-2222-4222-8222-222222222222";
 const GRAND_ID = "a3333333-3333-4333-8333-333333333333";
+const VIP_ID = "a4444444-4444-4444-8444-444444444444";
 const GOPRO_ID = "b1111111-1111-4111-8111-111111111111";
 const COSTUME_ID = "b2222222-2222-4222-8222-222222222222";
 const PHOTO_ID = "b3333333-3333-4333-8333-333333333333";
@@ -15,9 +17,18 @@ const INSURANCE_ID = "b4444444-4444-4444-8444-444444444444";
 
 const LOCALES = ["en", "zh-CN", "zh-TW", "ja", "ko"] as const;
 
-export const PLAN_SLUGS = ["standard", "night-run", "grand-tour"] as const;
+export const PLAN_SLUGS = ["sunset", "standard", "night-run", "grand-tour", "vip-night"] as const;
 
 const plans: PlanRecord[] = [
+  {
+    id: SUNSET_ID,
+    slug: "sunset",
+    duration_minutes: 45,
+    distance_km: 6,
+    base_price_jpy: 5000,
+    max_participants: 4,
+    is_active: true,
+  },
   {
     id: STANDARD_ID,
     slug: "standard",
@@ -45,6 +56,15 @@ const plans: PlanRecord[] = [
     max_participants: 4,
     is_active: true,
   },
+  {
+    id: VIP_ID,
+    slug: "vip-night",
+    duration_minutes: 90,
+    distance_km: 11,
+    base_price_jpy: 15000,
+    max_participants: 4,
+    is_active: true,
+  },
 ];
 
 const includes = {
@@ -68,6 +88,54 @@ const requirements = {
 } as const;
 
 const planTranslations: Record<string, PlanTranslation[]> = {
+  [SUNSET_ID]: [
+    {
+      locale: "en",
+      name: "Twilight Bay 45 min",
+      description:
+        "A short twilight run along the bay. Easy to start with if you want to try a kart first.",
+      highlights: ["Bay at dusk", "Short and easy", "Good first ride"],
+      route_summary: "Namba check-in → bay loop → return.",
+      includes: [...includes.en],
+      requirements: [...requirements.en],
+    },
+    {
+      locale: "zh-CN",
+      name: "黄昏湾岸 45 分钟",
+      description: "黄昏时分沿湾岸走一圈，路线短、好上手，适合想先试车的人。",
+      highlights: ["湾岸黄昏", "短途好上手", "适合试车"],
+      route_summary: "难波集合 → 湾岸环线 → 返回。",
+      includes: [...includes["zh-CN"]],
+      requirements: [...requirements["zh-CN"]],
+    },
+    {
+      locale: "zh-TW",
+      name: "黃昏灣岸 45 分鐘",
+      description: "黃昏時分沿灣岸走一圈，路線短、好上手，適合想先試車的人。",
+      highlights: ["灣岸黃昏", "短途好上手", "適合試車"],
+      route_summary: "難波集合 → 灣岸環線 → 返回。",
+      includes: [...includes["zh-TW"]],
+      requirements: [...requirements["zh-TW"]],
+    },
+    {
+      locale: "ja",
+      name: "トワイライトベイ45分",
+      description: "夕暮れ時の湾岸を走る、短時間で気軽に楽しめるコース。まずはカートを体験してみたい方におすすめです。",
+      highlights: ["湾岸の夕景", "短時間で気軽に体験", "初めての方にもおすすめ"],
+      route_summary: "難波集合 → 湾岸ループ → 戻る。",
+      includes: [...includes.ja],
+      requirements: [...requirements.ja],
+    },
+    {
+      locale: "ko",
+      name: "트와일라이트 베이 45분",
+      description: "해질녘 해안을 짧게 도는 코스. 처음 타보는 분께 좋습니다.",
+      highlights: ["해안 노을", "짧고 쉬운 코스", "첫 체험용"],
+      route_summary: "난바 체크인 → 베이 루프 → 복귀.",
+      includes: [...includes.ko],
+      requirements: [...requirements.ko],
+    },
+  ],
   [STANDARD_ID]: [
     {
       locale: "en",
@@ -220,6 +288,53 @@ const planTranslations: Record<string, PlanTranslation[]> = {
         "유서 깊은 오사카성을 배경으로 120분. 역사와 현대가 어우러진 명소를 돌며, 여유 있게 오사카를 둘러보고 싶은 분께 맞습니다.",
       highlights: ["오사카성 120분", "역사와 현대", "여유 있는 관광"],
       route_summary: "난바 → 오사카성 루프 → 베이스 복귀.",
+      includes: [...includes.ko],
+      requirements: [...requirements.ko],
+    },
+  ],
+  [VIP_ID]: [
+    {
+      locale: "en",
+      name: "Neon night 90 min",
+      description: "A neon night course through lit streets. Good if you want night photos.",
+      highlights: ["Night neon", "Night photos", "90-minute night course"],
+      route_summary: "Namba → Dotonbori neon → return.",
+      includes: [...includes.en],
+      requirements: [...requirements.en],
+    },
+    {
+      locale: "zh-CN",
+      name: "夜间霓虹 90 分钟",
+      description: "夜间霓虹路线，灯火和街景更密，适合想拍夜景的人。",
+      highlights: ["夜间霓虹", "夜景更好拍", "90 分钟"],
+      route_summary: "难波 → 道顿堀霓虹 → 返回。",
+      includes: [...includes["zh-CN"]],
+      requirements: [...requirements["zh-CN"]],
+    },
+    {
+      locale: "zh-TW",
+      name: "夜間霓虹 90 分鐘",
+      description: "夜間霓虹路線，燈火和街景更密，適合想拍夜景的人。",
+      highlights: ["夜間霓虹", "夜景更好拍", "90 分鐘"],
+      route_summary: "難波 → 道頓堀霓虹 → 返回。",
+      includes: [...includes["zh-TW"]],
+      requirements: [...requirements["zh-TW"]],
+    },
+    {
+      locale: "ja",
+      name: "ネオンナイト90分",
+      description: "ネオンが輝く夜の街を走るコース。光と街並みを楽しみながら、夜景を撮影したい方にもおすすめです。",
+      highlights: ["夜のネオン", "夜景撮影におすすめ", "90分のナイトコース"],
+      route_summary: "難波 → 道頓堀ネオン → 戻る。",
+      includes: [...includes.ja],
+      requirements: [...requirements.ja],
+    },
+    {
+      locale: "ko",
+      name: "네온 나이트 90분",
+      description: "네온이 빛나는 밤거리를 달리는 코스. 야경 사진에 좋습니다.",
+      highlights: ["밤 네온", "야경 촬영", "90분 나이트 코스"],
+      route_summary: "난바 → 도톤보리 네온 → 복귀.",
       includes: [...includes.ko],
       requirements: [...requirements.ko],
     },

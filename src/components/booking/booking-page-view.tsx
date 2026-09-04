@@ -5,7 +5,7 @@ import { AcidRaceBook } from "@/components/landing/acid-race-book";
 import { HtmlTheme } from "@/components/layout/html-theme";
 import { SiteFooter } from "@/components/site/site-footer";
 import { BookingForm } from "@/components/booking/booking-form";
-import { BookingPageCallNote, BookingPageContact } from "@/components/booking/booking-page-contact";
+import { BookingPageContact } from "@/components/booking/booking-page-contact";
 import { SiteNav } from "@/components/site/site-nav";
 import { ACID_PALETTE } from "@/lib/acid-palette";
 import { useSiteLook } from "@/lib/site-look";
@@ -63,7 +63,6 @@ export function BookingPageView({ plans, addons, locale, initialPlan }: BookingP
               <h2>{cal("noteTitle")}</h2>
               <p>{cal("noteBody")}</p>
             </article>
-            <BookingPageCallNote />
           </aside>
         </div>
       </main>

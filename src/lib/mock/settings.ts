@@ -36,6 +36,7 @@ export type MockBookChannel = {
   contact?: string;
   enabled: boolean;
   locked?: boolean;
+  sort?: number;
   cut: number;
   fieldLabel?: string;
   fieldValue?: string;
@@ -73,17 +74,17 @@ export const MOCK_PAYMENTS: MockPayChannel[] = [
 ];
 
 export const MOCK_BOOK_CHANNELS: MockBookChannel[] = [
-  { id: "官网", enabled: true, locked: true, kind: "direct", contact: "官网客服", cut: 0 },
-  { id: "Klook", enabled: true, kind: "ota", contact: "李娜", cut: 0.18, fieldLabel: "API Key", fieldValue: "" },
-  { id: "Viator", enabled: true, kind: "ota", contact: "James Cole", cut: 0.2 },
-  { id: "携程", enabled: true, kind: "ota", contact: "王倩", cut: 0.15 },
-  { id: "GetYourGuide", enabled: true, kind: "ota", contact: "Anna Berg", cut: 0.16 },
-  { id: "丽思卡尔顿酒店", name: "丽思卡尔顿酒店", enabled: true, kind: "hotel", contact: "前台礼宾", cut: 0.12 },
-  { id: "Instagram", enabled: true, kind: "social", contact: "内容运营", cut: 0 },
-  { id: "TikTok", enabled: true, kind: "social", contact: "内容运营", cut: 0 },
-  { id: "微信", enabled: true, kind: "social", contact: "社群运营", cut: 0.05 },
-  { id: "WhatsApp", enabled: true, kind: "social", contact: "预订专员", cut: 0 },
-  { id: "线下", enabled: true, kind: "direct", contact: "难波店", cut: 0 },
+  { id: "官网", enabled: true, locked: true, sort: 0, kind: "direct", contact: "官网客服", cut: 0 },
+  { id: "Klook", enabled: true, sort: 1, kind: "ota", contact: "李娜", cut: 0.18, fieldLabel: "API Key", fieldValue: "" },
+  { id: "Viator", enabled: true, sort: 2, kind: "ota", contact: "James Cole", cut: 0.2 },
+  { id: "携程", enabled: true, sort: 3, kind: "ota", contact: "王倩", cut: 0.15 },
+  { id: "GetYourGuide", enabled: true, sort: 4, kind: "ota", contact: "Anna Berg", cut: 0.16 },
+  { id: "丽思卡尔顿酒店", name: "丽思卡尔顿酒店", enabled: true, sort: 5, kind: "hotel", contact: "前台礼宾", cut: 0.12 },
+  { id: "Instagram", enabled: true, sort: 6, kind: "social", contact: "内容运营", cut: 0 },
+  { id: "TikTok", enabled: true, sort: 7, kind: "social", contact: "内容运营", cut: 0 },
+  { id: "微信", enabled: true, sort: 8, kind: "social", contact: "社群运营", cut: 0.05 },
+  { id: "WhatsApp", enabled: true, sort: 9, kind: "social", contact: "预订专员", cut: 0 },
+  { id: "线下", enabled: true, sort: 10, kind: "direct", contact: "难波店", cut: 0 },
 ];
 
 const REMOVED_BOOK_CHANNELS = new Set<string>([]);
@@ -118,7 +119,21 @@ export function refreshBundledChannels(
   const custom = (extra ?? []).filter(
     (item) => !seedIds.has(item.id) && !REMOVED_BOOK_CHANNELS.has(item.id),
   );
-  return [...merged, ...custom];
+  const list = [...merged, ...custom].map((item, index) => {
+    const official = item.id === "官网" || item.locked;
+    return {
+      ...item,
+      locked: official || item.locked,
+      enabled: official ? true : item.enabled,
+      sort: official ? 0 : item.sort ?? index + 1,
+    };
+  });
+  return list.sort((a, b) => {
+    const ap = a.locked ? 0 : 1;
+    const bp = b.locked ? 0 : 1;
+    if (ap !== bp) return ap - bp;
+    return (a.sort ?? 50) - (b.sort ?? 50);
+  });
 }
 
 const TYPES = ["预订确认", "出发提醒", "退款通知", "回访评价"] as const;

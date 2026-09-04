@@ -1,3 +1,5 @@
+import { tokyoDateIso } from "@/lib/japan-time";
+
 export const BOOKING_SLOTS = [
   "10:00",
   "11:30",
@@ -15,25 +17,19 @@ export const BOOKING_DAYPARTS = [
   { id: "night", label: "夜晚", range: "19:00", slots: ["19:00"] },
 ] as const;
 
+function addIsoDays(iso: string, days: number) {
+  const [year, month, day] = iso.split("-").map(Number);
+  return tokyoDateIso(new Date(Date.UTC(year, month - 1, day + days)));
+}
+
 export function todayIsoDate() {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return tokyoDateIso();
 }
 
 export function tomorrowIsoDate() {
-  const date = new Date();
-  date.setDate(date.getDate() + 1);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return addIsoDays(todayIsoDate(), 1);
 }
 
 export function maxBookIsoDate() {
-  const date = new Date();
-  date.setDate(date.getDate() + 60);
-  return date.toISOString().slice(0, 10);
+  return addIsoDays(todayIsoDate(), 60);
 }

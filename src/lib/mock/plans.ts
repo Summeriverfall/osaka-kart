@@ -176,3 +176,40 @@ export const MOCK_PLANS: MockPlan[] = [
     highlightsJa: ["夜のネオン", "夜景撮影におすすめ", "90分のナイトコース"],
   },
 ];
+
+export function mergePlansWithSeed(rows: MockPlan[] | undefined): MockPlan[] {
+  const source = rows?.length ? rows : MOCK_PLANS;
+  const used = new Set<string>();
+  const out: MockPlan[] = [];
+  for (const row of source) {
+    const seed =
+      MOCK_PLANS.find((item) => item.id === row.id) ?? MOCK_PLANS.find((item) => item.slug === row.slug);
+    used.add(row.slug);
+    if (seed) used.add(seed.slug);
+    if (!seed) {
+      out.push(row);
+      continue;
+    }
+    out.push({
+      ...seed,
+      ...row,
+      coverImage: row.coverImage,
+      detailImage: row.detailImage,
+      description: row.description,
+      descriptionEn: row.descriptionEn,
+      descriptionJa: row.descriptionJa || seed.descriptionJa,
+      descriptionKo: row.descriptionKo,
+      highlights: row.highlights,
+      highlightsEn: row.highlightsEn,
+      highlightsJa: row.highlightsJa?.length ? row.highlightsJa : seed.highlightsJa,
+      highlightsKo: row.highlightsKo,
+      includesJa: row.includesJa?.length ? row.includesJa : seed.includesJa,
+      includesEn: row.includesEn?.length ? row.includesEn : seed.includesEn,
+    });
+  }
+  for (const seed of MOCK_PLANS) {
+    if (used.has(seed.slug)) continue;
+    out.push(seed);
+  }
+  return out;
+}

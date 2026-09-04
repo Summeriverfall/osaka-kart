@@ -79,7 +79,7 @@ function viewFor(tab: string) {
       return <AdminPlansView />;
     case "/admin/permissions":
       return (
-        <AdminRoleGate allow={["admin", "manager"]}>
+        <AdminRoleGate allow={["admin"]}>
           <AdminPermissionsView />
         </AdminRoleGate>
       );
@@ -123,7 +123,7 @@ function viewFor(tab: string) {
       );
     case "/admin/staff":
       return (
-        <AdminRoleGate allow={["admin"]}>
+        <AdminRoleGate allow={["admin", "manager"]}>
           <AdminStaffView />
         </AdminRoleGate>
       );

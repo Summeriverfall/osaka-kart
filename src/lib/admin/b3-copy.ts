@@ -1,10 +1,14 @@
 type Locale = "zh" | "en" | "ja";
 
 const ZH = {
-  channelsLead: "B2B 渠道列表。可按名称或联系人搜索，并按类型、抽成、状态排序筛选。",
+  channelsLead: "官网固定置顶且不可关闭、删除。其余渠道可开关或删除；需要调整顺序时，先打开「排序」。",
   channelKind: "类型",
   channelContact: "联系人",
   channelStatus: "状态",
+  channelOrder: "排序",
+  reorder: "排序",
+  moveUp: "上移",
+  moveDown: "下移",
   kindAll: "全部类型",
   kindOta: "OTA",
   kindHotel: "酒店",
@@ -50,10 +54,14 @@ const ZH = {
 };
 
 const EN: typeof ZH = {
-  channelsLead: "B2B channel list. Search by name or contact. Sort and filter by type, cut, and status.",
+  channelsLead: "Official site stays pinned on and cannot be turned off or deleted. Switch or remove the rest. Turn on Reorder to change the order.",
   channelKind: "Type",
   channelContact: "Contact",
   channelStatus: "Status",
+  channelOrder: "Order",
+  reorder: "Reorder",
+  moveUp: "Up",
+  moveDown: "Down",
   kindAll: "All types",
   kindOta: "OTA",
   kindHotel: "Hotel",
@@ -99,10 +107,14 @@ const EN: typeof ZH = {
 };
 
 const JA: typeof ZH = {
-  channelsLead: "B2Bチャネル一覧。名前・連絡先で検索し、種別・手数料・状態で並べ替えできます。",
+  channelsLead: "公式サイトは先頭固定でオフ／削除できません。ほかはオンオフ・削除できます。並びを変えるときは「並べ替え」をオンにしてください。",
   channelKind: "種別",
   channelContact: "連絡先",
   channelStatus: "状態",
+  channelOrder: "並び",
+  reorder: "並べ替え",
+  moveUp: "上へ",
+  moveDown: "下へ",
   kindAll: "すべての種別",
   kindOta: "OTA",
   kindHotel: "ホテル",

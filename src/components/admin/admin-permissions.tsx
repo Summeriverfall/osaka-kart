@@ -1,107 +1,25 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import { NeonToggle } from "@/components/ui/neon-toggle";
 import { Modal } from "@/components/ui/modal";
+import { PermTable, cloneRole, moduleLabel, roleLabel } from "@/components/admin/perm-table";
 import { b2Copy } from "@/lib/admin/b2-copy";
 import { useAdminAccess } from "@/lib/admin-access";
-import { blankRole, PERM_MODULES, type MockRole, type PermModule } from "@/lib/mock/permissions";
+import { blankRole, PERM_MODULES, type MockRole } from "@/lib/mock/permissions";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
-import { storeIdOf } from "@/lib/store-id";
 import { cn } from "@/lib/utils";
-
-type PermPane = "roles" | "staff";
-
-function moduleLabel(id: PermModule, locale: string) {
-  const map: Record<PermModule, { zh: string; en: string; ja: string }> = {
-    dashboard: { zh: "仪表盘", en: "Dashboard", ja: "ダッシュボード" },
-    orders: { zh: "订单", en: "Orders", ja: "注文" },
-    calendar: { zh: "日历", en: "Calendar", ja: "カレンダー" },
-    inventory: { zh: "库存", en: "Inventory", ja: "在庫" },
-    vehicles: { zh: "车辆", en: "Vehicles", ja: "車両" },
-    plans: { zh: "套餐", en: "Plans", ja: "コース" },
-    addons: { zh: "附加项", en: "Add-ons", ja: "オプション" },
-    content: { zh: "内容", en: "Content", ja: "コンテンツ" },
-    affiliates: { zh: "推广代理", en: "Affiliates", ja: "アフィリエイト" },
-    reports: { zh: "报表", en: "Reports", ja: "レポート" },
-    staff: { zh: "员工", en: "Staff", ja: "スタッフ" },
-    settings: { zh: "系统设置", en: "Settings", ja: "設定" },
-    site: { zh: "全站配置", en: "Site", ja: "サイト設定" },
-    permissions: { zh: "权限", en: "Permissions", ja: "権限" },
-  };
-  if (locale.startsWith("ja")) return map[id].ja;
-  if (locale.startsWith("en")) return map[id].en;
-  return map[id].zh;
-}
-
-function roleLabel(item: MockRole, locale: string) {
-  if (locale.startsWith("ja")) return item.nameJa || item.name;
-  if (locale.startsWith("en")) return item.nameEn || item.name;
-  return item.name;
-}
-
-function cloneRole(row: MockRole): MockRole {
-  return {
-    ...row,
-    perms: Object.fromEntries(PERM_MODULES.map((mod) => [mod.id, { ...row.perms[mod.id] }])) as MockRole["perms"],
-  };
-}
-
-function RolePicker({
-  roles,
-  value,
-  locale,
-  removeLabel,
-  onChange,
-  onDelete,
-}: {
-  roles: MockRole[];
-  value: string;
-  locale: string;
-  removeLabel: string;
-  onChange: (id: string) => void;
-  onDelete: (row: MockRole) => void;
-}) {
-  return (
-    <ul className="role-pick-menu is-static" role="listbox">
-      {roles.map((item) => {
-        const custom = !item.builtin;
-        return (
-          <li key={item.id} className={cn("role-pick-row", item.id === value && "is-on")}>
-            <button
-              type="button"
-              className="role-pick-name"
-              role="option"
-              aria-selected={item.id === value}
-              onClick={() => onChange(item.id)}
-            >
-              {roleLabel(item, locale)}
-            </button>
-            {custom ? (
-              <button type="button" className="cta-btn-danger role-pick-del" onClick={() => onDelete(item)}>
-                {removeLabel}
-              </button>
-            ) : null}
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
 
 export function AdminPermissionsView() {
   const locale = useLocale();
   const b2 = b2Copy(locale);
-  const { isAdmin, isManager, record } = useAdminAccess();
+  const { isAdmin } = useAdminAccess();
   const roles = useOpsStore((state) => state.roles);
-  const staff = useOpsStore((state) => state.staff);
   const upsertRole = useOpsStore((state) => state.upsertRole);
   const removeRole = useOpsStore((state) => state.removeRole);
-  const patchStaff = useOpsStore((state) => state.patchStaff);
   const notify = useToastStore((state) => state.notify);
-  const [pane, setPane] = useState<PermPane>(isAdmin ? "roles" : "staff");
   const [roleId, setRoleId] = useState(roles[0]?.id ?? "role-admin");
   const [draft, setDraft] = useState<MockRole | null>(null);
   const [working, setWorking] = useState<MockRole | null>(null);
@@ -109,19 +27,9 @@ export function AdminPermissionsView() {
   const locked = Boolean(working?.builtin === "admin");
 
   useEffect(() => {
-    if (!isAdmin) setPane("staff");
-  }, [isAdmin]);
-
-  useEffect(() => {
     const row = roles.find((item) => item.id === roleId) ?? roles[0];
     setWorking(row ? cloneRole(row) : null);
   }, [roleId, roles]);
-
-  const mine = useMemo(() => {
-    if (isAdmin) return staff.filter((item) => item.role !== "admin");
-    const sid = storeIdOf(record?.storeId);
-    return staff.filter((item) => item.role === "staff" && storeIdOf(item.storeId) === sid);
-  }, [isAdmin, staff, record?.storeId]);
 
   function saveWorking() {
     if (!working?.name.trim()) return;
@@ -146,158 +54,62 @@ export function AdminPermissionsView() {
     notify(b2.roleDeleted);
   }
 
-  if (!isAdmin && !isManager) {
-    return <p className="admin-page-lead">{b2.permissionsLead}</p>;
+  if (!isAdmin) {
+    return <p className="admin-page-lead">{b2.staffPermsInStaff}</p>;
   }
-
-  const showRoles = isAdmin && pane === "roles";
-  const showStaff = pane === "staff" || !isAdmin;
 
   return (
     <div className="perm-page">
-      {isAdmin ? (
-        <div className="perm-tabs" role="tablist" aria-label={b2.permissions}>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={pane === "roles"}
-            className={cn("perm-tab", pane === "roles" && "is-on")}
-            onClick={() => setPane("roles")}
-          >
-            {b2.rolePermsTab}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={pane === "staff"}
-            className={cn("perm-tab", pane === "staff" && "is-on")}
-            onClick={() => setPane("staff")}
-          >
-            {b2.staffPermsTab}
+      <section className="perm-card">
+        <div className="perm-card-head">
+          <div>
+            <h2 className="perm-title">{b2.rolePermsTab}</h2>
+            <p className="perm-hint">{b2.rolePermsLead}</p>
+          </div>
+          <button type="button" className="cta-btn" onClick={() => setDraft(blankRole())}>
+            {b2.newRole}
           </button>
         </div>
-      ) : null}
-
-      {showRoles ? (
-        <section className="perm-card">
-          <div className="perm-card-head">
-            <p className="perm-hint">{b2.rolePermsLead}</p>
-            <button type="button" className="cta-btn" onClick={() => setDraft(blankRole())}>
-              {b2.newRole}
+        <ul className="perm-role-chips">
+          {roles.map((item) => (
+            <li key={item.id}>
+              <button
+                type="button"
+                className={cn("perm-chip", item.id === roleId && "is-on")}
+                onClick={() => setRoleId(item.id)}
+              >
+                {roleLabel(item, locale)}
+              </button>
+              {!item.builtin ? (
+                <button type="button" className="perm-chip-del" onClick={() => setPendingDelete(item)}>
+                  {b2.deleteRole}
+                </button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+        {working ? (
+          <PermTable
+            flags={working.perms}
+            locked={locked}
+            locale={locale}
+            b2={b2}
+            onChange={(mod, next) =>
+              setWorking({
+                ...working,
+                perms: { ...working.perms, [mod]: next },
+              })
+            }
+          />
+        ) : null}
+        {working && !locked ? (
+          <div className="perm-save">
+            <button type="button" className="cta-btn" onClick={saveWorking}>
+              {b2.savePerms}
             </button>
           </div>
-          <div className="admin-field perm-roles">
-            <span className="perm-label">{b2.roleName}</span>
-            <RolePicker
-              roles={roles}
-              value={roleId}
-              locale={locale}
-              removeLabel={b2.deleteRole}
-              onChange={setRoleId}
-              onDelete={setPendingDelete}
-            />
-          </div>
-          {working ? (
-            <table className="perm-table">
-              <thead>
-                <tr>
-                  <th>{b2.permModCol}</th>
-                  <th>{b2.permView}</th>
-                  <th>{b2.permEdit}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {PERM_MODULES.map((mod) => {
-                  const flags = working.perms[mod.id];
-                  return (
-                    <tr key={mod.id}>
-                      <td>{moduleLabel(mod.id, locale)}</td>
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={flags.view}
-                          disabled={locked}
-                          aria-label={`${moduleLabel(mod.id, locale)} ${b2.permView}`}
-                          onChange={(event) => {
-                            setWorking({
-                              ...working,
-                              perms: {
-                                ...working.perms,
-                                [mod.id]: { ...flags, view: event.target.checked, edit: event.target.checked ? flags.edit : false },
-                              },
-                            });
-                          }}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={flags.edit}
-                          disabled={locked}
-                          aria-label={`${moduleLabel(mod.id, locale)} ${b2.permEdit}`}
-                          onChange={(event) => {
-                            setWorking({
-                              ...working,
-                              perms: {
-                                ...working.perms,
-                                [mod.id]: { view: event.target.checked || flags.view, edit: event.target.checked },
-                              },
-                            });
-                          }}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          ) : null}
-          {working && !locked ? (
-            <div className="perm-save">
-              <button type="button" className="cta-btn" onClick={saveWorking}>
-                {b2.savePerms}
-              </button>
-            </div>
-          ) : null}
-        </section>
-      ) : null}
-
-      {showStaff ? (
-        <section className="perm-card">
-          <p className="perm-hint">{b2.staffPermsLead}</p>
-          <ul className="perm-staff">
-            {mine.map((person) => (
-              <li key={person.id}>
-                <p className="perm-staff-name">{person.name}</p>
-                <p className="perm-staff-mail">{person.email}</p>
-                <label className="admin-field">
-                  {b2.roleName}
-                  <select
-                    className="admin-input"
-                    value={person.roleId ?? (person.role === "staff" ? "role-staff" : "role-manager")}
-                    onChange={(event) => {
-                      const nextRole = roles.find((item) => item.id === event.target.value);
-                      patchStaff(person.id, {
-                        roleId: event.target.value,
-                        role: nextRole?.builtin === "manager" ? "manager" : nextRole?.builtin === "admin" ? "admin" : "staff",
-                      });
-                      notify(b2.permSaved);
-                    }}
-                  >
-                    {roles
-                      .filter((item) => isAdmin || item.builtin !== "admin")
-                      .map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {locale.startsWith("ja") ? item.nameJa : locale.startsWith("en") ? item.nameEn : item.name}
-                        </option>
-                      ))}
-                  </select>
-                </label>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+        ) : null}
+      </section>
 
       <Modal
         open={Boolean(draft)}

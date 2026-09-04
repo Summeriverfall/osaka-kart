@@ -9,6 +9,7 @@ import { setAdminFocusDate } from "@/lib/admin/focus-date";
 import { adminCopy, adminPlanName, adminStoreName, adminStoreStatus } from "@/lib/admin/copy";
 import { addDaysIso } from "@/lib/calendar";
 import { todayIsoDate } from "@/lib/booking/slots";
+import { cutsFromChannels, sumOrderNet } from "@/lib/order-revenue";
 import { occupancyRate } from "@/lib/fleet-inventory";
 import { formatYenShort } from "@/lib/format";
 import { b2Copy } from "@/lib/admin/b2-copy";
@@ -38,16 +39,22 @@ export function AdminDashboardView() {
   const vehiclesAll = useOpsStore((state) => state.vehicles);
   const plans = useOpsStore((state) => state.plans);
   const ensureDemoOrders = useOpsStore((state) => state.ensureDemoOrders);
+  const settleDueOrders = useOpsStore((state) => state.settleDueOrders);
+  const settings = useOpsStore((state) => state.settings);
+  const affiliates = useOpsStore((state) => state.affiliates);
   const { orders, vehicles, stores, storeId, setStoreId, canSwitch, store, vehicleSlots, specialDates } = useStoreData();
   const showingAll = canSwitch && isAllStores(storeId);
   const todayIso = todayIsoDate();
 
   useEffect(() => {
     ensureDemoOrders();
+    settleDueOrders();
     if (canSwitch) setStoreId(ALL_STORES_ID);
+    const tick = window.setInterval(settleDueOrders, 30000);
+    return () => window.clearInterval(tick);
     // 每次进入仪表盘，超管默认看全店合计
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canSwitch, ensureDemoOrders]);
+  }, [canSwitch, ensureDemoOrders, settleDueOrders]);
 
   const weekDays = useMemo(
     () => Array.from({ length: 7 }, (_, index) => addDaysIso(todayIso, index - 6)),
@@ -57,10 +64,9 @@ export function AdminDashboardView() {
   const dayOrders = orders.filter((item) => item.date === todayIso).sort((a, b) => a.time.localeCompare(b.time));
   const prevOrders = orders.filter((item) => item.date === yesterdayIso);
   const pending = dayOrders.filter((item) => item.status === "pending").length;
-  const billedToday = dayOrders.filter((item) => item.status === "completed");
-  const billedPrev = prevOrders.filter((item) => item.status === "completed");
-  const todayRevenue = billedToday.reduce((sum, item) => sum + item.totalJpy, 0);
-  const prevRevenue = billedPrev.reduce((sum, item) => sum + item.totalJpy, 0);
+  const cuts = useMemo(() => cutsFromChannels(settings.channels), [settings.channels]);
+  const todayRevenue = sumOrderNet(dayOrders, cuts, affiliates);
+  const prevRevenue = sumOrderNet(prevOrders, cuts, affiliates);
   const freeKarts = vehicles.filter((item) => item.status === "available").length;
   const utilization = occupancyRate(
     todayIso,
@@ -88,7 +94,7 @@ export function AdminDashboardView() {
       name: adminStoreName(locale, item.id, item.name),
       status: adminStoreStatus(locale, item.status),
       todayOrders: storeToday.length,
-      todayRevenue: storeToday.filter((order) => order.status === "completed").reduce((sum, order) => sum + order.totalJpy, 0),
+      todayRevenue: sumOrderNet(storeToday, cuts, affiliates),
       pending: storeToday.filter((order) => order.status === "pending").length,
       karts: storeVehicles.filter((vehicle) => vehicle.status === "available").length,
     };
@@ -108,10 +114,8 @@ export function AdminDashboardView() {
       value: todayRevenue,
       icon: Wallet,
       trend: prevRevenue
-        ? `${todayRevenue >= prevRevenue ? "↑" : "↓"} ${copy.dashboard.vsYesterday}`
-        : showingAll
-          ? copy.dashboard.allSum
-          : copy.dashboard.storeRevenue,
+        ? `${todayRevenue >= prevRevenue ? "↑" : "↓"} ${copy.dashboard.vsYesterday} · ${copy.dashboard.todayRevenueHint}`
+        : copy.dashboard.todayRevenueHint,
       yen: true,
       warn: false,
       href: "/admin/orders",

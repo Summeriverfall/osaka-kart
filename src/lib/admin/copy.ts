@@ -277,6 +277,7 @@ export type AdminCopy = {
   dashboard: {
     todayOrders: string;
     todayRevenue: string;
+    todayRevenueHint: string;
     pending: string;
     freeKarts: string;
     allSum: string;
@@ -684,8 +685,8 @@ const zh: AdminCopy = {
     "/admin/reports": { title: "营收报表", lead: "营收趋势与套餐销量。" },
     "/admin/reports/overview": { title: "营收报表", lead: "营收趋势与套餐销量。" },
     "/admin/reports/analytics": { title: "数据分析", lead: "本周对比上周、本月对比上月、本月对比去年同期。渠道分析、性别、国籍和时段一并统计。" },
-    "/admin/staff": { title: "员工管理", lead: "超管可添加、改角色、重置密码和停用。" },
-    "/admin/permissions": { title: "权限配置", lead: "超管建角色并分配查看/编辑权限。店长可给本店员工调配权限。" },
+    "/admin/staff": { title: "员工管理", lead: "添加员工、改角色，编辑里可单独加减权限。" },
+    "/admin/permissions": { title: "权限配置", lead: "这里是角色的默认权限。每个员工还可以在「员工管理」里单独配置。" },
     "/admin/settings": { title: "支付配置", lead: "开关支付方式。官网结账页只显示已开启的方式。" },
     "/admin/settings/pay": { title: "支付配置", lead: "开关支付方式。官网结账页只显示已开启的方式。" },
     "/admin/settings/channels": { title: "渠道设置", lead: "渠道只记在后台，前台不展示。OTA 抽成用于报表的门店实收。" },
@@ -1013,6 +1014,7 @@ const zh: AdminCopy = {
   dashboard: {
     todayOrders: "今日订单",
     todayRevenue: "今日营收",
+    todayRevenueHint: "已确认入账，已扣渠道抽成与代理佣金",
     pending: "待确认",
     freeKarts: "空余车位",
     allSum: "全店合计",
@@ -1427,8 +1429,8 @@ const en: AdminCopy = {
     "/admin/reports": { title: "Revenue", lead: "Revenue trend and plan sales." },
     "/admin/reports/overview": { title: "Revenue", lead: "Revenue trend and plan sales." },
     "/admin/reports/analytics": { title: "Analytics", lead: "This week vs last week, this month vs last month, this month vs the same month last year. Includes channel mix with commission, gender, nationality and time of day." },
-    "/admin/staff": { title: "Staff", lead: "Admins can add people, change roles, reset passwords and disable accounts." },
-    "/admin/permissions": { title: "Permissions", lead: "Admins create roles. Managers can grant or revoke access for their staff." },
+    "/admin/staff": { title: "Staff", lead: "Add people, change roles, and edit extra permissions on each person." },
+    "/admin/permissions": { title: "Permissions", lead: "These are the default rights for each role. You can still set extras for each person in Staff." },
     "/admin/settings": { title: "Payments", lead: "Toggle payment methods. Checkout only shows what is on." },
     "/admin/settings/pay": { title: "Payments", lead: "Toggle payment methods. Checkout only shows what is on." },
     "/admin/settings/channels": { title: "Channels", lead: "Channels stay in admin only. OTA cuts feed store net in reports." },
@@ -1756,6 +1758,7 @@ const en: AdminCopy = {
   dashboard: {
     todayOrders: "Today’s orders",
     todayRevenue: "Today’s revenue",
+    todayRevenueHint: "Confirmed, after channel cut and affiliate commission",
     pending: "Pending",
     freeKarts: "Open karts",
     allSum: "All-store total",
@@ -2170,8 +2173,8 @@ const ja: AdminCopy = {
     "/admin/reports": { title: "売上レポート", lead: "売上推移とプラン別の販売状況を確認できます。" },
     "/admin/reports/overview": { title: "売上レポート", lead: "売上推移とプラン別の販売状況を確認できます。" },
     "/admin/reports/analytics": { title: "データ分析", lead: "今週と先週、今月と先月、今月と前年同月を比較できます。チャネル別、性別、国籍、予約時間帯もあわせて集計します。" },
-    "/admin/staff": { title: "スタッフ管理", lead: "管理者はスタッフの追加、権限変更、パスワードのリセット、利用停止ができます。" },
-    "/admin/permissions": { title: "権限設定", lead: "管理者は役割を作成できます。店長は自店スタッフの権限を付与／解除できます。" },
+    "/admin/staff": { title: "スタッフ管理", lead: "スタッフの追加・役割変更。個別権限は編集画面で調整します。" },
+    "/admin/permissions": { title: "権限設定", lead: "ここは役割の初期権限です。スタッフごとに「スタッフ管理」で個別設定できます。" },
     "/admin/settings": { title: "決済設定", lead: "公式サイトの決済画面には、オンになっている支払い方法のみ表示されます。" },
     "/admin/settings/pay": { title: "決済設定", lead: "公式サイトの決済画面には、オンになっている支払い方法のみ表示されます。" },
     "/admin/settings/channels": { title: "チャネル設定", lead: "チャネル情報は管理画面でのみ使用し、サイトには表示されません。OTAの手数料は、レポート上の店舗受取額の計算に使用されます。" },
@@ -2499,6 +2502,7 @@ const ja: AdminCopy = {
   dashboard: {
     todayOrders: "本日の予約",
     todayRevenue: "本日の売上",
+    todayRevenueHint: "確認済み。手数料・紹介報酬控除後",
     pending: "確認待ち",
     freeKarts: "利用可能",
     allSum: "全店舗合計",

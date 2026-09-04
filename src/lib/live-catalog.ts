@@ -240,6 +240,13 @@ export function filterAddonsForPlan(
   return list.filter((addon) => !included.has(addon.slug));
 }
 
+function catalogOpsPlans(opsPlans: MockPlan[], hydrated: boolean) {
+  if (!hydrated) return MOCK_PLANS;
+  const have = new Set(opsPlans.map((item) => item.slug));
+  const missing = MOCK_PLANS.filter((item) => !have.has(item.slug));
+  return opsPlans.length ? [...opsPlans, ...missing] : MOCK_PLANS;
+}
+
 export function useLiveCatalog(
   seedPlans: PlanWithTranslation[],
   seedAddons: AddonWithTranslation[],
@@ -251,7 +258,7 @@ export function useLiveCatalog(
   const hydrated = useOpsHydrated();
 
   return useMemo(() => {
-    const liveOps = hydrated ? opsPlans : [];
+    const liveOps = catalogOpsPlans(opsPlans, hydrated);
     const plans = overlayPlans(seedPlans, liveOps, locale);
     const allAddons = overlayAddons(seedAddons, hydrated ? opsAddons : [], locale);
     const listed = planSlug ? plans.find((item) => item.slug === planSlug) : undefined;
@@ -280,7 +287,7 @@ export function useLivePlans(seedPlans: PlanWithTranslation[], locale: string) {
   const opsPlans = useOpsStore((state) => state.plans);
   const hydrated = useOpsHydrated();
   return useMemo(
-    () => overlayPlans(seedPlans, hydrated ? opsPlans : [], locale),
+    () => overlayPlans(seedPlans, catalogOpsPlans(opsPlans, hydrated), locale),
     [seedPlans, opsPlans, locale, hydrated],
   );
 }

@@ -1,4 +1,4 @@
-import { addDaysIso } from "@/lib/calendar";
+import { addDaysIso, eachIso, monthEndIso, monthStartIso, parseIsoDate } from "@/lib/calendar";
 import { todayIsoDate } from "@/lib/booking/slots";
 
 export type OrderStatus = "pending" | "confirmed" | "cancelled" | "completed";
@@ -120,8 +120,8 @@ function prefixOf(storeId: string) {
 
 function statusOf(dayOffset: number, index: number): OrderStatus {
   if (index === 1) return "pending";
-  if (dayOffset <= -4 && index === 3) return "completed";
-  if (dayOffset === -5 && index === 0) return "cancelled";
+  if (dayOffset < 0 && index === 3) return "completed";
+  if (dayOffset <= -2 && index === 0) return "cancelled";
   return "confirmed";
 }
 
@@ -131,14 +131,17 @@ export function isWebsiteLiveOrder(order: MockOrder) {
 
 export function buildWeekDemoOrders(today = todayIsoDate()): MockOrder[] {
   const rows: MockOrder[] = [];
-  for (let offset = -6; offset <= 0; offset += 1) {
-    const date = addDaysIso(today, offset);
+  const dates = eachIso(monthStartIso(today), monthEndIso(today));
+  dates.forEach((date, dayIndex) => {
+    const dayOffset = Math.round(
+      (parseIsoDate(date).getTime() - parseIsoDate(today).getTime()) / 86400000,
+    );
     const compact = date.replace(/-/g, "").slice(2);
     for (let index = 0; index < 4; index += 1) {
-      const guest = GUESTS[((offset + 6) * 4 + index) % GUESTS.length];
-      const storeId = storeOf(offset, index);
-      const status = statusOf(offset, index);
-      const time = SLOTS[(index + Math.abs(offset)) % SLOTS.length];
+      const guest = GUESTS[(dayIndex * 4 + index) % GUESTS.length];
+      const storeId = storeOf(dayOffset, index);
+      const status = statusOf(dayOffset, index);
+      const time = SLOTS[(index + Math.abs(dayOffset)) % SLOTS.length];
       rows.push({
         ...guest,
         id: `${prefixOf(storeId)}-${compact}-${String(index + 1).padStart(3, "0")}`,
@@ -157,11 +160,11 @@ export function buildWeekDemoOrders(today = todayIsoDate()): MockOrder[] {
         ],
         cancelKind: status === "cancelled" ? (index === 0 ? "noshow" : "voluntary") : undefined,
         affiliateId: ["af-yuki", "af-mei", "af-chen", undefined, "af-lisa", "af-rits", "af-via", "af-gyg"][
-          (index + Math.abs(offset)) % 8
+          (index + Math.abs(dayOffset)) % 8
         ],
       });
     }
-  }
+  });
   return rows;
 }
 

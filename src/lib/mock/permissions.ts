@@ -121,6 +121,19 @@ export function mergePerms(
   return next;
 }
 
+export function permDiff(
+  role: MockRole,
+  flags: Record<PermModule, PermFlags>,
+): Partial<Record<PermModule, PermFlags>> {
+  const out: Partial<Record<PermModule, PermFlags>> = {};
+  for (const mod of PERM_MODULES) {
+    const a = flags[mod.id];
+    const b = role.perms[mod.id];
+    if (a.view !== b.view || a.edit !== b.edit) out[mod.id] = { ...a };
+  }
+  return out;
+}
+
 export function moduleFromHref(href: string): PermModule {
   if (href.startsWith("/admin/orders") || href === "/admin/bookings") return "orders";
   if (href.startsWith("/admin/calendar")) return "calendar";

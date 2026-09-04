@@ -155,7 +155,7 @@ export function reportsFromOrders(
 ) {
   const pool = withAnalyticsHistory(orders);
   const scoped = range ? pool.filter((item) => item.date >= range.from && item.date <= range.to) : pool;
-  const billed = scoped.filter((item) => item.status === "completed");
+  const billed = scoped.filter((item) => item.status === "confirmed" || item.status === "completed");
   const pending = scoped.filter((item) => item.status === "pending");
   const cancelled = scoped.filter((item) => item.status === "cancelled");
   const revenue = billed.reduce((sum, item) => sum + item.totalJpy, 0);
@@ -238,7 +238,7 @@ export function reportsFromOrders(
     const current = billed.filter((order) => order.date === iso).reduce((sum, order) => sum + order.totalJpy, 0);
     const prevIso = span >= 28 ? addMonthsIso(iso, -1) : addDaysIso(iso, -span);
     const previous = pool
-      .filter((order) => order.date === prevIso && order.status === "completed")
+      .filter((order) => order.date === prevIso && (order.status === "confirmed" || order.status === "completed"))
       .reduce((sum, order) => sum + order.totalJpy, 0);
     return { day: iso.slice(5), iso, current, previous };
   });

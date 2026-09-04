@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLocale } from "next-intl";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { useAppPathname } from "@/lib/use-app-pathname";
-import { appPageHref } from "@/lib/file-href";
+import { appPageHref, isFileProtocol } from "@/lib/file-href";
 import { routing, type AppLocale } from "@/i18n/routing";
 
 const LOCALE_LABELS: Record<AppLocale, string> = {
@@ -16,6 +17,8 @@ const LOCALE_LABELS: Record<AppLocale, string> = {
 export function LocaleSwitcher() {
   const locale = useLocale() as AppLocale;
   const pathname = useAppPathname() || "/";
+  const router = useRouter();
+  const intlPath = usePathname() || "/";
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const switchPath = pathname === "/acid" || pathname.startsWith("/acid/")
@@ -51,9 +54,19 @@ export function LocaleSwitcher() {
                 aria-current={on ? "true" : undefined}
                 className={on ? "is-on" : undefined}
                 onClick={(event) => {
-                  if (on) event.preventDefault();
-                  else document.documentElement.lang = code;
+                  if (on) {
+                    event.preventDefault();
+                    setOpen(false);
+                    return;
+                  }
+                  document.documentElement.lang = code;
                   setOpen(false);
+                  if (isFileProtocol()) return;
+                  event.preventDefault();
+                  const qs = window.location.search;
+                  const hash = window.location.hash;
+                  const target = switchPath.includes("?") ? intlPath : `${intlPath}${qs}${hash}`;
+                  router.replace(target, { locale: code });
                 }}
               >
                 {LOCALE_LABELS[code]}

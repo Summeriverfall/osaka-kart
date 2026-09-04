@@ -419,18 +419,18 @@ html {
 
 .book-slots {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(6.4rem, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
 }
 
 .book-slots label {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  align-items: center;
-  column-gap: 0.4rem;
-  row-gap: 0.08rem;
-  padding: 0.5rem 0.65rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.22rem;
+  padding: 0.9rem 1.05rem;
   border: 1px solid rgb(255 255 255 / 16%);
   cursor: pointer;
   border-radius: var(--cta-radius);
@@ -447,26 +447,27 @@ html {
 }
 
 .book-slots label span {
-  grid-column: 2;
   font-weight: 800;
   line-height: 1.2;
+  font-size: 1.05rem;
 }
 
 .book-slots label small {
-  grid-column: 2;
   display: block;
   white-space: nowrap;
-  font-size: 0.72rem;
-  font-weight: 800;
+  font-size: 0.76rem;
+  font-weight: 700;
   line-height: 1.15;
   color: #86efac;
   opacity: 1;
 }
 
 .book-slots input {
-  grid-row: 1 / span 2;
-  margin: 0;
-  accent-color: var(--neon-pink);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
 }
 
 .book-addons {
