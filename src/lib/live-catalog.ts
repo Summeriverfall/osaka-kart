@@ -16,7 +16,7 @@ import type { MockVehicle } from "@/lib/mock/vehicles";
 import { summarizeFleetSlot, slotBookableLeft } from "@/lib/fleet-inventory";
 import type { MockOrder } from "@/lib/mock/orders";
 import { vehicleIdsForStore } from "@/lib/ops-inventory";
-import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
+import { sortPlansByDuration, type AddonWithTranslation, type PlanWithTranslation } from "@/lib/plans/types";
 import { DEFAULT_STORE_ID, storeIdOf } from "@/lib/store-id";
 import { scheduleOpsRehydrate, useOpsStore } from "@/stores/ops-store";
 import type { PayMethod } from "@/components/booking/pay-icons";
@@ -161,7 +161,7 @@ export function overlayPlans(
     if (!includeInactive && !live.active) continue;
     out.push(mockPlanToPublic(live, locale));
   }
-  return out;
+  return sortPlansByDuration(out);
 }
 
 export function overlayAddons(

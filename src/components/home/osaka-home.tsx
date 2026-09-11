@@ -1,11 +1,11 @@
 "use client";
 
-import { Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { HeroMedia } from "@/components/landing/hero-media";
 import { HeroTrust } from "@/components/landing/hero-trust";
 import { HomeFaq } from "@/components/home/home-faq";
 import { HomePlans } from "@/components/home/home-plans";
+import { HomeReviews } from "@/components/home/home-reviews";
 import { HomeVideos } from "@/components/home/home-videos";
 import { SiteNav } from "@/components/site/site-nav";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -26,7 +26,6 @@ export function OsakaHome({ plans, locale }: OsakaHomeProps) {
   const cta = useTranslations("CtaBand");
   const safety = useTranslations("Safety");
   const reviewsT = useTranslations("ReviewsHome");
-  const shop = useTranslations("Shop");
   const cms = useLiveCms();
   const reviews = localizedList(cms.reviews);
   const reviewTitle = localeText(cms.labels.reviewsTitle, locale, reviewsT("title"));
@@ -70,54 +69,9 @@ export function OsakaHome({ plans, locale }: OsakaHomeProps) {
       </section>
 
       <HomePlans plans={plans} locale={locale} sectionId="packages" kicker={nav("plans")} />
-      <HomeVideos kicker={nav("videos")} limit={7} />
+      <HomeVideos kicker={nav("videos")} limit={4} />
 
-      <section id="reviews" className="ok-sec ok-sec-alt">
-        <div className="ok-sec-wide">
-          <header className="ok-sec-head">
-            <p className="ok-kicker">{nav("reviews")}</p>
-            <h2>{reviewTitle}</h2>
-          </header>
-          <div className="ok-reviews">
-            {reviews.map((item) => {
-              const href = item.url?.trim();
-              const inner = (
-                <>
-                  <p className="ok-stars" aria-hidden>
-                    {Array.from({ length: 5 }).map((_, star) => (
-                      <Star key={star} className="inline size-4 fill-current" />
-                    ))}
-                  </p>
-                  <blockquote>“{localeText(item.quote, locale)}”</blockquote>
-                  <footer>
-                    <strong>{item.name}</strong>
-                    <span> · {item.country}</span>
-                    {item.platform ? <small>{shop("fromReview", { platform: item.platform })}</small> : null}
-                  </footer>
-                </>
-              );
-              if (href) {
-                return (
-                  <a
-                    key={item.id}
-                    className="ok-review"
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {inner}
-                  </a>
-                );
-              }
-              return (
-                <article key={item.id} className="ok-review">
-                  {inner}
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      <HomeReviews reviews={reviews} kicker={nav("reviews")} title={reviewTitle} />
 
       <section id="safety" className="ok-sec">
         <div className="ok-sec-wide">

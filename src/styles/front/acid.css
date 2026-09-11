@@ -380,6 +380,11 @@
   font-weight: 700;
 }
 
+.acid-stickers blockquote p {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
 .acid-stickers .rot-0 {
   transform: rotate(-2.5deg);
 }

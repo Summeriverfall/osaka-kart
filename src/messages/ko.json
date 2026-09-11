@@ -43,7 +43,9 @@
   "PlansHome": {
     "title": "플랜 선택",
     "select": "선택",
-    "details": "자세히 보기"
+    "details": "자세히 보기",
+    "prev": "이전 플랜",
+    "next": "다음 플랜"
   },
   "VideosHome": {
     "title": "현장 영상",
@@ -68,7 +70,9 @@
     "r2Quote": "설명이 분명하고 가이드가 친절했다. 남기고 싶은 사진이 나왔다.",
     "r3Name": "Jonas K.",
     "r3Country": "Germany",
-    "r3Quote": "도로 속도에서도 안정적이었다. 네온 주행이 여행의 전부였다."
+    "r3Quote": "도로 속도에서도 안정적이었다. 네온 주행이 여행의 전부였다.",
+    "expand": "더 보기",
+    "collapse": "접기"
   },
   "Safety": {
     "title": "출발 전에 알아둘 것",
@@ -180,6 +184,8 @@
     "map": "집합 장소 지도",
     "addons": "추가 옵션",
     "includedAddons": "포함",
+    "includedLoud": "패키지 요금에 포함되어 추가 비용이 없습니다.",
+    "includedFree": "포함",
     "selectedQty": "선택 {n}",
     "addonTotal": "추가 옵션",
     "grandTotal": "합계",
@@ -214,6 +220,11 @@
     "addonOn": "추가됨",
     "full": "마감",
     "stepPlan": "패키지",
+    "stepAddons": "추가",
+    "stepAddonsHint": "선택 사항입니다.",
+    "addonsPick": "옵션 선택",
+    "addonsChange": "옵션 수정",
+    "addonsConfirm": "확인",
     "stepDate": "날짜",
     "stepTime": "시간",
     "stepInfo": "정보",
@@ -222,7 +233,14 @@
     "passport": "여권 번호",
     "nationality": "국적",
     "request": "요청 사항",
-    "summary": "예약 요약"
+    "summary": "예약 요약",
+    "includedNow": "포함",
+    "parts": {
+      "morning": "오전",
+      "afternoon": "오후",
+      "dusk": "저녁",
+      "night": "밤"
+    }
   },
   "Press": {
     "title": "뉴스 보도",
@@ -302,6 +320,11 @@
   "Notes": {
     "title": "주의사항",
     "agreeLead": "각 항목을 체크하면 내용을 읽고 동의한 것으로 봅니다.",
+    "open": "읽고 동의",
+    "view": "보기",
+    "openHint": "면허, 나이, 복장, 날씨, 취소 정책",
+    "agreed": "동의 완료",
+    "agreeBtn": "읽고 동의합니다",
     "payTitle": "면허 주의사항",
     "more": "더 보기",
     "licenseLabel": "면허",

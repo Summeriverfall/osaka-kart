@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_BRAND}`,
   },
   description: "Street kart experience in Osaka",
+  referrer: "strict-origin-when-cross-origin",
 };
 
 export const viewport: Viewport = {

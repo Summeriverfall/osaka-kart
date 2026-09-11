@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import { CmsVideoMedia } from "@/components/site/cms-video-media";
 import { asset } from "@/lib/asset";
+import { isFileProtocol } from "@/lib/file-href";
 import { cmsBySlot, localeText, resolveCmsVideo, useLiveCms } from "@/lib/live-cms";
 import type { CmsVideo } from "@/lib/mock/cms";
 
@@ -34,6 +35,10 @@ export function HomeVideos({ limit, kicker }: { limit?: number; kicker?: string 
     const media = resolveCmsVideo(clip);
     if (media?.kind === "facebook" || media?.kind === "instagram") {
       window.open(media.href, "_blank", "noopener,noreferrer");
+      return;
+    }
+    if (media?.kind === "youtube" && isFileProtocol()) {
+      window.open(`https://www.youtube.com/watch?v=${media.id}`, "_blank", "noopener,noreferrer");
       return;
     }
     setPlaying(clip.id);

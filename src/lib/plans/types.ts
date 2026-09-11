@@ -46,3 +46,7 @@ export type AddonWithTranslation = AddonRecord & {
   translation: AddonTranslation;
   source: "supabase" | "seed";
 };
+
+export function sortPlansByDuration<T extends { duration_minutes: number }>(plans: T[]): T[] {
+  return plans.slice().sort((a, b) => a.duration_minutes - b.duration_minutes);
+}

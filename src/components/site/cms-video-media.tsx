@@ -1,6 +1,7 @@
 "use client";
 
 import { HeroVideo } from "@/components/home/hero-video";
+import { isFileProtocol } from "@/lib/file-href";
 import { resolveCmsVideo, type ResolvedCmsVideo } from "@/lib/live-cms";
 import type { CmsVideo } from "@/lib/mock/cms";
 import { youtubeThumb } from "@/lib/cms-text";
@@ -55,15 +56,35 @@ export function ResolvedVideo({
   eager?: boolean;
 }) {
   if (resolved.kind === "youtube") {
+    const watch = `https://www.youtube.com/watch?v=${resolved.id}`;
+    if (isFileProtocol()) {
+      return (
+        <a
+          href={watch}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn("relative block h-full w-full overflow-hidden bg-black", className)}
+        >
+          {resolved.poster ? (
+            <img src={resolved.poster} alt="" className="h-full w-full object-cover" />
+          ) : null}
+          <span className="absolute inset-x-0 bottom-0 bg-black/60 px-3 py-2 text-center text-sm font-semibold text-white">
+            YouTube
+          </span>
+        </a>
+      );
+    }
+    const start = Math.max(0, Math.floor(startAt));
     const params = autoPlay
-      ? `autoplay=1&mute=1&loop=1&playlist=${resolved.id}&controls=0&playsinline=1&start=${Math.max(0, Math.floor(startAt))}`
-      : `playsinline=1&start=${Math.max(0, Math.floor(startAt))}`;
+      ? `autoplay=1&mute=1&loop=1&playlist=${resolved.id}&controls=${controls ? "1" : "0"}&playsinline=1&rel=0&start=${start}`
+      : `playsinline=1&rel=0&start=${start}`;
     return (
       <iframe
         title={title}
-        src={`https://www.youtube-nocookie.com/embed/${resolved.id}?${params}`}
+        src={`https://www.youtube.com/embed/${resolved.id}?${params}`}
         className={cn("h-full w-full border-0", className)}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerPolicy="strict-origin-when-cross-origin"
         allowFullScreen
       />
     );

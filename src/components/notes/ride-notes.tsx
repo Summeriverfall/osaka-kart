@@ -39,21 +39,34 @@ export function allNotesChecked(notes: Record<NoteKey, boolean>) {
   return NOTE_KEYS.every((key) => notes[key]);
 }
 
+export function filledNoteChecks(): Record<NoteKey, boolean> {
+  return {
+    license: true,
+    age: true,
+    clothes: true,
+    weather: true,
+    cancel: true,
+  };
+}
+
 type RideNotesProps = {
   compact?: boolean;
+  title?: boolean;
 };
 
-export function RideNotes({ compact = false }: RideNotesProps) {
+export function RideNotes({ compact = false, title = true }: RideNotesProps) {
   const t = useTranslations("Notes");
   const locale = useLocale();
   const help = withSlash("/help");
 
   return (
-    <div className={cn("ride-notes", compact && "is-compact")}>
+    <div className={cn("ride-notes", compact && "is-compact", !title && "is-flush")}>
+      {title ? (
       <h2>
         <AlertTriangle className="size-5" aria-hidden />
         {compact ? t("payTitle") : t("title")}
       </h2>
+      ) : null}
       <ul>
         {NOTE_ITEMS.map(({ key, Icon, more }) => (
           <li key={key}>
@@ -91,6 +104,7 @@ type RideNoteChecksProps = {
   checked: Record<NoteKey, boolean>;
   onToggle: (key: NoteKey, on: boolean) => void;
   title?: boolean;
+  compact?: boolean;
 };
 
 export function RideNoteChecks({
@@ -98,6 +112,7 @@ export function RideNoteChecks({
   checked,
   onToggle,
   title = true,
+  compact = false,
 }: RideNoteChecksProps) {
   const t = useTranslations("Notes");
   const locale = useLocale();
@@ -105,14 +120,14 @@ export function RideNoteChecks({
   const help = withSlash("/help");
 
   return (
-    <div className={cn("ride-notes is-checks", !title && "is-flush")}>
-      {title ? (
+    <div className={cn("ride-notes is-checks", !title && "is-flush", compact && "is-compact")}>
+      {title && !compact ? (
         <h2>
           <AlertTriangle className="size-5" aria-hidden />
           {t("title")}
         </h2>
       ) : null}
-      {title ? <p className="ride-notes-lead">{t("agreeLead")}</p> : null}
+      {title && !compact ? <p className="ride-notes-lead">{t("agreeLead")}</p> : null}
       <ul>
         {items.map(({ key, Icon, more }) => (
           <li key={key}>
@@ -126,7 +141,7 @@ export function RideNoteChecks({
               <Icon className="size-4" aria-hidden />
               <p>
                 <strong>{t(`${key}Label`)}</strong>
-                {t(`${key}Body`)}
+                {compact ? null : t(`${key}Body`)}
                 {more ? (
                   <>
                     {" "}

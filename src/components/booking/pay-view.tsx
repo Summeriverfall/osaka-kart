@@ -6,8 +6,8 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { formatJpy } from "@/lib/format";
-import { siteHome, withSlash } from "@/lib/paths";
-import { useSiteLook } from "@/lib/site-look";
+import { withSlash } from "@/lib/paths";
+import { appPageHref } from "@/lib/file-href";
 import {
   BOOKING_RESULT_KEY,
   type BookingResult,
@@ -31,7 +31,6 @@ type PayViewProps = {
 export function PayView({ locale }: PayViewProps) {
   const t = useTranslations("Pay");
   const success = useTranslations("Success");
-  const look = useSiteLook();
   const router = useRouter();
   const settings = useOpsStore((state) => state.settings);
   const notify = useToastStore((state) => state.notify);
@@ -256,9 +255,9 @@ export function PayView({ locale }: PayViewProps) {
                     <dd>{formatJpy(result.totalJpy, locale)}</dd>
                   </div>
                 </dl>
-                <Link href={siteHome(look)} className="shop-text-link">
+                <a href={appPageHref(withSlash("/"), locale)} className="shop-text-link" suppressHydrationWarning>
                   {success("back")}
-                </Link>
+                </a>
               </aside>
               <aside className="pay-license">
                 <RideNotes compact />

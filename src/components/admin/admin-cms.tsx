@@ -625,7 +625,7 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
                 <label className="admin-field">{copy.cms.reviewPlatform}<input className="admin-input" value={review.platform ?? ""} onChange={(event) => setReview({ ...review, platform: event.target.value })} /></label>
                 <label className="admin-field">{copy.cms.reviewUrl}<input className="admin-input" value={review.url ?? ""} onChange={(event) => setReview({ ...review, url: event.target.value })} /></label>
               </div>
-              <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.quote} value={review.quote} onChange={(quote) => setReview({ ...review, quote })} rows={3} />
+              <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.quote} value={review.quote} onChange={(quote) => setReview({ ...review, quote })} rows={8} />
               <ImageField
                 label={copy.cms.photo}
                 hint={`${CMS_IMAGE_LIMIT.minEdge}px+`}

@@ -1493,6 +1493,10 @@ html:not(:has(.admin-app)) .float-book {
   margin-top: 1.7rem;
 }
 
+.shop-reviews {
+  align-items: start;
+}
+
 @media (min-width: 800px) {
   .shop-reviews,
   .shop-news {
@@ -1527,6 +1531,8 @@ html:not(:has(.admin-app)) .float-book {
 
 .shop-review blockquote {
   margin: 0.8rem 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .shop-review footer {

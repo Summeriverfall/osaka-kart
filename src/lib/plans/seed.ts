@@ -1,8 +1,9 @@
-import type {
-  AddonWithTranslation,
-  PlanRecord,
-  PlanTranslation,
-  PlanWithTranslation,
+import {
+  sortPlansByDuration,
+  type AddonWithTranslation,
+  type PlanRecord,
+  type PlanTranslation,
+  type PlanWithTranslation,
 } from "./types";
 
 const SUNSET_ID = "a0000000-0000-4000-8000-000000000000";
@@ -456,11 +457,13 @@ function pickTranslation(
 }
 
 export function getSeedPlans(locale: string): PlanWithTranslation[] {
-  return plans.map((plan) => ({
-    ...plan,
-    translation: pickTranslation(planTranslations[plan.id], locale),
-    source: "seed" as const,
-  }));
+  return sortPlansByDuration(
+    plans.map((plan) => ({
+      ...plan,
+      translation: pickTranslation(planTranslations[plan.id], locale),
+      source: "seed" as const,
+    })),
+  );
 }
 
 export function getSeedPlanBySlug(

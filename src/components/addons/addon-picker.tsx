@@ -28,9 +28,10 @@ type AddonPickerProps = {
   ctaLabel: string;
   onCta: () => void;
   sticky?: boolean;
+  layout?: "cards" | "rows";
 };
 
-export function AddonPicker({ addons, ctaLabel, onCta, sticky = true }: AddonPickerProps) {
+export function AddonPicker({ addons, ctaLabel, onCta, sticky = true, layout = "cards" }: AddonPickerProps) {
   const t = useTranslations("Plan");
   const store = useBookingStore();
   const extras = addons.reduce((sum, addon) => {
@@ -61,9 +62,50 @@ export function AddonPicker({ addons, ctaLabel, onCta, sticky = true }: AddonPic
     store.updateAddonQty(addon.id, next);
   }
 
+  if (layout === "rows") {
+    return (
+      <div className="ok-addon-rows">
+        {addons.map((addon) => {
+          const qty = qtyOf(addon.id);
+          const selected = qty > 0;
+          const Icon = ICONS[addon.slug as keyof typeof ICONS] ?? Camera;
+          return (
+            <article key={addon.id} className={cn("ok-addon-row", selected && "is-on")}>
+              <span className="ok-addon-row-icon">
+                <Icon className="size-4" />
+              </span>
+              <div className="ok-addon-row-copy">
+                <strong>{addon.name}</strong>
+                <span>
+                  + {formatYenShort(addon.priceJpy)}
+                  {addon.unitLabel}
+                </span>
+              </div>
+              <div className="ok-addon-row-qty">
+                <button type="button" className="plan-qty-btn" onClick={() => setQty(addon, qty - 1)} aria-label="decrease">
+                  <Minus className="size-3.5" />
+                </button>
+                <b>{qty}</b>
+                <button
+                  type="button"
+                  className="plan-qty-btn"
+                  onClick={() => setQty(addon, qty + 1)}
+                  disabled={qty >= addon.maxQty}
+                  aria-label="increase"
+                >
+                  <Plus className="size-3.5" />
+                </button>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="ok-addon-cards grid grid-cols-1 gap-6 md:grid-cols-3">
         {addons.map((addon) => {
           const qty = qtyOf(addon.id);
           const selected = qty > 0;

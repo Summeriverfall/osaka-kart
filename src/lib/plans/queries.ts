@@ -2,10 +2,11 @@ import type { AppLocale } from "@/i18n/routing";
 import { getSupabaseServer } from "@/lib/supabase/server";
 import { hasSupabaseConfig } from "@/lib/supabase/env";
 import { getSeedAddons, getSeedPlanBySlug, getSeedPlans } from "./seed";
-import type {
-  AddonWithTranslation,
-  PlanTranslation,
-  PlanWithTranslation,
+import {
+  sortPlansByDuration,
+  type AddonWithTranslation,
+  type PlanTranslation,
+  type PlanWithTranslation,
 } from "./types";
 
 type TranslationRow = {
@@ -109,13 +110,15 @@ async function fetchPlansFromSupabase(locale: string) {
     .from("plans")
     .select(planSelect)
     .eq("is_active", true)
-    .order("base_price_jpy", { ascending: true });
+    .order("duration_minutes", { ascending: true });
 
   if (error) throw error;
 
-  return (data as PlanRow[])
-    .map((row) => toPlan(row, locale, "supabase"))
-    .filter((plan): plan is PlanWithTranslation => plan !== null);
+  return sortPlansByDuration(
+    (data as PlanRow[])
+      .map((row) => toPlan(row, locale, "supabase"))
+      .filter((plan): plan is PlanWithTranslation => plan !== null),
+  );
 }
 
 async function fetchPlanBySlugFromSupabase(slug: string, locale: string) {

@@ -517,16 +517,26 @@ html:not(:has(.admin-app)) .ok-brand strong {
   color: #fff;
 }
 
+.ok-pack-deck {
+  position: relative;
+}
+
 .ok-pack-grid {
-  display: grid;
-  gap: 1.25rem;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ok-pack-grid::-webkit-scrollbar {
+  display: none;
 }
 
 .ok-pack-card {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   min-width: 0;
+  width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1.35rem;
   background: linear-gradient(180deg, #161625 0%, #101018 100%);
@@ -534,10 +544,48 @@ html:not(:has(.admin-app)) .ok-brand strong {
   transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
-.ok-pack-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255, 0, 110, 0.4);
-  box-shadow: 0 18px 40px rgba(255, 0, 110, 0.14);
+.ok-pack-arrow {
+  display: none;
+  position: absolute;
+  top: 34%;
+  z-index: 3;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(12, 12, 18, 0.88);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.ok-pack-arrow.is-prev {
+  left: 0.35rem;
+}
+
+.ok-pack-arrow.is-next {
+  right: 0.35rem;
+}
+
+.ok-pack-arrow:hover:not(:disabled) {
+  border-color: rgba(255, 0, 110, 0.45);
+  background: rgba(28, 18, 36, 0.95);
+}
+
+.ok-pack-arrow:disabled {
+  cursor: default;
+  opacity: 0.28;
+}
+
+@media (hover: hover) {
+  .ok-pack-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 0, 110, 0.4);
+    box-shadow: 0 18px 40px rgba(255, 0, 110, 0.14);
+  }
 }
 
 .ok-pack-photo {
@@ -569,6 +617,7 @@ html:not(:has(.admin-app)) .ok-brand strong {
 
 .ok-pack-copy {
   display: flex;
+  flex: 1;
   flex-direction: column;
   min-width: 0;
   padding: 1rem 1.15rem 1.2rem;
@@ -650,6 +699,105 @@ html:not(:has(.admin-app)) .ok-brand strong {
   font-size: 0.88rem;
 }
 
+@media (min-width: 1120px) {
+  .ok-pack-deck.has-arrows {
+    padding: 0 2.1rem;
+  }
+
+  .ok-pack-grid {
+    gap: 0.8rem;
+  }
+
+  .ok-pack-card {
+    flex: 0 0 calc((100% - 3.2rem) / 5);
+    border-radius: 1.05rem;
+  }
+
+  .ok-pack-arrow.is-prev {
+    left: -0.15rem;
+  }
+
+  .ok-pack-arrow.is-next {
+    right: -0.15rem;
+  }
+
+  .ok-pack-photo img {
+    aspect-ratio: 3 / 4;
+  }
+
+  .ok-pack-chip {
+    top: 0.55rem;
+    left: 0.55rem;
+    padding: 0.28rem 0.62rem;
+    font-size: 0.72rem;
+  }
+
+  .ok-pack-copy {
+    padding: 0.95rem 0.9rem 1.05rem;
+  }
+
+  .ok-pack-copy h3 {
+    display: -webkit-box;
+    overflow: hidden;
+    min-height: 2.7em;
+    font-size: 1.08rem;
+    letter-spacing: -0.02em;
+    line-height: 1.32;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .ok-pack-meta {
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+  }
+
+  .ok-pack-desc {
+    margin-top: 0.55rem;
+    min-height: 4.05em;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    -webkit-line-clamp: 3;
+  }
+
+  .ok-pack-points {
+    display: none;
+  }
+
+  .ok-pack-price {
+    margin-top: 0.75rem;
+    font-size: 1.18rem;
+  }
+
+  .ok-pack-price span {
+    display: block;
+    margin: 0.1rem 0 0;
+    font-size: 0.72rem;
+  }
+
+  .ok-pack-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+    padding-top: 0.8rem;
+  }
+
+  .ok-pack-actions .ok-btn,
+  .ok-pack-actions .ok-btn-ghost {
+    width: 100%;
+    justify-content: center;
+    padding: 0.62rem 0.5rem;
+    font-size: 0.82rem;
+  }
+
+  .ok-pack-actions .ok-btn-ghost {
+    border-color: transparent;
+    background: transparent;
+    padding-top: 0.25rem;
+    padding-bottom: 0.2rem;
+  }
+}
+
 .ok-btn.ok-btn-sm {
   margin-top: 1.15rem;
   align-self: flex-start;
@@ -661,6 +809,7 @@ html:not(:has(.admin-app)) .ok-brand strong {
   display: grid;
   gap: 1.25rem;
   grid-template-columns: 1fr;
+  align-items: stretch;
 }
 
 .ok-review {
@@ -685,6 +834,16 @@ a.ok-review:hover {
 .ok-review footer {
   display: grid;
   gap: 0.2rem;
+  margin-top: auto;
+}
+
+.ok-review footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ok-review footer a:hover {
+  color: var(--ok-pink);
 }
 
 .ok-review footer span {
@@ -698,9 +857,40 @@ a.ok-review:hover {
 }
 
 .ok-review blockquote {
-  margin: 0.7rem 0;
+  margin: 0.7rem 0 0.35rem;
   color: var(--ok-g100);
-  line-height: 1.65;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.ok-review blockquote.is-clamp {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--quote-lines);
+}
+
+.ok-review-more {
+  display: flex;
+  align-items: center;
+  min-height: 1.45rem;
+  margin: 0 0 0.7rem;
+}
+
+.ok-review-more button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ok-pink);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ok-review-more button:hover {
+  text-decoration: underline;
 }
 
 .ok-stars {
@@ -1233,7 +1423,24 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
   }
 
   .ok-pack-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ok-pack-card {
+    flex: 0 0 min(22.5rem, 46vw);
+    width: auto;
+    scroll-snap-align: start;
+  }
+
+  .ok-pack-arrow {
+    display: grid;
   }
 
   .ok-reviews,
@@ -1302,6 +1509,12 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
   }
 }
 
+@media (min-width: 1120px) {
+  .ok-pack-card {
+    flex: 0 0 calc((100% - 3.2rem) / 5);
+  }
+}
+
 @media (max-width: 767px) {
   .ok-nav-inner {
     padding: 0 1rem;
@@ -1347,19 +1560,96 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
   }
 
   .ok-pack-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.75rem;
+  }
+
+  .ok-pack-card {
+    flex-direction: row;
+    align-items: stretch;
+    border-radius: 1.05rem;
+  }
+
+  .ok-pack-photo {
+    flex: 0 0 8rem;
+    width: 8rem;
+    min-height: 8rem;
+  }
+
+  .ok-pack-photo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    object-fit: cover;
+  }
+
+  .ok-pack-chip {
+    top: 0.4rem;
+    left: 0.4rem;
+    padding: 0.18rem 0.45rem;
+    font-size: 0.62rem;
+  }
+
+  .ok-pack-copy {
+    padding: 0.7rem 0.8rem 0.75rem;
+  }
+
+  .ok-pack-copy h3 {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.95rem;
+    letter-spacing: -0.02em;
+    line-height: 1.28;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .ok-pack-meta {
+    margin-top: 0.22rem;
+    font-size: 0.68rem;
+  }
+
+  .ok-pack-desc {
+    margin-top: 0.28rem;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    -webkit-line-clamp: 2;
+  }
+
+  .ok-pack-points {
+    display: none;
+  }
+
+  .ok-pack-price {
+    margin-top: 0.4rem;
+    font-size: 1.05rem;
+  }
+
+  .ok-pack-price span {
+    font-size: 0.65rem;
   }
 
   .ok-pack-actions {
-    flex-direction: column;
-    align-items: stretch;
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+    padding-top: 0.55rem;
   }
 
-  .ok-pack-actions .ok-btn,
-  .ok-pack-actions .ok-btn-ghost {
-    width: 100%;
+  .ok-pack-actions .ok-btn {
+    flex: 1;
     justify-content: center;
+    padding: 0.48rem 0.55rem;
+    font-size: 0.75rem;
+  }
+
+  .ok-pack-actions .ok-btn-ghost {
+    flex: 0 0 auto;
+    width: auto;
+    padding: 0.48rem 0.15rem;
+    border-color: transparent;
+    background: transparent;
+    font-size: 0.72rem;
   }
 }
 
@@ -1417,9 +1707,17 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
   background: linear-gradient(180deg, #161625 0%, #101018 100%);
 }
 
+.ok-idea-row .ok-pack-photo,
+.ok-idea-detail .ok-pack-photo {
+  align-self: start;
+}
+
 .ok-idea-row .ok-pack-photo img,
 .ok-idea-detail .ok-pack-photo img {
+  width: 100%;
+  height: auto;
   aspect-ratio: 16 / 10;
+  object-fit: cover;
 }
 
 .ok-idea-tiles {
@@ -1478,16 +1776,17 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
 .ok-idea-hero-main {
   position: relative;
   overflow: hidden;
-  min-height: 22rem;
+  aspect-ratio: 16 / 10;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1.35rem;
 }
 
 .ok-idea-hero-main > img {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
-  min-height: 22rem;
   object-fit: cover;
 }
 
@@ -1502,6 +1801,13 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
   margin: 0;
   font-size: clamp(1.3rem, 3vw, 1.8rem);
   font-weight: 700;
+}
+
+.ok-idea-hero-copy .ok-idea-desc-full {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .ok-idea-thumbs {
@@ -1526,7 +1832,7 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
 .ok-idea-thumb img {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 16 / 10;
   object-fit: cover;
 }
 
@@ -1604,8 +1910,143 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.ok-idea-acc-body .ok-pack-photo {
+  align-self: start;
+}
+
 .ok-idea-acc-body .ok-pack-photo img {
-  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.ok-idea-lineup-track {
+  display: flex;
+  gap: 0.85rem;
+  align-items: stretch;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ok-idea-lineup-track::-webkit-scrollbar {
+  display: none;
+}
+
+.ok-idea-lineup-card {
+  display: flex;
+  flex: 0 0 78%;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  scroll-snap-align: start;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.35rem;
+  background: linear-gradient(180deg, #161625 0%, #101018 100%);
+}
+
+.ok-idea-lineup-photo {
+  position: relative;
+  overflow: hidden;
+  background: #0c0c12;
+}
+
+.ok-idea-lineup-photo img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.ok-idea-lineup-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1rem 1.05rem 1.15rem;
+}
+
+.ok-idea-lineup-copy h3 {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.ok-idea-lineup-desc {
+  display: -webkit-box;
+  margin: 0.2rem 0 0;
+  overflow: hidden;
+  color: var(--ok-g300);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.ok-idea-lineup-copy .ok-pack-price {
+  margin-top: 0.55rem;
+}
+
+.ok-idea-lineup-copy .ok-pack-actions {
+  padding-top: 0.85rem;
+}
+
+.ok-idea-lineup-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.95rem;
+}
+
+.ok-idea-lineup-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.ok-idea-lineup-dots button {
+  width: 0.45rem;
+  height: 0.45rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+}
+
+.ok-idea-lineup-dots button.is-on {
+  background: #fff;
+}
+
+.ok-idea-lineup-arrows {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ok-idea-lineup-arrows button {
+  width: 2.55rem;
+  height: 2.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 1.55rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ok-idea-lineup-arrows button:disabled {
+  cursor: default;
+  opacity: 0.28;
 }
 
 @media (min-width: 860px) {
@@ -1613,13 +2054,7 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
   .ok-idea-detail,
   .ok-idea-acc-body {
     grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-  }
-
-  .ok-idea-row .ok-pack-photo img,
-  .ok-idea-detail .ok-pack-photo img {
-    height: 100%;
-    aspect-ratio: auto;
-    min-height: 16rem;
+    align-items: start;
   }
 
   .ok-idea-tiles {
@@ -1629,4 +2064,798 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
   .ok-idea-thumbs {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
+
+  .ok-idea-lineup-card {
+    flex-basis: 19.5rem;
+  }
 }
+
+.book-wizard-hint {
+  margin: 0 0 0.85rem;
+  color: var(--ok-g300);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.book-wizard-nav {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.book-wizard-nav .book-submit {
+  width: auto;
+  flex: 1;
+}
+
+.ok-addon-rows {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.ok-addon-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.72rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.95rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ok-addon-row.is-on {
+  border-color: rgba(255, 0, 110, 0.55);
+  background: rgba(255, 46, 151, 0.08);
+}
+
+.ok-addon-row-icon {
+  display: grid;
+  place-items: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: 0.7rem;
+  background: var(--ok-grad);
+  color: #fff;
+}
+
+.ok-addon-row-copy {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.ok-addon-row-copy strong {
+  overflow: hidden;
+  font-size: 0.9rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ok-addon-row-copy span {
+  color: var(--ok-g300);
+  font-size: 0.76rem;
+}
+
+.ok-addon-row-qty {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.book-slot-board {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.book-slot-group h3 {
+  margin: 0 0 0.45rem;
+  color: var(--ok-pink);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.book-slot-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.book-slot {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 3.5rem;
+  padding: 0.75rem 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.045);
+  cursor: pointer;
+}
+
+.book-slot span {
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.book-slot small {
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(134, 239, 172, 0.12);
+  color: #86efac;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.book-slot.is-on {
+  border-color: transparent;
+  background: var(--ok-grad);
+  box-shadow: 0 8px 22px rgba(255, 0, 110, 0.24);
+}
+
+.book-slot.is-on small {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.book-slot.is-full {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.book-slot input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.ok-book-page:has(.book-form.is-wizard) {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -10%, rgba(131, 56, 236, 0.22), transparent 58%),
+    radial-gradient(ellipse 70% 40% at 100% 100%, rgba(255, 0, 110, 0.12), transparent 55%),
+    #0a0a0a;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-page-head,
+.ok-book-page:has(.book-form.is-wizard) .ok-book-aside,
+.ok-book-page:has(.book-form.is-wizard) .ok-foot,
+.ok-book-page:has(.book-form.is-wizard) .ok-addon-cards,
+.ok-book-page:has(.book-form.is-wizard) .addon-sticky-bar {
+  display: none !important;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-shell {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-self: stretch;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-book-layout {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: stretch;
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  gap: 0;
+}
+
+html:not(:has(.admin-app)) .ok-book-page:has(.book-form.is-wizard) .book-form.is-wizard {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-self: stretch;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.book-wizard-head {
+  flex-shrink: 0;
+  padding: 0.85rem 1.15rem 0.7rem;
+}
+
+.book-wizard-progress {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.book-wizard-progress button {
+  height: 5px;
+  padding: 0;
+  border: 0;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+}
+
+.book-wizard-progress button.is-done,
+.book-wizard-progress button.is-on {
+  background: var(--ok-grad);
+}
+
+.book-wizard-kicker {
+  margin: 0.85rem 0 0;
+  color: var(--ok-pink);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.book-wizard-title {
+  margin: 0.2rem 0 0;
+  color: #fff;
+  font-size: clamp(1.55rem, 7vw, 2rem);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+}
+
+.book-wizard-sub {
+  margin: 0.28rem 0 0;
+  color: var(--ok-g300);
+  font-size: 0.88rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-wizard-hint {
+  margin: 0 0 0.85rem;
+  font-size: 0.86rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-wizard-pane {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  padding: 0.15rem 1.15rem 0.4rem;
+  overflow: hidden;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-form[data-screen="plan"] .book-wizard-pane,
+.ok-book-page:has(.book-form.is-wizard) .book-form[data-screen="info"] .book-wizard-pane {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.book-pane-fill {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-pkg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-height: 0;
+  border: 0;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-pkg-row {
+  grid-template-columns: 3.1rem minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  min-height: 0;
+  padding: 0.58rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-pkg-row.is-on {
+  border-color: rgba(255, 0, 110, 0.7);
+  background: linear-gradient(90deg, rgba(255, 0, 110, 0.16), rgba(131, 56, 236, 0.1));
+  box-shadow: 0 0 0 1px rgba(255, 0, 110, 0.35), 0 10px 28px rgba(255, 0, 110, 0.12);
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-pkg-row-time {
+  font-size: 1.18rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-pkg-row-copy strong {
+  font-size: 0.88rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-pkg-row-price {
+  color: #fff;
+  font-size: 0.86rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-included {
+  flex-shrink: 0;
+  margin-top: 0.75rem;
+}
+
+.ok-included ul {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ok-included-kicker {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.ok-included.is-loud {
+  padding: 0.95rem 1rem 1rem;
+  border: 1px solid rgba(52, 211, 153, 0.55);
+  border-radius: 1.15rem;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.08));
+}
+
+.ok-included.is-loud .ok-included-kicker {
+  color: #6ee7b7;
+  font-size: 0.92rem;
+  letter-spacing: 0.08em;
+}
+
+.ok-included-lead {
+  margin: 0.28rem 0 0;
+  color: #d1fae5;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+html:not(:has(.admin-app)) .ok-included.is-loud .addon-included {
+  justify-content: flex-start;
+  padding: 0.72rem 0.85rem;
+  background: rgba(0, 0, 0, 0.28);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.ok-included.is-loud .addon-included em {
+  margin-left: auto;
+  color: #6ee7b7;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.ok-included-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.45rem 0 0;
+}
+
+.ok-included-strip b {
+  color: #6ee7b7;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.ok-included-strip span {
+  padding: 0.16rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.2);
+  color: #bbf7d0;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-addon-rows {
+  flex: none;
+  gap: 0.4rem;
+  min-height: 0;
+  grid-auto-rows: auto;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-addon-row {
+  min-height: 0;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.95rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-addon-row-icon {
+  width: 2.05rem;
+  height: 2.05rem;
+  border-radius: 0.7rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ok-addon-row-copy strong {
+  font-size: 0.88rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-board {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  padding: 0.2rem 0 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-head {
+  flex-shrink: 0;
+  margin-bottom: 0.55rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-head p {
+  font-size: 1.05rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-week {
+  flex-shrink: 0;
+  margin-bottom: 0.25rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-grid {
+  flex: 1;
+  min-height: 0;
+  gap: 0.32rem;
+  grid-auto-rows: 1fr;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell {
+  min-height: 0;
+  height: 100%;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-empty,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell:disabled {
+  background: transparent;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on {
+  outline: 0;
+  background: var(--ok-grad);
+  box-shadow: 0 8px 22px rgba(255, 0, 110, 0.28);
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on b,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on .cal-spots {
+  color: #fff;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell b {
+  font-size: 0.95rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-price {
+  display: none;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-spots {
+  margin-top: 0.1rem;
+  font-size: 0.62rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-legend {
+  flex-shrink: 0;
+  justify-content: center;
+  margin-top: 0.65rem;
+  gap: 0.85rem;
+}
+
+html:not(:has(.admin-app)) .ok-book-page:has(.book-form.is-wizard) .book-slot-board {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.9rem;
+  width: 100%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-slot-group h3 {
+  margin: 0 0 0.4rem;
+  color: var(--ok-pink);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-slot-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-slot {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  min-height: 3.35rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.045);
+  cursor: pointer;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-slot span {
+  color: #fff;
+  font-size: 1.18rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-slot small {
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(134, 239, 172, 0.12);
+  color: #86efac;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-slot.is-on {
+  border-color: transparent;
+  background: var(--ok-grad);
+  box-shadow: 0 8px 22px rgba(255, 0, 110, 0.28);
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-slot.is-on small {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-slot.is-full {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-slot input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-info {
+  display: grid;
+  gap: 0.7rem;
+  width: 100%;
+  padding-bottom: 0.4rem;
+}
+
+.book-addon-block {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.book-addon-kicker {
+  margin: 0;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+.book-notes-open {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid rgba(255, 46, 151, 0.35);
+  border-radius: 1rem;
+  background: linear-gradient(90deg, rgba(255, 0, 110, 0.14), rgba(131, 56, 236, 0.1));
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.book-notes-open.is-on {
+  border-color: rgba(52, 211, 153, 0.45);
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.16), rgba(131, 56, 236, 0.08));
+}
+
+.book-notes-open-copy {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.book-notes-open-copy strong {
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+
+.book-notes-open-copy small {
+  color: var(--ok-g300);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.book-notes-open-cta {
+  flex-shrink: 0;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: var(--ok-grad);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.ok-book-page .admin-modal-overlay {
+  z-index: 240 !important;
+}
+
+.ok-book-page .admin-modal-panel {
+  max-width: 36rem;
+}
+
+.ok-book-page .admin-modal-panel .ride-notes ul {
+  margin-top: 0;
+}
+
+.ok-book-page .admin-modal-panel .ride-notes li {
+  align-items: flex-start;
+}
+
+.ok-book-page .admin-modal-panel .ride-notes li p {
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.ok-book-page .admin-modal-panel .ride-notes li strong {
+  display: block;
+  margin-bottom: 0.28rem;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.ok-book-page .admin-modal-panel .ride-notes li strong::after {
+  content: none;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-field {
+  gap: 0.28rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-field span {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-field input,
+.ok-book-page:has(.book-form.is-wizard) .book-field select,
+.ok-book-page:has(.book-form.is-wizard) .book-field textarea {
+  min-height: 2.7rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.85rem;
+  font-size: 16px;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-field textarea {
+  min-height: 3.4rem;
+  resize: none;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ride-notes.is-compact.is-checks {
+  margin-top: 0.2rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ride-notes.is-compact.is-checks ul {
+  margin-top: 0.4rem;
+  gap: 0.4rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ride-notes.is-compact.is-checks label {
+  align-items: center;
+  padding: 0.55rem 0.7rem;
+  gap: 0.5rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ride-notes.is-compact.is-checks input {
+  margin-top: 0;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ride-notes.is-compact li p {
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .ride-notes.is-compact li strong::after {
+  content: none;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-wizard-foot {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 0.85rem 1.15rem calc(0.95rem + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(10, 10, 10, 0.4), rgba(10, 10, 10, 0.96) 28%);
+  backdrop-filter: blur(18px);
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-total {
+  padding: 0 0 0.7rem;
+  border: 0;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-total strong {
+  font-size: 1.45rem;
+  letter-spacing: -0.03em;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-wizard-nav {
+  gap: 0.6rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-wizard-back {
+  flex: 0 0 auto;
+  justify-content: center;
+  min-width: 5.4rem;
+  min-height: 3.05rem;
+  padding: 0.7rem 1.1rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-wizard-nav .book-submit {
+  justify-content: center;
+  min-height: 3.05rem;
+  padding: 0.7rem 1.2rem;
+  font-size: 1rem;
+}
+

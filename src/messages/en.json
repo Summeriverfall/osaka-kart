@@ -43,7 +43,9 @@
   "PlansHome": {
     "title": "Choose Your Plan",
     "select": "Select",
-    "details": "View details"
+    "details": "View details",
+    "prev": "Previous plan",
+    "next": "Next plan"
   },
   "VideosHome": {
     "title": "On the street",
@@ -68,7 +70,9 @@
     "r2Quote": "Clear briefing, friendly guide, and photos we actually want to keep.",
     "r3Name": "Jonas K.",
     "r3Country": "Germany",
-    "r3Quote": "Felt safe at street speed. The neon run is the whole trip."
+    "r3Quote": "Felt safe at street speed. The neon run is the whole trip.",
+    "expand": "Read more",
+    "collapse": "Show less"
   },
   "Safety": {
     "title": "Before you roll",
@@ -180,6 +184,8 @@
     "map": "Meeting point",
     "addons": "Add-ons",
     "includedAddons": "Included",
+    "includedLoud": "Already in the plan price — no extra charge.",
+    "includedFree": "Included",
     "selectedQty": "Selected {n}",
     "addonTotal": "Add-ons",
     "grandTotal": "Total",
@@ -214,6 +220,11 @@
     "addonOn": "Added",
     "full": "Full",
     "stepPlan": "Package",
+    "stepAddons": "Extras",
+    "stepAddonsHint": "Optional.",
+    "addonsPick": "Choose extras",
+    "addonsChange": "Edit extras",
+    "addonsConfirm": "Done",
     "stepDate": "Date",
     "stepTime": "Time",
     "stepInfo": "Details",
@@ -222,7 +233,14 @@
     "passport": "ID / passport no.",
     "nationality": "Nationality",
     "request": "Special requests",
-    "summary": "Order summary"
+    "summary": "Order summary",
+    "includedNow": "Included",
+    "parts": {
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "dusk": "Evening",
+      "night": "Night"
+    }
   },
   "Press": {
     "title": "In the news",
@@ -302,6 +320,11 @@
   "Notes": {
     "title": "Before you ride",
     "agreeLead": "Tick each item to confirm you have read and agree.",
+    "open": "Read and agree",
+    "view": "View",
+    "openHint": "License, age, clothing, weather, and cancellation",
+    "agreed": "Notes agreed",
+    "agreeBtn": "I have read and agree",
     "payTitle": "License notes",
     "more": "Read more",
     "licenseLabel": "License",

@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatJpy } from "@/lib/format";
-import { siteHome, withSlash } from "@/lib/paths";
+import { withSlash } from "@/lib/paths";
 import { appPageHref } from "@/lib/file-href";
-import { useSiteLook } from "@/lib/site-look";
 import {
   BOOKING_RESULT_KEY,
   type BookingResult,
@@ -20,7 +19,6 @@ type SuccessViewProps = {
 
 export function SuccessView({ locale }: SuccessViewProps) {
   const t = useTranslations("Success");
-  const look = useSiteLook();
   const [result, setResult] = useState<BookingResult | null>(null);
 
   useEffect(() => {
@@ -70,7 +68,7 @@ export function SuccessView({ locale }: SuccessViewProps) {
             </Link>
           ) : null}
           <a
-            href={appPageHref(siteHome(look), locale)}
+            href={appPageHref(withSlash("/"), locale)}
             className={result && !result.paid ? "ok-btn-ghost" : "ok-btn"}
             suppressHydrationWarning
           >

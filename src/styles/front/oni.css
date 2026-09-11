@@ -996,6 +996,11 @@
   box-shadow: 6px 6px 0 #c43c3c;
 }
 
+.oni-ema-hang blockquote p {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
 .oni-ema-hang .tilt-0 {
   transform: rotate(-1.6deg);
 }

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { asset } from "@/lib/asset";
-import { localeText } from "@/lib/cms-text";
+import { localeText, originalLocaleText, parseYoutubeId, youtubeThumb } from "@/lib/cms-text";
 import { SITE_CONTACT } from "@/lib/contact";
 import { useLiveStoreContact, useOpsHydrated } from "@/lib/live-catalog";
 import { LOOK_VIDEO, type SiteTheme } from "@/lib/visual-theme";
@@ -39,7 +39,10 @@ export function resolveCmsVideo(video: CmsVideo | undefined, fallback?: string):
     return { kind: "instagram", href: video.pageUrl.trim(), poster };
   }
   if (video.source === "youtube" && video.youtubeId) {
-    return { kind: "youtube", id: video.youtubeId, poster };
+    const id = parseYoutubeId(video.youtubeId) || video.youtubeId;
+    const uploaded =
+      Boolean(video.poster?.startsWith("data:")) || Boolean(video.poster?.startsWith("blob:"));
+    return { kind: "youtube", id, poster: uploaded ? poster : youtubeThumb(id) || poster };
   }
   const file = video.file?.trim();
   if (file) {
@@ -113,4 +116,4 @@ export function useBookingContact() {
   return useMemo(() => bookingContact(cms, store), [cms, store]);
 }
 
-export { localeText, cmsBySlot };
+export { localeText, originalLocaleText, cmsBySlot };

@@ -17,6 +17,16 @@ export function localeText(text: LocaleText | undefined, locale: string, fallbac
   return text.zh || text.en || fallback;
 }
 
+/** Pick the original wording when the same text was copied into every locale field. */
+export function originalLocaleText(text: LocaleText | undefined, fallback = "") {
+  if (!text) return fallback;
+  const values = [text.zh, text.en, text.ja, text.ko].map((item) => item.trim()).filter(Boolean);
+  if (!values.length) return fallback;
+  const unique = [...new Set(values)];
+  if (unique.length === 1) return unique[0];
+  return [...unique].sort((a, b) => b.length - a.length)[0];
+}
+
 export function parseYoutubeId(input: string) {
   const raw = input.trim();
   if (!raw) return "";

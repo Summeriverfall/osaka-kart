@@ -13,7 +13,7 @@ export default async function VideosPage({ params }: PageProps) {
   return (
     <div className="ok-page ok-page-pad">
       <SiteNav />
-      <HomeVideos />
+      <HomeVideos limit={4} />
       <SiteFooter />
     </div>
   );

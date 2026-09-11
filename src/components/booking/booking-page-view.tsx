@@ -47,7 +47,7 @@ export function BookingPageView({ plans, addons, locale, initialPlan }: BookingP
   }
 
   return (
-    <div className="ok-page ok-page-pad">
+    <div className="ok-page ok-page-pad ok-book-page">
       <SiteNav />
       <main className="ok-shell">
         <header className="ok-page-head">

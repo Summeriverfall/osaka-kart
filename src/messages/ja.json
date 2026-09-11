@@ -43,7 +43,9 @@
   "PlansHome": {
     "title": "プランを選ぶ",
     "select": "選択",
-    "details": "詳細を見る"
+    "details": "詳細を見る",
+    "prev": "前のプラン",
+    "next": "次のプラン"
   },
   "VideosHome": {
     "title": "実際の走行風景",
@@ -68,7 +70,9 @@
     "r2Quote": "説明がわかりやすく、ガイドも親切でした。思い出に残る写真が撮れました。",
     "r3Name": "Jonas K.",
     "r3Country": "Germany",
-    "r3Quote": "公道での走行も安心して楽しめました。ネオンの街を走った夜が、旅のハイライトです。"
+    "r3Quote": "公道での走行も安心して楽しめました。ネオンの街を走った夜が、旅のハイライトです。",
+    "expand": "続きを読む",
+    "collapse": "閉じる"
   },
   "Safety": {
     "title": "走る前に知っておきたいこと",
@@ -180,6 +184,8 @@
     "map": "集合場所",
     "addons": "オプション",
     "includedAddons": "セットに含む",
+    "includedLoud": "料金に含まれています。追加料金はありません。",
+    "includedFree": "含む",
     "selectedQty": "選択中 {n}",
     "addonTotal": "オプション",
     "grandTotal": "合計",
@@ -214,6 +220,11 @@
     "addonOn": "追加済み",
     "full": "満員",
     "stepPlan": "プラン",
+    "stepAddons": "追加",
+    "stepAddonsHint": "任意です。",
+    "addonsPick": "オプションを選ぶ",
+    "addonsChange": "変更する",
+    "addonsConfirm": "確定",
     "stepDate": "日付",
     "stepTime": "時間",
     "stepInfo": "情報",
@@ -222,7 +233,14 @@
     "passport": "旅券番号",
     "nationality": "国籍",
     "request": "ご要望",
-    "summary": "予約内容"
+    "summary": "予約内容",
+    "includedNow": "含む",
+    "parts": {
+      "morning": "午前",
+      "afternoon": "午後",
+      "dusk": "夕方",
+      "night": "夜"
+    }
   },
   "Press": {
     "title": "メディア掲載",
@@ -302,6 +320,11 @@
   "Notes": {
     "title": "注意事項",
     "agreeLead": "各項目をチェックして、内容を確認・同意したことを示してください。",
+    "open": "読んで同意する",
+    "view": "見る",
+    "openHint": "免許・年齢・服装・天候・キャンセル",
+    "agreed": "同意済み",
+    "agreeBtn": "内容を確認して同意する",
     "payTitle": "免許の注意",
     "more": "詳しく見る",
     "licenseLabel": "免許",

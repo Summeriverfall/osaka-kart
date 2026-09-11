@@ -461,7 +461,7 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 25,
+      version: 28,
       skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
@@ -723,6 +723,54 @@ export const useOpsStore = create<OpsState>()(
         }
         if (version < 25) {
           state.roles = refreshBuiltinRoles(state.roles);
+        }
+        if (version < 26 && state.cms?.videos) {
+          const pageSeed = MOCK_CMS.videos.filter((item) => item.slot === "page");
+          const bundledPageIds = new Set(["page-1", "page-2", "page-3", "page-4", "page-5", "page-6", "page-7", "page-8"]);
+          state.cms = {
+            ...state.cms,
+            videos: [
+              ...state.cms.videos.filter((item) => item.slot !== "page"),
+              ...pageSeed,
+              ...state.cms.videos.filter(
+                (item) => item.slot === "page" && !bundledPageIds.has(item.id) && isCustomCmsVideo(item),
+              ),
+            ],
+          };
+        }
+        if (version < 27 && state.cms) {
+          const bundledIds = new Set(MOCK_CMS.reviews.map((item) => item.id));
+          state.cms = {
+            ...state.cms,
+            reviews: [
+              ...MOCK_CMS.reviews.map((seed) => {
+                const prev = (state.cms?.reviews ?? []).find((item) => item.id === seed.id);
+                return {
+                  ...seed,
+                  photo: prev?.photo || seed.photo,
+                  active: prev?.active ?? seed.active,
+                };
+              }),
+              ...(state.cms.reviews ?? []).filter((item) => !bundledIds.has(item.id)),
+            ],
+          };
+        }
+        if (version < 28 && state.cms) {
+          const bundledIds = new Set(MOCK_CMS.reviews.map((item) => item.id));
+          state.cms = {
+            ...state.cms,
+            reviews: [
+              ...MOCK_CMS.reviews.map((seed) => {
+                const prev = (state.cms?.reviews ?? []).find((item) => item.id === seed.id);
+                return {
+                  ...seed,
+                  photo: prev?.photo || seed.photo,
+                  active: prev?.active ?? seed.active,
+                };
+              }),
+              ...(state.cms.reviews ?? []).filter((item) => !bundledIds.has(item.id)),
+            ],
+          };
         }
         delete state.vehicleSlots;
         return state as OpsState;

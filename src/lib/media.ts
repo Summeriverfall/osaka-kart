@@ -2,8 +2,8 @@ import { asset } from "./asset";
 
 export const PLAN_IMAGES: Record<string, string> = {
   sunset: asset("/images/social/yejingtiyan.webp"),
-  standard: asset("/images/plans/standard.webp"),
-  "night-run": asset("/images/plans/night-run.webp"),
+  standard: asset("/images/social/bianzhuang.webp"),
+  "night-run": asset("/images/social/tsutenkaku-kart.webp"),
   "grand-tour": asset("/images/plans/grand-tour.webp"),
   "vip-night": asset("/images/social/yejiankadingche.webp"),
 };

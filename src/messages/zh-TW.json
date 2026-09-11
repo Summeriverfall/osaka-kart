@@ -43,7 +43,9 @@
   "PlansHome": {
     "title": "選擇套餐",
     "select": "選擇",
-    "details": "查看詳情"
+    "details": "查看詳情",
+    "prev": "上一套",
+    "next": "下一套"
   },
   "VideosHome": {
     "title": "現場畫面",
@@ -68,7 +70,9 @@
     "r2Quote": "說明清楚，嚮導友善，照片值得留。",
     "r3Name": "Jonas K.",
     "r3Country": "Germany",
-    "r3Quote": "街上的速度也很穩。霓虹這一趟就是整趟旅行。"
+    "r3Quote": "街上的速度也很穩。霓虹這一趟就是整趟旅行。",
+    "expand": "展開",
+    "collapse": "收起"
   },
   "Safety": {
     "title": "上路前你需要知道",
@@ -180,6 +184,8 @@
     "map": "集合點地圖",
     "addons": "加項",
     "includedAddons": "套餐已含",
+    "includedLoud": "這項已包在套餐價裡，不用再付。",
+    "includedFree": "已含",
     "selectedQty": "已選 {n}",
     "addonTotal": "加項",
     "grandTotal": "合計",
@@ -214,6 +220,11 @@
     "addonOn": "已加入",
     "full": "已滿",
     "stepPlan": "套餐",
+    "stepAddons": "加項",
+    "stepAddonsHint": "可不選。",
+    "addonsPick": "選擇加項",
+    "addonsChange": "修改加項",
+    "addonsConfirm": "確定",
     "stepDate": "日期",
     "stepTime": "時段",
     "stepInfo": "資料",
@@ -222,7 +233,14 @@
     "passport": "證件號",
     "nationality": "國籍",
     "request": "特殊要求",
-    "summary": "訂單摘要"
+    "summary": "訂單摘要",
+    "includedNow": "已含",
+    "parts": {
+      "morning": "上午",
+      "afternoon": "下午",
+      "dusk": "傍晚",
+      "night": "夜晚"
+    }
   },
   "Press": {
     "title": "新聞報道",
@@ -302,6 +320,11 @@
   "Notes": {
     "title": "注意事項",
     "agreeLead": "請逐項勾選，確認已閱讀並同意。",
+    "open": "閱讀並同意",
+    "view": "查看",
+    "openHint": "駕照、年齡、著裝、天氣與取消政策",
+    "agreed": "已同意注意事項",
+    "agreeBtn": "我已閱讀並同意",
     "payTitle": "駕照注意事項",
     "more": "查看更多",
     "licenseLabel": "駕照",

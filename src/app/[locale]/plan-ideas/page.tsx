@@ -19,7 +19,7 @@ export default async function PlanIdeasPage({ params }: PageProps) {
         <header className="ok-page-head">
           <p className="ok-kicker">套餐版式</p>
           <h1>选择套餐 · 方案预览</h1>
-          <p className="ok-page-lead">上面四颗按钮切换版式。这是预览页，选定后我再接到正式套餐页。</p>
+          <p className="ok-page-lead">上面按钮切换版式。E 是横向滑动，一次看一张。这是预览页，选定后再接到正式套餐页。</p>
         </header>
         <PlanLayoutGallery plans={plans} locale={locale} />
       </main>

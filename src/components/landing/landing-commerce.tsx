@@ -436,7 +436,7 @@ export function LandingReviews({ copy, theme }: { copy: LandingCopy; theme: Site
               <p>{localeText(item.quote, locale)}</p>
               <footer>
                 {item.name}
-                <span> · {item.country}</span>
+                {item.country ? <span> · {item.country}</span> : null}
               </footer>
               <ReviewFrom item={item} />
             </blockquote>
@@ -464,7 +464,7 @@ export function LandingReviews({ copy, theme }: { copy: LandingCopy; theme: Site
                 <p>{localeText(item.quote, locale)}</p>
                 <footer>
                   {item.name}
-                  <span>{item.country}</span>
+                  {item.country ? <span>{item.country}</span> : null}
                 </footer>
                 <ReviewFrom item={item} />
               </blockquote>
@@ -492,7 +492,7 @@ export function LandingReviews({ copy, theme }: { copy: LandingCopy; theme: Site
               <blockquote>“{localeText(item.quote, locale)}”</blockquote>
               <footer>
                 <strong>{item.name}</strong>
-                <span>{item.country}</span>
+                {item.country ? <span>{item.country}</span> : null}
               </footer>
               <ReviewFrom item={item} />
             </article>
