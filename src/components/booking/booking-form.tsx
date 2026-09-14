@@ -269,14 +269,10 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
           </select>
         </label>
       </div>
-      <div className="book-grid">
-        <label className="book-field"><span>{t("name")}</span><input value={hydrated ? store.name : ""} onChange={(e) => store.patch({ name: e.target.value })} required={last} autoComplete="name" /></label>
-        <label className="book-field"><span>{t("email")}</span><input type="email" value={hydrated ? store.email : ""} onChange={(e) => store.patch({ email: e.target.value })} required={last} autoComplete="email" /></label>
-      </div>
-      <div className="book-grid">
-        <label className="book-field"><span>{t("phone")}</span><input value={hydrated ? store.phone : ""} onChange={(e) => store.patch({ phone: e.target.value })} required={last} autoComplete="tel" /></label>
-        <label className="book-field"><span>{t("passport")}</span><input value={passport} onChange={(e) => setPassport(e.target.value)} required={last} /></label>
-      </div>
+      <label className="book-field"><span>{t("name")}</span><input value={hydrated ? store.name : ""} onChange={(e) => store.patch({ name: e.target.value })} required={last} autoComplete="name" /></label>
+      <label className="book-field"><span>{t("email")}</span><input type="email" value={hydrated ? store.email : ""} onChange={(e) => store.patch({ email: e.target.value })} required={last} autoComplete="email" /></label>
+      <label className="book-field"><span>{t("phone")}</span><input value={hydrated ? store.phone : ""} onChange={(e) => store.patch({ phone: e.target.value })} required={last} autoComplete="tel" /></label>
+      <label className="book-field"><span>{t("passport")}</span><input value={passport} onChange={(e) => setPassport(e.target.value)} required={last} /></label>
       <label className="book-field"><span>{t("request")}</span><textarea value={request} onChange={(e) => setRequest(e.target.value)} rows={2} /></label>
       <button type="button" className={cn("book-notes-open", notesOk && "is-on")} onClick={() => setNotesOpen(true)}>
         <span className="book-notes-open-copy">

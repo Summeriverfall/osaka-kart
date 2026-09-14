@@ -41,17 +41,12 @@ export function OsakaHome({ plans, locale }: OsakaHomeProps) {
         <div className="ok-hero-copy">
           <p className="ok-badge">🏎️ {gateway("kicker")}</p>
           <h1>
-            {hero("title")}
-            <span className="block">{hero("titleRest")}</span>
+            <span className="ok-hero-line">{hero("title")}</span>
+            <span className="ok-hero-line">{hero("titleRest")}</span>
           </h1>
-          <p className="ok-hero-kicker">{gateway("title")}</p>
           <p className="ok-hero-sub">{hero("subtitle")}</p>
           <HeroTrust />
-          <p className="ok-hero-need">{gateway("need")}</p>
           <div className="ok-hero-stats">
-            <span>
-              <strong>{hero("ridersCount")}</strong> {hero("ridersLabel")}
-            </span>
             <span className="ok-hero-stars">★★★★★</span>
             <span>
               <strong>{hero("ratingScore")}</strong> {hero("ratingLabel")}
@@ -59,12 +54,13 @@ export function OsakaHome({ plans, locale }: OsakaHomeProps) {
           </div>
           <div className="ok-hero-actions">
             <a className="ok-btn" href={appPageHref(withSlash("/booking"), locale)}>
-              {nav("booking")}
+              {hero("bookTimes")}
             </a>
             <a className="ok-btn-ghost" href="#packages">
-              {nav("viewPackages")}
+              {hero("seeRoutes")}
             </a>
           </div>
+          <p className="ok-hero-need">{hero("need")}</p>
         </div>
       </section>
 

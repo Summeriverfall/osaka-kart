@@ -461,7 +461,7 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 28,
+      version: 31,
       skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
@@ -767,6 +767,40 @@ export const useOpsStore = create<OpsState>()(
                   photo: prev?.photo || seed.photo,
                   active: prev?.active ?? seed.active,
                 };
+              }),
+              ...(state.cms.reviews ?? []).filter((item) => !bundledIds.has(item.id)),
+            ],
+          };
+        }
+        if (version < 29 && state.cms) {
+          const bundledIds = new Set(MOCK_CMS.reviews.map((item) => item.id));
+          state.cms = {
+            ...state.cms,
+            labels: {
+              ...state.cms.labels,
+              reviewsLead: MOCK_CMS.labels.reviewsLead,
+            },
+            reviews: [
+              ...MOCK_CMS.reviews.map((seed) => {
+                const prev = (state.cms?.reviews ?? []).find((item) => item.id === seed.id);
+                return {
+                  ...seed,
+                  photo: prev?.photo || seed.photo,
+                  active: prev?.active ?? seed.active,
+                };
+              }),
+              ...(state.cms.reviews ?? []).filter((item) => !bundledIds.has(item.id)),
+            ],
+          };
+        }
+        if (version < 31 && state.cms) {
+          const bundledIds = new Set(MOCK_CMS.reviews.map((item) => item.id));
+          state.cms = {
+            ...state.cms,
+            reviews: [
+              ...MOCK_CMS.reviews.map((seed) => {
+                const prev = (state.cms?.reviews ?? []).find((item) => item.id === seed.id);
+                return { ...seed, photo: prev?.photo || seed.photo };
               }),
               ...(state.cms.reviews ?? []).filter((item) => !bundledIds.has(item.id)),
             ],

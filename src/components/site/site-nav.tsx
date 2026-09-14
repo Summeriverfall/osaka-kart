@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useAppPathname } from "@/lib/use-app-pathname";
 import { LiveBrandMark } from "@/components/site/live-brand-mark";
 import { NavBookingContact } from "@/components/site/contact-ticker";
-import { LocaleSwitcher } from "@/components/site/locale-switcher";
+import { LocaleLinks, LocaleSwitcher } from "@/components/site/locale-switcher";
 import { withSlash } from "@/lib/paths";
 import { appPageHref, isFileProtocol, navigateToHref } from "@/lib/file-href";
 import { useSiteLook } from "@/lib/site-look";
@@ -105,29 +105,35 @@ export function SiteNav({ look }: SiteNavProps) {
         </div>
         {open ? (
           <div className="ok-nav-sheet">
-            {items.map((item) => {
-              const href = onLanding && item.hash ? item.hash : appPageHref(item.href, locale);
-              return (
-                <a
-                  key={item.key}
-                  href={href}
-                  suppressHydrationWarning
-                  onClick={(event) => {
-                    setOpen(false);
-                    if (onLanding && item.hash) return;
-                    if (!isFileProtocol()) return;
-                    event.preventDefault();
-                    go(item.href);
-                  }}
-                >
-                  {t(item.key)}
-                </a>
-              );
-            })}
-            {contact}
+            <nav className="ok-nav-sheet-links">
+              {items.map((item) => {
+                const href = onLanding && item.hash ? item.hash : appPageHref(item.href, locale);
+                return (
+                  <a
+                    key={item.key}
+                    href={href}
+                    suppressHydrationWarning
+                    onClick={(event) => {
+                      setOpen(false);
+                      if (onLanding && item.hash) return;
+                      if (!isFileProtocol()) return;
+                      event.preventDefault();
+                      go(item.href);
+                    }}
+                  >
+                    {t(item.key)}
+                  </a>
+                );
+              })}
+            </nav>
+            <div className="ok-nav-sheet-langs">
+              <p>{t("language")}</p>
+              <LocaleLinks onPicked={() => setOpen(false)} />
+            </div>
+            <div className="ok-nav-sheet-contact">{contact}</div>
             <a
               href={appPageHref(withSlash("/booking"), locale)}
-              className="ok-btn mt-2 justify-center"
+              className="ok-btn ok-nav-sheet-cta"
               suppressHydrationWarning
               onClick={(event) => {
                 setOpen(false);

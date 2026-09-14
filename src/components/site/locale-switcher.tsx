@@ -1,32 +1,124 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useLocale } from "next-intl";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useAppPathname } from "@/lib/use-app-pathname";
 import { appPageHref, isFileProtocol } from "@/lib/file-href";
 import { routing, type AppLocale } from "@/i18n/routing";
+import { consumeLangPicked, LOCALE_LABELS, markLangPicked, withLangPickedQuery } from "@/lib/locales";
+import { cn } from "@/lib/utils";
 
-const LOCALE_LABELS: Record<AppLocale, string> = {
-  en: "English",
-  ja: "日本語",
-  "zh-TW": "繁體中文",
-  ko: "한국어",
-};
-
-export function LocaleSwitcher() {
+function useLocaleSwitch() {
   const locale = useLocale() as AppLocale;
   const pathname = useAppPathname() || "/";
   const router = useRouter();
   const intlPath = usePathname() || "/";
-  const [open, setOpen] = useState(false);
-  const box = useRef<HTMLDivElement>(null);
   const switchPath = pathname === "/acid" || pathname.startsWith("/acid/")
     ? "/acid/?palette=pace"
     : pathname;
 
+  function goTo(code: AppLocale, event?: MouseEvent<HTMLAnchorElement>) {
+    markLangPicked(code);
+    if (code === locale) {
+      event?.preventDefault();
+      return;
+    }
+    document.documentElement.lang = code;
+    if (isFileProtocol()) return;
+    event?.preventDefault();
+    const qs = new URLSearchParams(window.location.search);
+    qs.set("langpicked", "1");
+    const pathOnly = intlPath.split("?")[0] || "/";
+    router.replace(`${pathOnly}?${qs}${window.location.hash}`, { locale: code });
+  }
+
+  return { locale, switchPath, goTo };
+}
+
+export function LocaleLinks({
+  className,
+  onPicked,
+}: {
+  className?: string;
+  onPicked?: () => void;
+}) {
+  const { locale, switchPath, goTo } = useLocaleSwitch();
+
+  return (
+    <div className={cn("ok-lang-grid", className)} role="listbox">
+      {routing.locales.map((code) => {
+        const on = locale === code;
+        return (
+          <a
+            key={code}
+            href={withLangPickedQuery(appPageHref(switchPath, code))}
+            hrefLang={code}
+            aria-current={on ? "true" : undefined}
+            className={on ? "is-on" : undefined}
+            onClick={(event) => {
+              goTo(code, event);
+              onPicked?.();
+            }}
+          >
+            {LOCALE_LABELS[code]}
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
+export function LocaleGate() {
+  const { locale, switchPath, goTo } = useLocaleSwitch();
+  const t = useTranslations("Nav");
+  const [open, setOpen] = useState(false);
+
   useEffect(() => {
-    function onDoc(event: MouseEvent) {
+    const path = window.location.pathname;
+    if (path.includes("/admin") || path.includes("/agent")) return;
+    if (consumeLangPicked(locale)) {
+      setOpen(false);
+      return;
+    }
+    setOpen(true);
+  }, [locale]);
+
+  if (!open) return null;
+
+  return (
+    <div className="ok-lang-gate" role="dialog" aria-modal="true" aria-labelledby="ok-lang-gate-title">
+      <div className="ok-lang-gate-card">
+        <p className="ok-lang-gate-kicker">{t("language")}</p>
+        <h2 id="ok-lang-gate-title">{t("chooseLanguage")}</h2>
+        <div className="ok-lang-grid is-gate">
+          {routing.locales.map((code) => (
+            <a
+              key={code}
+              href={withLangPickedQuery(appPageHref(switchPath, code))}
+              hrefLang={code}
+              className={locale === code ? "is-on" : undefined}
+              onClick={(event) => {
+                goTo(code, event);
+                setOpen(false);
+              }}
+            >
+              {LOCALE_LABELS[code]}
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function LocaleSwitcher() {
+  const { locale, switchPath, goTo } = useLocaleSwitch();
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onDoc(event: globalThis.MouseEvent) {
       if (!box.current?.contains(event.target as Node)) setOpen(false);
     }
     document.addEventListener("mousedown", onDoc);
@@ -40,7 +132,7 @@ export function LocaleSwitcher() {
           <circle cx="12" cy="12" r="10" />
           <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
         </svg>
-        <span className="hidden sm:inline">{LOCALE_LABELS[locale]}</span>
+        <span>{LOCALE_LABELS[locale]}</span>
       </button>
       {open ? (
         <div className="ok-lang-menu" role="listbox">
@@ -54,19 +146,8 @@ export function LocaleSwitcher() {
                 aria-current={on ? "true" : undefined}
                 className={on ? "is-on" : undefined}
                 onClick={(event) => {
-                  if (on) {
-                    event.preventDefault();
-                    setOpen(false);
-                    return;
-                  }
-                  document.documentElement.lang = code;
+                  goTo(code, event);
                   setOpen(false);
-                  if (isFileProtocol()) return;
-                  event.preventDefault();
-                  const qs = window.location.search;
-                  const hash = window.location.hash;
-                  const target = switchPath.includes("?") ? intlPath : `${intlPath}${qs}${hash}`;
-                  router.replace(target, { locale: code });
                 }}
               >
                 {LOCALE_LABELS[code]}

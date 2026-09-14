@@ -170,15 +170,195 @@ html:not(:has(.admin-app)) .ok-brand strong {
 .ok-nav-sheet {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: 1rem 1.25rem 1.5rem;
+  gap: 1.15rem;
+  padding: 0.85rem 1.15rem calc(1.15rem + env(safe-area-inset-bottom));
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(10, 10, 10, 0.96);
+  background: rgba(10, 10, 10, 0.98);
 }
 
-.ok-nav-sheet a {
-  padding: 0.7rem 0;
+.ok-nav-sheet-links {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.ok-nav-sheet-links a {
+  padding: 0.78rem 0.15rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #eee;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.ok-nav-sheet-links a:last-child {
+  border-bottom: 0;
+}
+
+.ok-nav-sheet-langs p,
+.ok-nav-sheet-contact p {
+  margin: 0 0 0.55rem;
+  color: var(--ok-g500);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.ok-nav-sheet-contact .site-bar-contact-list a {
   color: var(--ok-g300);
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.ok-nav-sheet-cta {
+  justify-content: center;
+  width: 100%;
+}
+
+.ok-lang-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+}
+
+.ok-lang-grid a {
+  display: grid;
+  place-items: center;
+  min-height: 2.7rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: #ddd;
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.ok-lang-grid a.is-on,
+.ok-lang-grid a:hover {
+  border-color: rgba(255, 46, 151, 0.55);
+  background: rgba(255, 0, 110, 0.14);
+  color: #fff;
+}
+
+.ok-lang-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 1.15rem;
+  background: rgba(6, 6, 10, 0.78);
+  backdrop-filter: blur(16px);
+}
+
+.ok-lang-gate-card {
+  width: min(100%, 22rem);
+  padding: 1.5rem 1.25rem 1.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.35rem;
+  background: #12121a;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.ok-lang-gate-kicker {
+  margin: 0;
+  color: var(--ok-pink);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.ok-lang-gate-card h2 {
+  margin: 0.35rem 0 1.1rem;
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 750;
+}
+
+.ok-lang-grid.is-gate a {
+  min-height: 3.1rem;
+  font-size: 1rem;
+}
+
+.ok-route-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.ok-route-scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(4, 4, 10, 0.82);
+  cursor: pointer;
+}
+
+.ok-route-sheet {
+  position: relative;
+  z-index: 1;
+  width: min(52rem, 100%);
+  max-height: 92dvh;
+  overflow: auto;
+  padding: 1rem 1rem 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.05rem;
+  background: #12121a;
+}
+
+.ok-route-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.ok-route-head h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.ok-route-x {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+.ok-route-x:hover {
+  border-color: rgba(255, 0, 110, 0.55);
+}
+
+.ok-route-sheet img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 68dvh;
+  object-fit: contain;
+  background: #0b0b10;
+  border-radius: 0.85rem;
+}
+
+.ok-route-sheet p {
+  margin: 0.8rem 0 0;
+  color: var(--ok-g300);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  text-wrap: wrap;
 }
 
 .ok-lang {
@@ -272,6 +452,7 @@ html:not(:has(.admin-app)) .ok-brand strong {
 .ok-hero-copy {
   position: relative;
   z-index: 2;
+  width: 100%;
   max-width: 920px;
 }
 
@@ -299,10 +480,30 @@ html:not(:has(.admin-app)) .ok-brand strong {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 0 40px rgba(255, 0, 110, 0.2));
-  font-size: clamp(2.2rem, 8vw, 5.5rem);
+  /* 12 字中文标题尽量铺满行宽，又不拆到下一行 */
+  font-size: clamp(1.45rem, 7.5vw, 3.6rem);
   font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.04em;
+  line-height: 1.4;
+  letter-spacing: -0.03em;
+}
+
+.ok-hero-line {
+  display: block;
+  white-space: nowrap;
+}
+
+html[lang="ja"] .ok-hero h1 {
+  font-size: clamp(1.35rem, 5.5vw, 3rem);
+}
+
+html[lang="en"] .ok-hero h1,
+html[lang="ko"] .ok-hero h1 {
+  font-size: clamp(1.45rem, 5.8vw, 3.15rem);
+}
+
+html[lang="en"] .ok-hero-line,
+html[lang="ko"] .ok-hero-line {
+  white-space: normal;
 }
 
 .ok-hero-kicker {
@@ -314,11 +515,12 @@ html:not(:has(.admin-app)) .ok-brand strong {
 }
 
 .ok-hero-sub {
-  max-width: 600px;
-  margin: 0 auto 1.1rem;
-  color: var(--ok-g300);
-  font-size: clamp(1rem, 2vw, 1.15rem);
-  line-height: 1.7;
+  max-width: 38rem;
+  margin: 0 auto 1.15rem;
+  color: #e8e8ee;
+  font-size: clamp(1.12rem, 3.2vw, 1.42rem);
+  line-height: 1.65;
+  text-wrap: wrap;
 }
 
 .ok-hero .hero-trust {
@@ -331,15 +533,17 @@ html:not(:has(.admin-app)) .ok-brand strong {
   background: rgb(255 46 151 / 12%);
   border: 1px solid rgb(255 46 151 / 28%);
   color: #f4c4d8;
-  font-size: 0.78rem;
+  font-size: clamp(0.86rem, 2.1vw, 0.98rem);
   font-weight: 700;
 }
 
 .ok-hero-need {
-  margin: 0 0 1rem;
-  color: rgb(255 255 255 / 62%);
-  font-size: 0.8rem;
-  letter-spacing: 0.04em;
+  margin: 1rem auto 0;
+  max-width: 28rem;
+  color: rgb(255 255 255 / 68%);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
 }
 
 .ok-hero-stats {
@@ -348,7 +552,7 @@ html:not(:has(.admin-app)) .ok-brand strong {
   gap: 1.25rem;
   margin-bottom: 1.25rem;
   color: var(--ok-g300);
-  font-size: 0.88rem;
+  font-size: 1rem;
 }
 
 .ok-hero-stats strong {
@@ -675,6 +879,7 @@ html:not(:has(.admin-app)) .ok-brand strong {
   font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: -0.03em;
+  white-space: nowrap;
 }
 
 .ok-pack-price span {
@@ -770,8 +975,7 @@ html:not(:has(.admin-app)) .ok-brand strong {
   }
 
   .ok-pack-price span {
-    display: block;
-    margin: 0.1rem 0 0;
+    margin-left: 0.28rem;
     font-size: 0.72rem;
   }
 
@@ -808,12 +1012,15 @@ html:not(:has(.admin-app)) .ok-brand strong {
 .ok-reviews {
   display: grid;
   gap: 1.25rem;
-  grid-template-columns: 1fr;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
 }
 
 .ok-review {
   display: flex;
+  min-width: 0;
+  width: 100%;
   flex-direction: column;
   padding: 1.7rem 1.6rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -870,6 +1077,7 @@ a.ok-review:hover {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: var(--quote-lines);
+  white-space: normal;
 }
 
 .ok-review-more {
@@ -1258,6 +1466,21 @@ a.ok-review:hover {
   object-fit: cover;
 }
 
+.ok-vid-play {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.ok-vid-plat {
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: rgba(255, 0, 110, 0.15);
+  padding: 0.25rem 0.7rem;
+  color: var(--ok-pink);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
 .ok-vid-body {
   display: flex;
   align-items: center;
@@ -1418,6 +1641,15 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
 }
 
 @media (min-width: 768px) {
+  .ok-vid.is-feature {
+    grid-column: 1 / -1;
+  }
+
+  .ok-vid.is-feature .ok-vid-play {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
   .ok-lang-btn span {
     display: inline;
   }
@@ -1443,7 +1675,14 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
     display: grid;
   }
 
-  .ok-reviews,
+  .ok-reviews {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  }
+
+  .ok-reviews:has(> .ok-review:only-child) {
+    grid-template-columns: minmax(0, 40rem);
+  }
+
   .ok-safety {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1475,6 +1714,12 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
 
   .ok-foot-grid {
     grid-template-columns: 2fr 1fr 1fr;
+  }
+}
+
+@media (max-width: 1023px) {
+  .ok-nav-end .ok-lang {
+    display: none;
   }
 }
 
@@ -1555,6 +1800,26 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
     padding: 3.25rem 1.15rem;
   }
 
+  .ok-vids {
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ok-vid.is-feature {
+    grid-column: auto;
+  }
+
+  .ok-vid-body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    padding: 0.65rem 0.7rem 0.75rem;
+  }
+
+  .ok-vid-body p {
+    font-size: 0.82rem;
+  }
+
   .ok-step-label {
     font-size: 0.62rem;
   }
@@ -1592,6 +1857,7 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
   }
 
   .ok-pack-copy {
+    min-width: 0;
     padding: 0.7rem 0.8rem 0.75rem;
   }
 
@@ -1631,25 +1897,18 @@ html:not(:has(.admin-app)) .ok-page.pay-page .pay-grid {
   }
 
   .ok-pack-actions {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 0.4rem;
     padding-top: 0.55rem;
   }
 
-  .ok-pack-actions .ok-btn {
-    flex: 1;
-    justify-content: center;
-    padding: 0.48rem 0.55rem;
-    font-size: 0.75rem;
-  }
-
+  .ok-pack-actions .ok-btn,
   .ok-pack-actions .ok-btn-ghost {
-    flex: 0 0 auto;
-    width: auto;
-    padding: 0.48rem 0.15rem;
-    border-color: transparent;
-    background: transparent;
-    font-size: 0.72rem;
+    flex: 1 1 100%;
+    justify-content: center;
+    width: 100%;
+    padding: 0.55rem 0.6rem;
+    font-size: 0.78rem;
   }
 }
 
@@ -2733,8 +2992,12 @@ html:not(:has(.admin-app)) .ok-book-page:has(.book-form.is-wizard) .book-slot-bo
   letter-spacing: 0.04em;
 }
 
+html:not(:has(.admin-app)) .admin-modal-overlay {
+  z-index: 1100 !important;
+}
+
 .ok-book-page .admin-modal-overlay {
-  z-index: 240 !important;
+  z-index: 1100 !important;
 }
 
 .ok-book-page .admin-modal-panel {

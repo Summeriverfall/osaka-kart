@@ -14,7 +14,9 @@
     "menu": "메뉴",
     "reviews": "후기",
     "help": "도움말",
-    "viewPackages": "플랜 보기"
+    "viewPackages": "플랜 보기",
+    "language": "언어",
+    "chooseLanguage": "언어를 선택하세요"
   },
   "Gateway": {
     "kicker": "오사카 합법 도로 카트",
@@ -29,21 +31,24 @@
     "lookOni": "스트리트"
   },
   "Hero": {
-    "title": "오늘 밤, 네온 속으로",
-    "titleRest": "도톤보리가 바퀴 아래",
-    "subtitle": "밤의 난바에서 출발해 대열을 따라 도톤보리 불빛 속으로. 헬멧, 슈트, 보험은 요금에 포함. 코스와 날짜만 고르면 오늘 밤 바로 달릴 수 있다.",
+    "title": "오늘 밤, 오사카 네온 속으로",
+    "titleRest": "스트리트 카트로 도톤보리를 가로지르다",
+    "subtitle": "난바에서 출발해 대열을 따라 오사카의 실제 거리를 달립니다. 의상, 가이드, 주행 촬영도 준비되어 있습니다.",
     "cta": "플랜과 요금 보기",
+    "bookTimes": "예약 가능 시간 보기",
+    "seeRoutes": "코스와 플랜 보기",
+    "need": "운전자는 만 18세 이상이며 일본에서 인정되는 유효 면허가 있어야 합니다.",
     "rating": "4.9 (후기 2,000+)",
     "ridersCount": "2,000+",
     "ridersLabel": "라이더",
     "ratingScore": "4.9",
-    "ratingLabel": "평점",
+    "ratingLabel": "게스트 후기",
     "scroll": "아래로"
   },
   "PlansHome": {
     "title": "플랜 선택",
     "select": "선택",
-    "details": "자세히 보기",
+    "details": "경로 보기",
     "prev": "이전 플랜",
     "next": "다음 플랜"
   },
@@ -232,7 +237,7 @@
     "changePlan": "패키지 변경",
     "passport": "여권 번호",
     "nationality": "국적",
-    "request": "요청 사항",
+    "request": "비고",
     "summary": "예약 요약",
     "includedNow": "포함",
     "parts": {
@@ -290,14 +295,14 @@
     "phoneHint": "사람이 답장하는 편이 더 빠릅니다"
   },
   "Shop": {
-    "legal": "시내 도로, 폐쇄 트랙 아님",
-    "tax": "거리에서 가장 멋진 의상",
-    "license": "시간과 코스 선택 풍부",
-    "media": "영상과 사진으로, 가장 특별한 일본 거리의 기억!",
+    "legal": "일반 도로 주행",
+    "tax": "가이드 선도",
+    "license": "장비 현장 제공",
+    "media": "사진·영상 추가 가능",
     "age": "18+",
     "faqLead": "출발 전에 가장 많이 묻는 질문입니다. 면허 규정은 나라마다 다릅니다.",
     "moreHelp": "국가별 면허 안내",
-    "reviewLead": "다녀온 사람들의 이야기.",
+    "reviewLead": "구글 지도에 올라온 실제 후기.",
     "fromReview": "{platform}에서",
     "visitLead": "집합은 난바. 정확한 주소는 예약 후 보내 드립니다.",
     "nextDate": "플랜을 골랐습니다. 다음은 날짜입니다.",
@@ -318,12 +323,12 @@
     "paidBody": "예약이 매장 관리 화면에 반영되었습니다. 확인 후 집합 장소를 이메일로 보냅니다. 당일 면허를 지참하세요."
   },
   "Notes": {
-    "title": "주의사항",
+    "title": "이용약관",
     "agreeLead": "각 항목을 체크하면 내용을 읽고 동의한 것으로 봅니다.",
     "open": "읽고 동의",
     "view": "보기",
     "openHint": "면허, 나이, 복장, 날씨, 취소 정책",
-    "agreed": "동의 완료",
+    "agreed": "이용약관에 동의함",
     "agreeBtn": "읽고 동의합니다",
     "payTitle": "면허 주의사항",
     "more": "더 보기",

@@ -14,7 +14,9 @@
     "menu": "Menu",
     "reviews": "Reviews",
     "help": "Help",
-    "viewPackages": "View Packages"
+    "viewPackages": "View Packages",
+    "language": "Language",
+    "chooseLanguage": "Choose your language"
   },
   "Gateway": {
     "kicker": "Street-legal karting in Osaka",
@@ -29,21 +31,24 @@
     "lookOni": "Street"
   },
   "Hero": {
-    "title": "Tonight, into the neon",
-    "titleRest": "Dotonbori under the wheels",
-    "subtitle": "Roll out of Namba at night and follow the convoy into Dotonbori's lights. Helmet, suit, and insurance are already in the price — pick a plan and a date, and you're on the street tonight.",
+    "title": "Tonight, into Osaka’s neon",
+    "titleRest": "Street kart through Dotonbori",
+    "subtitle": "Start in Namba and follow the convoy on real Osaka streets. Outfits, a guide, and trip photos are available.",
     "cta": "See plans and prices",
+    "bookTimes": "See available times",
+    "seeRoutes": "See routes and packages",
+    "need": "Drivers must be 18 or older and hold a valid license accepted in Japan.",
     "rating": "4.9 (2,000+ reviews)",
     "ridersCount": "2,000+",
     "ridersLabel": "Happy Riders",
     "ratingScore": "4.9",
-    "ratingLabel": "Rating",
+    "ratingLabel": "from guest reviews",
     "scroll": "Scroll"
   },
   "PlansHome": {
     "title": "Choose Your Plan",
     "select": "Select",
-    "details": "View details",
+    "details": "View route map",
     "prev": "Previous plan",
     "next": "Next plan"
   },
@@ -232,7 +237,7 @@
     "changePlan": "Change package",
     "passport": "ID / passport no.",
     "nationality": "Nationality",
-    "request": "Special requests",
+    "request": "Notes",
     "summary": "Order summary",
     "includedNow": "Included",
     "parts": {
@@ -290,14 +295,14 @@
     "phoneHint": "A person usually replies faster"
   },
   "Shop": {
-    "legal": "City streets, not a closed track",
-    "tax": "The coolest street outfits",
-    "license": "Lots of times and routes to pick",
-    "media": "Videos and photos — the most unique Japan street memory!",
+    "legal": "Public streets",
+    "tax": "Guide-led convoy",
+    "license": "Gear provided on site",
+    "media": "Photos and video extra",
     "age": "18+",
     "faqLead": "The questions people ask before they ride. License rules differ by country.",
     "moreHelp": "License notes by country",
-    "reviewLead": "What riders take away.",
+    "reviewLead": "Real reviews from Google Maps.",
     "fromReview": "From {platform}",
     "visitLead": "We meet in Namba. The exact pin is sent after you book.",
     "nextDate": "Plan selected. Next, pick a date.",
@@ -318,12 +323,12 @@
     "paidBody": "Your booking is now in the shop console. After staff confirm, a meeting pin is emailed. Bring your license on the day."
   },
   "Notes": {
-    "title": "Before you ride",
+    "title": "User agreement",
     "agreeLead": "Tick each item to confirm you have read and agree.",
     "open": "Read and agree",
     "view": "View",
     "openHint": "License, age, clothing, weather, and cancellation",
-    "agreed": "Notes agreed",
+    "agreed": "Agreement accepted",
     "agreeBtn": "I have read and agree",
     "payTitle": "License notes",
     "more": "Read more",

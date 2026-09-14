@@ -1,10 +1,12 @@
 "use client";
 
-import { type CSSProperties, type Ref, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { Star } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { localeText } from "@/lib/live-cms";
 import type { CmsReview } from "@/lib/mock/cms";
+
+const PREVIEW_LINES = 8;
 
 type Props = {
   reviews: CmsReview[];
@@ -14,23 +16,66 @@ type Props = {
 
 export function HomeReviews({ reviews, kicker, title }: Props) {
   const locale = useLocale();
-  const firstQuoteRef = useRef<HTMLQuoteElement>(null);
-  const [lines, setLines] = useState<number | null>(null);
-  const [capPx, setCapPx] = useState<number | null>(null);
+
+  return (
+    <section id="reviews" className="ok-sec ok-sec-alt">
+      <div className="ok-sec-wide">
+        <header className="ok-sec-head">
+          {kicker ? <p className="ok-kicker">{kicker}</p> : null}
+          <h2>{title}</h2>
+        </header>
+        <div className="ok-reviews">
+          {reviews.map((item) => (
+            <ReviewCard key={item.id} item={item} locale={locale} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ReviewCard({ item, locale }: { item: CmsReview; locale: string }) {
+  const t = useTranslations("ReviewsHome");
+  const shop = useTranslations("Shop");
+  const href = item.url?.trim();
+  const text = localeText(item.quote, locale);
+  const [open, setOpen] = useState(false);
+  const quoteEl = useRef<HTMLQuoteElement>(null);
+  const [overflow, setOverflow] = useState(false);
+  const clamp = !open;
 
   useEffect(() => {
-    const el = firstQuoteRef.current;
+    const el = quoteEl.current;
     if (!el) return;
 
     function measure() {
-      const quote = firstQuoteRef.current;
+      const quote = quoteEl.current;
       if (!quote) return;
       const style = getComputedStyle(quote);
       const fontSize = Number.parseFloat(style.fontSize) || 14;
       const lineHeight = Number.parseFloat(style.lineHeight) || fontSize * 1.7;
-      const height = quote.scrollHeight;
-      setCapPx(height);
-      setLines(Math.max(4, Math.round(height / lineHeight)));
+      const probe = document.createElement("blockquote");
+      probe.className = quote.className.replace("is-clamp", "").trim();
+      probe.textContent = quote.textContent ?? "";
+      probe.style.cssText = [
+        "position:absolute",
+        "left:-9999px",
+        "top:0",
+        "visibility:hidden",
+        "display:block",
+        "height:auto",
+        "max-height:none",
+        `-webkit-line-clamp:unset`,
+        `width:${quote.clientWidth}px`,
+        `font:${style.font}`,
+        `letter-spacing:${style.letterSpacing}`,
+        "white-space:pre-wrap",
+        `line-height:${style.lineHeight}`,
+      ].join(";");
+      quote.parentElement?.appendChild(probe);
+      const full = probe.scrollHeight;
+      probe.remove();
+      setOverflow(full > lineHeight * PREVIEW_LINES + 2);
     }
 
     measure();
@@ -41,77 +86,11 @@ export function HomeReviews({ reviews, kicker, title }: Props) {
       ro.disconnect();
       window.removeEventListener("resize", measure);
     };
-  }, [reviews, locale]);
+  }, [text, locale]);
 
-  return (
-    <section id="reviews" className="ok-sec ok-sec-alt">
-      <div className="ok-sec-wide">
-        <header className="ok-sec-head">
-          {kicker ? <p className="ok-kicker">{kicker}</p> : null}
-          <h2>{title}</h2>
-        </header>
-        <div className="ok-reviews">
-          {reviews.map((item, index) => (
-            <ReviewCard
-              key={item.id}
-              item={item}
-              locale={locale}
-              quoteRef={index === 0 ? firstQuoteRef : undefined}
-              lines={index === 0 ? null : lines}
-              capPx={index === 0 ? null : capPx}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ReviewCard({
-  item,
-  locale,
-  quoteRef,
-  lines,
-  capPx,
-}: {
-  item: CmsReview;
-  locale: string;
-  quoteRef?: Ref<HTMLQuoteElement>;
-  lines: number | null;
-  capPx: number | null;
-}) {
-  const t = useTranslations("ReviewsHome");
-  const shop = useTranslations("Shop");
-  const href = item.url?.trim();
-  const text = localeText(item.quote, locale);
-  const [open, setOpen] = useState(false);
-  const quoteEl = useRef<HTMLQuoteElement>(null);
-  const [overflow, setOverflow] = useState(false);
-  const clamp = Boolean(lines) && !open;
-
-  useEffect(() => {
-    const el = quoteEl.current;
-    if (!el || !lines || open) {
-      setOverflow(false);
-      return;
-    }
-    const id = requestAnimationFrame(() => {
-      setOverflow(el.scrollHeight > el.clientHeight + 1);
-    });
-    return () => cancelAnimationFrame(id);
-  }, [text, lines, open]);
-
-  function setQuoteRef(node: HTMLQuoteElement | null) {
-    quoteEl.current = node;
-    if (!quoteRef) return;
-    if (typeof quoteRef === "function") quoteRef(node);
-    else quoteRef.current = node;
-  }
-
-  const quoteStyle = {
-    ...(capPx && !open ? { minHeight: capPx } : null),
-    ...(clamp && lines ? ({ "--quote-lines": String(lines) } as CSSProperties) : null),
-  };
+  const quoteStyle = clamp
+    ? ({ "--quote-lines": String(PREVIEW_LINES) } as CSSProperties)
+    : undefined;
 
   return (
     <article className="ok-review">
@@ -120,7 +99,7 @@ function ReviewCard({
           <Star key={star} className="inline size-4 fill-current" />
         ))}
       </p>
-      <blockquote ref={setQuoteRef} className={clamp ? "is-clamp" : undefined} style={quoteStyle}>
+      <blockquote ref={quoteEl} className={clamp ? "is-clamp" : undefined} style={quoteStyle}>
         “{text}”
       </blockquote>
       <div className="ok-review-more">

@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { FileProtocolNav } from "@/components/file-protocol-nav";
 import { PromoCapture } from "@/components/promo/promo-capture";
+import { LocaleGate } from "@/components/site/locale-switcher";
 import { routing } from "@/i18n/routing";
 import { acidPaletteBootScript } from "@/lib/acid-palette";
 
@@ -59,6 +60,7 @@ export default async function LocaleLayout({
         >
           <FileProtocolNav />
           <PromoCapture />
+          <LocaleGate />
           {children}
         </NextIntlClientProvider>
       </body>

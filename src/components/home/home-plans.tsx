@@ -5,7 +5,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatJpy } from "@/lib/format";
 import { useLivePlans } from "@/lib/live-catalog";
-import { coverOf } from "@/lib/media";
+import { coverOf, routeOf } from "@/lib/media";
+import { RouteMapLightbox } from "@/components/plan/route-map-dialog";
 import { appPageHref, isFileProtocol, navigateToHref } from "@/lib/file-href";
 import { withSlash } from "@/lib/paths";
 import type { PlanWithTranslation } from "@/lib/plans/types";
@@ -25,18 +26,21 @@ export function HomePlans({ plans: seedPlans, locale, sectionId = "plans", kicke
   const plans = useLivePlans(seedPlans, locale);
   const trackRef = useRef<HTMLDivElement>(null);
   const [pager, setPager] = useState({ prev: false, next: false });
+  const [routeId, setRouteId] = useState<string | null>(null);
+  const routePlan = plans.find((item) => item.id === routeId) ?? null;
 
   function updatePager() {
     const el = trackRef.current;
     if (!el) {
-      setPager({ prev: false, next: false });
+      setPager((prev) => (prev.prev || prev.next ? { prev: false, next: false } : prev));
       return;
     }
     const max = el.scrollWidth - el.clientWidth;
-    setPager({
+    const next = {
       prev: el.scrollLeft > 20,
       next: max - el.scrollLeft > 20,
-    });
+    };
+    setPager((prev) => (prev.prev === next.prev && prev.next === next.next ? prev : next));
   }
 
   function slide(dir: -1 | 1) {
@@ -101,7 +105,6 @@ export function HomePlans({ plans: seedPlans, locale, sectionId = "plans", kicke
         {plans.map((plan) => {
           const points = plan.translation.highlights.slice(0, 3);
           const bookPath = withSlash(`/booking?plan=${plan.slug}`);
-          const detailPath = withSlash(`/plan/${plan.slug}`);
           return (
             <article key={plan.id} className="ok-pack-card">
               <div className="ok-pack-photo">
@@ -130,15 +133,18 @@ export function HomePlans({ plans: seedPlans, locale, sectionId = "plans", kicke
                   <a className="ok-btn" href={appPageHref(bookPath, locale)} onClick={go(bookPath)}>
                     {nav("booking")}
                   </a>
-                  <a className="ok-btn-ghost" href={appPageHref(detailPath, locale)} onClick={go(detailPath)}>
-                    {t("details")}
-                  </a>
+                  {routeOf(plan) ? (
+                    <button type="button" className="ok-btn-ghost" onClick={() => setRouteId(plan.id)}>
+                      {t("details")}
+                    </button>
+                  ) : null}
                 </div>
               </div>
             </article>
           );
         })}
       </div>
+      <RouteMapLightbox plan={routePlan} onClose={() => setRouteId(null)} />
     </div>
   );
 
