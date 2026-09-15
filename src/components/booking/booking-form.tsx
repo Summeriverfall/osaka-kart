@@ -301,6 +301,11 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
     setErrors((cur) => ({ ...cur, notes: "" }));
   }
 
+  function revokeNotes() {
+    setNotes(emptyNoteChecks());
+    store.patch({ licenseOk: false });
+  }
+
   function revealFormErrors(nextErrors: Record<string, string>) {
     const order = ["name", "phone", "email", "licence", "notes"];
     const first = order.find((key) => nextErrors[key]) || Object.keys(nextErrors)[0];
@@ -308,10 +313,7 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
     window.requestAnimationFrame(() => {
       const node = document.getElementById(`book-field-${first}`);
       node?.scrollIntoView({ behavior: "smooth", block: "center" });
-      if (first === "notes") {
-        window.setTimeout(() => setNotesOpen(true), 420);
-        return;
-      }
+      if (first === "notes") return;
       const focusable = node?.querySelector<HTMLElement>("input, button");
       focusable?.focus({ preventScroll: true });
     });
@@ -550,13 +552,22 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
         <AddonPicker addons={addonCards} ctaLabel={t("submit")} onCta={() => undefined} sticky={false} layout="rows" />
       </div>
       <div id="book-field-notes" className={cn("book-notes-block", errors.notes && "is-bad")}>
-        <button type="button" className={cn("book-notes-open", notesOk && "is-on", errors.notes && "is-bad")} onClick={() => setNotesOpen(true)}>
+        <div className={cn("book-notes-open", notesOk && "is-on", errors.notes && "is-bad")}>
+          <button
+            type="button"
+            className={cn("book-notes-check", notesOk && "is-on")}
+            aria-pressed={notesOk}
+            aria-label={notesOk ? tn("agreed") : tn("open")}
+            onClick={() => (notesOk ? revokeNotes() : setNotesOpen(true))}
+          />
           <span className="book-notes-open-copy">
             <strong>{tn("title")}</strong>
-            <small>{notesOk ? tn("agreed") : errors.notes || tn("openHint")}</small>
+            <small>{notesOk ? tn("agreed") : tn("openHint")}</small>
           </span>
-          <span className="book-notes-open-cta">{notesOk ? tn("view") : tn("open")}</span>
-        </button>
+          <button type="button" className="book-notes-open-cta" onClick={() => setNotesOpen(true)}>
+            {notesOk ? tn("view") : tn("open")}
+          </button>
+        </div>
         {errors.notes ? <em className="book-field-err">{errors.notes}</em> : null}
       </div>
     </div>

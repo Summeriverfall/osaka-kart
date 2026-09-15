@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { ArrowLeft, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -8,16 +8,20 @@ import { useFileRouter as useRouter } from "@/lib/use-file-router";
 import { formatJpy } from "@/lib/format";
 import { withSlash } from "@/lib/paths";
 import { appPageHref, isFileProtocol } from "@/lib/file-href";
+import { finalizePaidBooking } from "@/lib/booking/finalize-pay";
 import { createStripeCheckout, isStripeTestMode } from "@/lib/stripe/browser";
 import {
   BOOKING_RESULT_KEY,
   type BookingResult,
 } from "@/stores/booking-store";
+import { PayMethodMark, type PayMethod } from "@/components/booking/pay-icons";
 import { RideNotes } from "@/components/notes/ride-notes";
 import { SiteNav } from "@/components/site/site-nav";
+import { enabledPayMethods } from "@/lib/live-catalog";
 import { japanAppointmentPassed } from "@/lib/japan-time";
+import { cn } from "@/lib/utils";
 import { useBookingStore } from "@/stores/booking-store";
-import { scheduleOpsRehydrate } from "@/stores/ops-store";
+import { useOpsStore, scheduleOpsRehydrate } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 
 type PayViewProps = {
@@ -28,8 +32,15 @@ export function PayView({ locale }: PayViewProps) {
   const t = useTranslations("Pay");
   const success = useTranslations("Success");
   const router = useRouter();
+  const settings = useOpsStore((state) => state.settings);
   const notify = useToastStore((state) => state.notify);
+  const methods = enabledPayMethods(settings);
   const [result, setResult] = useState<BookingResult | null>(null);
+  const [method, setMethod] = useState<PayMethod>("stripe");
+  const [number, setNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvc, setCvc] = useState("");
+  const [holder, setHolder] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -41,6 +52,10 @@ export function PayView({ locale }: PayViewProps) {
       setResult(null);
     }
   }, []);
+
+  useEffect(() => {
+    if (!methods.includes(method)) setMethod(methods.includes("stripe") ? "stripe" : (methods[0] ?? "card"));
+  }, [methods, method]);
 
   async function payWithStripe() {
     if (!result || busy) return;
@@ -57,8 +72,9 @@ export function PayView({ locale }: PayViewProps) {
       const origin = window.location.origin;
       const successUrl = `${origin}${appPageHref(withSlash("/success"), locale)}?session_id={CHECKOUT_SESSION_ID}`;
       const cancelUrl = `${origin}${appPageHref(withSlash("/pay"), locale)}`;
-      const addons = useBookingStore.getState().addons
-        .filter((item) => item.qty > 0)
+      const addons = useBookingStore
+        .getState()
+        .addons.filter((item) => item.qty > 0)
         .map((item) => ({ slug: item.slug, qty: item.qty, name: item.name }));
       const url = await createStripeCheckout({
         origin,
@@ -81,6 +97,35 @@ export function PayView({ locale }: PayViewProps) {
       notify(code === "offline" || code === "missing-secret" ? t("stripeOffline") : t("stripeFail"));
       setBusy(false);
     }
+  }
+
+  function finishFakePay() {
+    if (!result) return;
+    const done = finalizePaidBooking(result);
+    if (!done.ok) {
+      notify(t("timePassed"));
+      setBusy(false);
+      return;
+    }
+    notify(done.already ? t("alreadySynced") : t("synced"));
+    router.push(withSlash("/success"));
+  }
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!result || busy) return;
+    if (method === "stripe") {
+      void payWithStripe();
+      return;
+    }
+    if (method === "card") {
+      const digits = number.replace(/\s/g, "");
+      if (digits.length < 15 || expiry.length < 4 || cvc.length < 3 || !holder.trim()) {
+        return;
+      }
+    }
+    setBusy(true);
+    window.setTimeout(finishFakePay, 650);
   }
 
   return (
@@ -115,22 +160,122 @@ export function PayView({ locale }: PayViewProps) {
           </div>
         ) : (
           <div className="pay-grid">
-            <div className="pay-panel">
+            <form className="pay-panel" onSubmit={onSubmit}>
               <p className="pay-secure">
                 <Lock className="size-4" />
                 {t("secure")}
               </p>
-              <p className="pay-card-note">{t("stripeLead")}</p>
-              {isStripeTestMode() ? <p className="pay-wallet-note">{t("testHint")}</p> : null}
+              <p className="pay-label">{t("methods")}</p>
+              <div className="pay-methods" role="tablist">
+                {(
+                  [
+                    ["card", t("card")],
+                    ["paypay", t("paypay")],
+                    ["apple", t("apple")],
+                    ["alipay", t("alipay")],
+                    ["wechat", t("wechat")],
+                    ["stripe", t("stripe")],
+                  ] as const
+                )
+                  .filter(([id]) => methods.includes(id))
+                  .map(([id, label]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      role="tab"
+                      aria-selected={method === id}
+                      className={cn("pay-method", method === id && "is-on")}
+                      onClick={() => setMethod(id)}
+                    >
+                      <PayMethodMark id={id} />
+                      <span className="pay-method-name">{label}</span>
+                      {id === "card" ? <span className="pay-method-hint">{t("cardVia")}</span> : null}
+                    </button>
+                  ))}
+              </div>
+
+              {method === "stripe" ? (
+                <>
+                  <p className="pay-card-note">{t("stripeLead")}</p>
+                  {isStripeTestMode() ? <p className="pay-wallet-note">{t("testHint")}</p> : null}
+                </>
+              ) : method === "card" ? (
+                <div className="pay-card-fields">
+                  <p className="pay-card-note">{t("cardNote")}</p>
+                  <label>
+                    <span>{t("number")}</span>
+                    <input
+                      inputMode="numeric"
+                      autoComplete="cc-number"
+                      placeholder="ACCT-000015"
+                      value={number}
+                      onChange={(event) =>
+                        setNumber(
+                          event.target.value
+                            .replace(/[^\d]/g, "")
+                            .slice(0, 16)
+                            .replace(/(\d{4})(?=\d)/g, "$1 ")
+                            .trim(),
+                        )
+                      }
+                      required
+                    />
+                  </label>
+                  <div className="pay-card-row">
+                    <label>
+                      <span>{t("expiry")}</span>
+                      <input
+                        inputMode="numeric"
+                        autoComplete="cc-exp"
+                        placeholder="MM / YY"
+                        value={expiry}
+                        onChange={(event) => {
+                          const digits = event.target.value.replace(/[^\d]/g, "").slice(0, 4);
+                          setExpiry(digits.length > 2 ? `${digits.slice(0, 2)} / ${digits.slice(2)}` : digits);
+                        }}
+                        required
+                      />
+                    </label>
+                    <label>
+                      <span>{t("cvc")}</span>
+                      <input
+                        inputMode="numeric"
+                        autoComplete="cc-csc"
+                        placeholder="123"
+                        value={cvc}
+                        onChange={(event) => setCvc(event.target.value.replace(/[^\d]/g, "").slice(0, 4))}
+                        required
+                      />
+                    </label>
+                  </div>
+                  <label>
+                    <span>{t("holder")}</span>
+                    <input
+                      autoComplete="cc-name"
+                      value={holder}
+                      onChange={(event) => setHolder(event.target.value)}
+                      required
+                    />
+                  </label>
+                </div>
+              ) : (
+                <p className="pay-wallet-note">{t("walletNote")}</p>
+              )}
+
               <button
-                type="button"
-                className="cta-btn pay-submit pay-stripe"
+                type="submit"
+                className={cn(
+                  "cta-btn pay-submit",
+                  method === "apple" && "pay-apple",
+                  method === "alipay" && "pay-alipay",
+                  method === "wechat" && "pay-wechat",
+                  method === "stripe" && "pay-stripe",
+                )}
                 disabled={busy}
-                onClick={() => void payWithStripe()}
               >
                 {t("payNow", { price: formatJpy(result.totalJpy, locale) })}
               </button>
-            </div>
+            </form>
 
             <div className="pay-side">
               <aside className="pay-summary">
@@ -155,18 +300,6 @@ export function PayView({ locale }: PayViewProps) {
                     <dd>{formatJpy(result.totalJpy, locale)}</dd>
                   </div>
                 </dl>
-                <a
-                  href={appPageHref(withSlash("/booking?from=pay"), locale)}
-                  className="shop-text-link"
-                  suppressHydrationWarning
-                  onClick={(event) => {
-                    if (!isFileProtocol()) return;
-                    event.preventDefault();
-                    router.push(withSlash("/booking?from=pay"));
-                  }}
-                >
-                  {t("backEdit")}
-                </a>
               </aside>
               <aside className="pay-license">
                 <RideNotes compact />
