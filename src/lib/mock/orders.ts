@@ -118,10 +118,18 @@ function prefixOf(storeId: string) {
   return "FK";
 }
 
-function statusOf(dayOffset: number, index: number): OrderStatus {
+function isNambaDepartDay(date: string) {
+  const parsed = parseIsoDate(date);
+  const dow = parsed.getDay();
+  if (dow === 6) return true;
+  return parsed.getDate() % 4 === 1;
+}
+
+function statusOf(date: string, dayOffset: number, index: number, storeId: string): OrderStatus {
   if (index === 1) return "pending";
   if (dayOffset < 0 && index === 3) return "completed";
   if (dayOffset <= -2 && index === 0) return "cancelled";
+  if (storeId === "namba" && dayOffset >= 0 && !isNambaDepartDay(date)) return "pending";
   return "confirmed";
 }
 
@@ -140,11 +148,11 @@ export function buildWeekDemoOrders(today = todayIsoDate()): MockOrder[] {
     for (let index = 0; index < 4; index += 1) {
       const guest = GUESTS[(dayIndex * 4 + index) % GUESTS.length];
       const storeId = storeOf(dayOffset, index);
-      const status = statusOf(dayOffset, index);
+      const status = statusOf(date, dayOffset, index, storeId);
       const time = SLOTS[(index + Math.abs(dayOffset)) % SLOTS.length];
       rows.push({
         ...guest,
-        id: `${prefixOf(storeId)}-${compact}-${String(index + 1).padStart(3, "0")}`,
+        id: `${prefixOf(storeId)}-${compact}-${String(index + 201).padStart(3, "0")}`,
         date,
         time,
         status,
@@ -181,7 +189,5 @@ export function isRolledDemoOrder(order: MockOrder) {
 export function mergeFreshDemoOrders(orders: MockOrder[], today = todayIsoDate()): MockOrder[] {
   const keep = orders.filter((item) => !isRolledDemoOrder(item) && !item.id.startsWith("FK-H-"));
   const keepIds = new Set(keep.map((item) => item.id));
-  const existingDemo = new Map(orders.filter(isRolledDemoOrder).map((item) => [item.id, item]));
-  const demo = buildWeekDemoOrders(today).map((item) => existingDemo.get(item.id) ?? item);
-  return [...keep, ...demo.filter((item) => !keepIds.has(item.id))];
+  return [...keep, ...buildWeekDemoOrders(today).filter((item) => !keepIds.has(item.id))];
 }

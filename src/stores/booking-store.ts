@@ -18,6 +18,8 @@ export type BookingDraft = {
   name: string;
   email: string;
   phone: string;
+  licenceCountry: string;
+  nationality: string;
   licenseOk: boolean;
   affiliateCode: string;
 };
@@ -31,6 +33,8 @@ const emptyDraft: BookingDraft = {
   name: "",
   email: "",
   phone: "",
+  licenceCountry: "",
+  nationality: "",
   licenseOk: false,
   affiliateCode: "",
 };
@@ -160,6 +164,7 @@ export type BookingResult = BookingDraft & {
   synced?: boolean;
   passport?: string;
   nationality?: string;
+  licenceCountry?: string;
   note?: string;
   storeId?: string;
 };

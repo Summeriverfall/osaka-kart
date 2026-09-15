@@ -55,6 +55,7 @@ html:not(:has(.admin-app)) .ok-brand strong {
   font-size: inherit;
   font-weight: inherit;
   letter-spacing: inherit;
+  text-transform: inherit;
 }
 
 .ok-nav {
@@ -570,6 +571,11 @@ html[lang="ko"] .ok-hero-line {
   justify-content: center;
   gap: 0.85rem;
   flex-wrap: wrap;
+}
+
+.ok-hero-actions .ok-btn {
+  text-align: center;
+  max-width: 100%;
 }
 
 .ok-btn {
@@ -1509,6 +1515,11 @@ a.ok-review:hover {
   margin-bottom: 1.75rem;
 }
 
+.ok-steps.is-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 22rem;
+}
+
 .ok-step {
   position: relative;
   display: flex;
@@ -1573,6 +1584,302 @@ html:not(:has(.admin-app)) .ok-page .book-form {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1.25rem;
   background: rgba(22, 22, 37, 0.78);
+}
+
+.book-date-stage {
+  position: relative;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-date-stage {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-date-stage .cal-board {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.book-picked-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0 0 0.85rem;
+}
+
+.book-picked-plan span {
+  color: var(--ok-pink);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.book-picked-plan strong {
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 750;
+}
+
+.book-date-label {
+  margin: 0 0 0.7rem;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.book-picked-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  margin: 0.85rem 0 0;
+  padding: 0.7rem 0.9rem;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 0.9rem;
+  color: var(--ok-g300);
+  font-size: 0.88rem;
+}
+
+.book-picked-slot small {
+  color: var(--ok-g300);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+}
+
+.book-picked-slot b {
+  color: inherit;
+  font-size: 0.95rem;
+  font-weight: 750;
+}
+
+.book-picked-slot.is-on {
+  border-style: solid;
+  border-color: rgba(255, 46, 147, 0.35);
+  background: rgba(255, 46, 147, 0.08);
+  color: #fff;
+  font-weight: 700;
+}
+
+.book-picked-slot.is-on b {
+  color: #fff;
+}
+
+.book-riders {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.book-riders > span {
+  color: var(--ok-g300);
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.book-riders-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.book-riders-ctrl button {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.book-riders-ctrl button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.book-riders-ctrl strong {
+  min-width: 1.6rem;
+  color: #fff;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.book-slot-pop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+}
+
+.book-slot-scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(4, 4, 10, 0.72);
+  cursor: pointer;
+}
+
+.book-slot-sheet {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(26rem, 100%);
+  max-height: min(88vh, 40rem);
+  overflow: auto;
+  padding: 1.05rem 1rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.15rem;
+  background: #161625;
+}
+
+.book-slot-title {
+  margin: 0;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.book-slot-sub {
+  margin: 0.2rem 0 0.75rem;
+  color: var(--ok-g300);
+  font-size: 0.82rem;
+}
+
+.book-slot-kicker {
+  margin: 0 0 0.65rem;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.book-slot-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 0;
+  overflow: auto;
+}
+
+.book-slot-opt {
+  display: grid;
+  grid-template-columns: 4.6rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.045);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.book-slot-opt b {
+  color: #fff;
+  font-size: 1.12rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.book-slot-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.book-slot-copy em {
+  color: #d1d5db;
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.book-slot-copy small {
+  color: var(--ok-g300);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.book-slot-opt.is-recommend {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.book-slot-opt.is-recommend em {
+  color: #4ade80;
+}
+
+.book-slot-opt.is-on {
+  border-color: transparent;
+  background: var(--ok-grad);
+  box-shadow: 0 8px 22px rgba(255, 0, 110, 0.24);
+}
+
+.book-slot-opt.is-on b,
+.book-slot-opt.is-on em,
+.book-slot-opt.is-on small {
+  color: #fff;
+}
+
+.book-slot-opt.is-off {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.book-slot-confirm {
+  width: 100%;
+  margin-top: 0.85rem;
+}
+
+.book-slot-confirm:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+@media (max-width: 1023px) {
+  .book-slot-pop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .book-slot-sheet {
+    width: 100%;
+    max-height: 82vh;
+    border-radius: 1.25rem 1.25rem 0 0;
+  }
+}
+
+.ok-nav-sheet-contact-btn {
+  width: 100%;
+  min-height: 2.9rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 650;
+  cursor: pointer;
 }
 
 html:not(:has(.admin-app)) .ok-page .book-slots {
@@ -2796,24 +3103,173 @@ html:not(:has(.admin-app)) .ok-included.is-loud .addon-included {
   grid-auto-rows: 1fr;
 }
 
+.ok-book-page .cal-board.is-booking .cal-cell {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
+}
+
+.ok-book-page .cal-board.is-booking .cal-cell.is-recommended:not(:disabled) {
+  background: rgba(8, 12, 18, 0.55);
+  border-color: rgba(34, 197, 94, 0.72);
+  box-shadow: none;
+}
+
+.ok-book-page .cal-board.is-booking .cal-cell.is-recommended:not(:disabled) .cal-tag,
+.ok-book-page .cal-board.is-booking .cal-tag.is-recommend {
+  color: #4ade80;
+}
+
+.ok-book-page .cal-board.is-booking .cal-cell.is-open:not(:disabled) .cal-tag,
+.ok-book-page .cal-board.is-booking .cal-tag.is-open {
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 650;
+}
+
+.ok-book-page .cal-board.is-booking .cal-cell:not(:disabled):not(.is-on):hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.ok-book-page .cal-board.is-booking .cal-cell.is-empty,
+.ok-book-page .cal-board.is-booking .cal-cell:disabled {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  opacity: 0.38;
+}
+
+.ok-book-page .cal-board.is-booking .cal-cell:disabled b {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.ok-book-page .cal-board.is-booking .cal-cell:disabled:hover {
+  background: transparent;
+}
+
+.ok-book-page .cal-board.is-booking .cal-cell.is-on {
+  outline: 0;
+  border-color: transparent;
+  background: var(--ok-grad);
+  box-shadow: 0 8px 22px rgba(255, 0, 110, 0.28);
+  opacity: 1;
+}
+
+.ok-book-page .cal-board.is-booking .cal-cell.is-on .cal-tag.is-recommend {
+  color: #86efac;
+}
+
+.ok-book-page .cal-board.is-booking .cal-cell.is-on .cal-tag.is-open {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.ok-book-page .cal-board.is-booking .cal-legend {
+  justify-content: center;
+  margin-top: 0.55rem;
+  gap: 0.7rem 0.95rem;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.ok-book-page .cal-board.is-booking .cal-legend li {
+  gap: 0.32rem;
+}
+
+.ok-book-page .cal-board.is-booking .cal-dot {
+  display: inline-block;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.ok-book-page .cal-board.is-booking .cal-dot.is-recommended {
+  background: #22c55e;
+}
+
+.ok-book-page .cal-board.is-booking .cal-dot.is-open {
+  background: #e5e7eb;
+}
+
+.ok-book-page .cal-board.is-booking .cal-dot.is-blocked {
+  background: #6b7280;
+}
+
+.ok-book-page .cal-board.is-booking .cal-tag {
+  margin-top: 0;
+  font-size: 0.52rem;
+  letter-spacing: 0.02em;
+}
+
 .ok-book-page:has(.book-form.is-wizard) .cal-cell {
   min-height: 0;
   height: 100%;
   justify-content: center;
-  border: 0;
+  gap: 0.08rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 0.9rem;
   background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-open:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-recommended:not(:disabled) {
+  background: rgba(8, 12, 18, 0.55);
+  border-color: rgba(34, 197, 94, 0.72);
+  box-shadow: none;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-recommended:not(:disabled) .cal-tag {
+  color: #4ade80;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-open:not(:disabled) .cal-tag {
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 650;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell:not(:disabled):not(.is-on):hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.ok-book-page:has(.book-form.is-wizard) .book-picked-plan {
+  display: none;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on .cal-tag.is-recommend {
+  color: #86efac;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on .cal-tag.is-open {
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .ok-book-page:has(.book-form.is-wizard) .cal-cell.is-empty,
 .ok-book-page:has(.book-form.is-wizard) .cal-cell:disabled {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  opacity: 0.38;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell:disabled b {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-cell:disabled:hover {
   background: transparent;
 }
 
 .ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on {
   outline: 0;
+  border-color: transparent;
   background: var(--ok-grad);
   box-shadow: 0 8px 22px rgba(255, 0, 110, 0.28);
+  opacity: 1;
 }
 
 .ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on b,
@@ -2837,8 +3293,40 @@ html:not(:has(.admin-app)) .ok-included.is-loud .addon-included {
 .ok-book-page:has(.book-form.is-wizard) .cal-legend {
   flex-shrink: 0;
   justify-content: center;
-  margin-top: 0.65rem;
-  gap: 0.85rem;
+  margin-top: 0.55rem;
+  gap: 0.7rem 0.95rem;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-legend li {
+  gap: 0.32rem;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-dot {
+  display: inline-block;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-dot.is-recommended {
+  background: #22c55e;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-dot.is-open {
+  background: #e5e7eb;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-dot.is-blocked {
+  background: #6b7280;
+}
+
+.ok-book-page:has(.book-form.is-wizard) .cal-tag {
+  margin-top: 0;
+  font-size: 0.52rem;
+  letter-spacing: 0.02em;
 }
 
 html:not(:has(.admin-app)) .ok-book-page:has(.book-form.is-wizard) .book-slot-board {
@@ -2930,6 +3418,262 @@ html:not(:has(.admin-app)) .ok-book-page:has(.book-form.is-wizard) .book-slot-bo
   padding-bottom: 0.4rem;
 }
 
+.book-summary-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.book-summary-kicker {
+  margin: 0 0 0.25rem;
+  color: var(--ok-pink);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.book-summary-card strong {
+  display: block;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+.book-summary-card p {
+  margin: 0.2rem 0 0;
+  color: var(--ok-g300);
+  font-size: 0.82rem;
+}
+
+.book-summary-edit {
+  flex-shrink: 0;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.book-lead {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.book-lead-title {
+  margin: 0;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 750;
+}
+
+.book-lead-hint {
+  margin: 0;
+  color: var(--ok-g300);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.book-field > span i {
+  margin-left: 0.35rem;
+  color: var(--ok-pink);
+  font-style: normal;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+}
+
+.book-field > span i.is-opt {
+  color: var(--ok-g300);
+}
+
+.book-field-err {
+  color: #fb7185;
+  font-size: 0.72rem;
+  font-style: normal;
+}
+
+.book-field.is-bad input,
+.book-field.is-bad .book-combo input,
+.book-field.is-bad .book-phone,
+.book-field.is-bad .book-phone-dial-btn,
+.book-field.is-bad .book-phone input,
+.book-combo.is-bad input,
+.book-phone.is-bad,
+.book-phone.is-bad input,
+.book-notes-open.is-bad {
+  border-color: #fb7185;
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.3);
+  background: rgba(251, 113, 133, 0.08);
+}
+
+.book-notes-block {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.book-notes-open.is-bad {
+  animation: book-notes-pulse 1.15s ease 0s 2;
+}
+
+@keyframes book-notes-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(251, 113, 133, 0.16);
+  }
+}
+
+.book-combo {
+  position: relative;
+}
+
+.book-combo input,
+.book-phone-dial-btn,
+.book-phone input {
+  width: 100%;
+  min-height: 2.7rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 0.85rem;
+  background: var(--card-surface, rgba(18, 18, 26, 0.9));
+  color: inherit;
+  font-size: 16px;
+}
+
+.book-combo-list,
+.book-combo-pop {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 0.3rem);
+  right: 0;
+  left: 0;
+  max-height: 14rem;
+  overflow: auto;
+  margin: 0;
+  padding: 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.9rem;
+  background: #161625;
+  list-style: none;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.book-combo-pop {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 16rem;
+}
+
+.book-combo-pop .book-combo-list {
+  position: static;
+  max-height: 12rem;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+.book-combo-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 0;
+  border-radius: 0.65rem;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.book-combo-list button small {
+  color: var(--ok-g300);
+  font-size: 0.68rem;
+}
+
+.book-combo-list button.is-on,
+.book-combo-list button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.book-combo-empty {
+  padding: 0.7rem;
+  color: var(--ok-g300);
+  font-size: 0.8rem;
+}
+
+.book-phone {
+  display: grid;
+  grid-template-columns: 5.6rem minmax(0, 1fr);
+  gap: 0.45rem;
+}
+
+.book-phone-dial-btn {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.book-guests {
+  margin-top: 1.5rem;
+}
+
+.book-guests-panel {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.book-guests-panel > p {
+  margin: 0;
+  color: var(--ok-g300);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.book-guest-row {
+  display: grid;
+  gap: 0.55rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.book-guest-row > p {
+  margin: 0;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.book-guests-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.book-guest-picked {
+  color: var(--ok-g300);
+  font-size: 0.72rem;
+}
+
+.book-guests-toggle {
+  width: 100%;
+}
+
 .book-addon-block {
   display: grid;
   gap: 0.45rem;
@@ -3001,7 +3745,13 @@ html:not(:has(.admin-app)) .admin-modal-overlay {
 }
 
 .ok-book-page .admin-modal-panel {
-  max-width: 36rem;
+  max-width: 40rem;
+}
+
+.ok-book-page .admin-modal-panel .ride-notes-doc {
+  max-height: min(62vh, 32rem);
+  overflow: auto;
+  padding-right: 0.2rem;
 }
 
 .ok-book-page .admin-modal-panel .ride-notes ul {
@@ -3010,6 +3760,14 @@ html:not(:has(.admin-app)) .admin-modal-overlay {
 
 .ok-book-page .admin-modal-panel .ride-notes li {
   align-items: flex-start;
+}
+
+.ok-book-page .admin-modal-panel .ride-notes-doc li {
+  display: list-item;
+  align-items: revert;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .ok-book-page .admin-modal-panel .ride-notes li p {

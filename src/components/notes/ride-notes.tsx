@@ -25,6 +25,21 @@ export type NoteKey = (typeof NOTE_ITEMS)[number]["key"];
 
 export const NOTE_KEYS = NOTE_ITEMS.map((item) => item.key) as NoteKey[];
 
+const DOC_SECTIONS = [
+  { title: "noticeTitle", items: "noticeItems", taiwan: true },
+  { title: "cautionTitle", items: "cautionItems" },
+  { title: "restrictTitle", items: "restrictItems" },
+  { title: "dressTitle", items: "dressItems" },
+  { title: "accessTitle", items: "accessItems" },
+  { title: "weatherLabel", items: "weatherItems" },
+  { title: "cancelLabel", items: "cancelItems" },
+] as const;
+
+function noteList(t: { raw: (key: string) => unknown }, key: string) {
+  const raw = t.raw(key);
+  return Array.isArray(raw) ? raw.filter((item): item is string => typeof item === "string") : [];
+}
+
 export function emptyNoteChecks(): Record<NoteKey, boolean> {
   return {
     license: false,
@@ -49,6 +64,33 @@ export function filledNoteChecks(): Record<NoteKey, boolean> {
   };
 }
 
+export function BookingNoticeDoc() {
+  const t = useTranslations("Notes");
+
+  return (
+    <div className="ride-notes-doc">
+      {DOC_SECTIONS.map((section) => (
+        <section key={section.title}>
+          <h3>{t(section.title)}</h3>
+          <ul>
+            {noteList(t, section.items).map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+            {"taiwan" in section && section.taiwan ? (
+              <li>
+                {t("taiwanHint")}{" "}
+                <a href={t("taiwanHref")} target="_blank" rel="noopener noreferrer">
+                  {t("taiwanLink")}
+                </a>
+              </li>
+            ) : null}
+          </ul>
+        </section>
+      ))}
+    </div>
+  );
+}
+
 type RideNotesProps = {
   compact?: boolean;
   title?: boolean;
@@ -59,12 +101,26 @@ export function RideNotes({ compact = false, title = true }: RideNotesProps) {
   const locale = useLocale();
   const help = withSlash("/help");
 
+  if (!compact) {
+    return (
+      <div className={cn("ride-notes", !title && "is-flush")}>
+        {title ? (
+          <h2>
+            <AlertTriangle className="size-5" aria-hidden />
+            {t("title")}
+          </h2>
+        ) : null}
+        <BookingNoticeDoc />
+      </div>
+    );
+  }
+
   return (
-    <div className={cn("ride-notes", compact && "is-compact", !title && "is-flush")}>
+    <div className={cn("ride-notes", "is-compact", !title && "is-flush")}>
       {title ? (
       <h2>
         <AlertTriangle className="size-5" aria-hidden />
-        {compact ? t("payTitle") : t("title")}
+        {t("payTitle")}
       </h2>
       ) : null}
       <ul>

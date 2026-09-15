@@ -34,6 +34,7 @@ jobs:
         run: npm run build:pages
         env:
           GITHUB_PAGES: "true"
+          NEXT_PUBLIC_STRIPE_API_BASE: "https://osaka-kart-stripe.pickle-dirt.workers.dev"
 
       - name: Prepare Pages folder
         run: |

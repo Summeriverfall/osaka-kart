@@ -45,3 +45,6 @@ next-env.d.ts
 /notes/
 更改清单.txt
 后台需求整理.txt
+_feedback_imgs/
+.dev.vars
+wrangler.local.toml

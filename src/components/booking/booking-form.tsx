@@ -3,14 +3,16 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { useFileRouter as useRouter } from "@/lib/use-file-router";
-import { formatJpy } from "@/lib/format";
+import { formatBookDate, formatBookDateLong, formatJpy } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { RideNotes, allNotesChecked, emptyNoteChecks, filledNoteChecks } from "@/components/notes/ride-notes";
 import { AddonPicker, type AddonCardModel } from "@/components/addons/addon-picker";
-import { IncludedAddonsList } from "@/components/addons/included-addons";
 import { MonthCalendar } from "@/components/booking/month-calendar";
+import { CountrySearch } from "@/components/booking/country-search";
+import { PhoneField } from "@/components/booking/phone-field";
 import { Modal } from "@/components/ui/modal";
-import { BOOKING_DAYPARTS, todayIsoDate } from "@/lib/booking/slots";
+import { maxBookIsoDate, todayIsoDate } from "@/lib/booking/slots";
+import { defaultDial, isEmail, joinPhone, parsePhone } from "@/lib/geo/countries";
 import { useLiveCatalog, useLiveInventory } from "@/lib/live-catalog";
 import { addonUnitLabel } from "@/lib/mock/addons";
 import { DEFAULT_STORE_ID } from "@/lib/store-id";
@@ -20,16 +22,16 @@ import {
   useBookingStore,
   type BookingResult,
 } from "@/stores/booking-store";
+import { useToastStore } from "@/stores/toast-store";
 import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 
-const BOOK_FLOW = ["plan", "date", "time", "info"] as const;
+const BOOK_FLOW = ["date", "info"] as const;
 type Screen = (typeof BOOK_FLOW)[number];
-const STEP_COPY: Record<Screen, "stepPlan" | "stepDate" | "stepTime" | "stepInfo"> = {
-  plan: "stepPlan",
+const STEP_COPY: Record<Screen, "stepDate" | "stepInfo"> = {
   date: "stepDate",
-  time: "stepTime",
   info: "stepInfo",
 };
+const MAX_PARTY = 8;
 
 function useMobileBook() {
   const [mobile, setMobile] = useState(false);
@@ -56,41 +58,175 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
   const router = useRouter();
   const store = useBookingStore();
   const live = useLiveInventory();
+  const notify = useToastStore((state) => state.notify);
   const mobile = useMobileBook();
   const flow: readonly Screen[] = BOOK_FLOW;
   const [hydrated, setHydrated] = useState(false);
-  const [screen, setScreen] = useState<Screen>("plan");
-  const [passport, setPassport] = useState("");
-  const [nation, setNation] = useState("USA");
-  const [request, setRequest] = useState("");
+  const [screen, setScreen] = useState<Screen>("date");
   const [notes, setNotes] = useState(emptyNoteChecks);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [slotOpen, setSlotOpen] = useState(false);
+  const [draftTime, setDraftTime] = useState("");
+  const [dial, setDial] = useState(() => defaultDial(locale));
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const notesOk = allNotesChecked(notes);
 
   useEffect(() => {
-    if (!(flow as readonly string[]).includes(screen)) setScreen("plan");
+    if (!(flow as readonly string[]).includes(screen)) setScreen("date");
   }, [flow, screen]);
 
   const planSlugHint = hydrated ? store.planSlug || initialPlan : initialPlan;
   const { plans, addons, includedAddons, plan: catalogPlan } = useLiveCatalog(seedPlans, seedAddons, locale, planSlugHint);
 
   useEffect(() => {
-    const queryPlan = new URLSearchParams(window.location.search).get("plan") || "";
-    const fromUrl = plans.some((item) => item.slug === queryPlan) ? queryPlan : "";
-    const fallback = fromUrl || initialPlan || plans[0]?.slug || "";
-    store.patch({ planSlug: fromUrl || store.planSlug || fallback });
-    if (fromUrl) {
-      store.patch({ planSlug: fromUrl });
-      setScreen("date");
+    let cancelled = false;
+    let done = false;
+    function apply() {
+      if (cancelled || done) return;
+      done = true;
+      const params = new URLSearchParams(window.location.search);
+      const queryPlan = params.get("plan") || "";
+      const fromPay = params.get("from") === "pay";
+      const snap = useBookingStore.getState();
+      const fromUrl = plans.some((item) => item.slug === queryPlan) ? queryPlan : "";
+      const fallback = fromUrl || initialPlan || plans[0]?.slug || "";
+      snap.patch({ planSlug: fromUrl || snap.planSlug || fallback });
+      let date = useBookingStore.getState().date;
+      let time = useBookingStore.getState().time;
+      if (fromPay && (!date || !time)) {
+        try {
+          const raw = sessionStorage.getItem(BOOKING_RESULT_KEY);
+          if (raw) {
+            const saved = JSON.parse(raw) as BookingResult;
+            useBookingStore.getState().patch({
+              planSlug: saved.planSlug || fallback,
+              riders: saved.riders || 1,
+              date: saved.date,
+              time: saved.time,
+              addonSlugs: saved.addonSlugs || [],
+              name: saved.name || "",
+              email: saved.email || "",
+              phone: saved.phone || "",
+              licenceCountry: saved.licenceCountry || "",
+              nationality: saved.nationality || "",
+              licenseOk: true,
+            });
+            date = saved.date;
+            time = saved.time;
+            setNotes(filledNoteChecks());
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+      const licenseOk = useBookingStore.getState().licenseOk;
+      if (fromPay && date && time) {
+        setScreen("info");
+        if (licenseOk) setNotes(filledNoteChecks());
+      } else {
+        setScreen("date");
+      }
+      setHydrated(true);
     }
-    setHydrated(true);
+    if (useBookingStore.persist.hasHydrated()) {
+      apply();
+      return () => {
+        cancelled = true;
+      };
+    }
+    const unsub = useBookingStore.persist.onFinishHydration(apply);
+    const timer = window.setTimeout(apply, 160);
+    return () => {
+      cancelled = true;
+      unsub();
+      window.clearTimeout(timer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!hydrated) return;
+    const parsed = parsePhone(useBookingStore.getState().phone, defaultDial(locale));
+    setDial(parsed.dial);
+    setPhoneNumber(parsed.number);
+  }, [hydrated, locale]);
+
+  useEffect(() => {
+    if (!slotOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSlotOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [slotOpen]);
+
   const planSlug = hydrated ? store.planSlug || initialPlan || plans[0]?.slug : initialPlan;
   const plan = plans.find((item) => item.slug === planSlug) ?? catalogPlan;
-  const cap = live.riderCap(hydrated ? store.date : "", hydrated ? store.time : "");
-  const riders = live.clampRiders(hydrated ? store.riders : 1, hydrated ? store.date : "", hydrated ? store.time : "");
+  const riders = Math.max(1, hydrated ? store.riders : 1);
+
+  useEffect(() => {
+    if (!hydrated || !store.date) return;
+    const dayKind = live.dayOffer(store.date, riders, todayIsoDate(), maxBookIsoDate());
+    const dayOk = dayKind === "recommended" || dayKind === "open";
+    if (!dayOk) {
+      store.patch({ date: "", time: "" });
+      setDraftTime("");
+      setSlotOpen(false);
+      if (screen === "info") setScreen("date");
+      notify(t("slotPastPick"));
+      return;
+    }
+    if (!store.time) return;
+    const offer = live.slotOffer(store.date, store.time, riders);
+    if (offer.canBook) return;
+    store.patch({ time: "" });
+    setDraftTime("");
+    if (offer.past) {
+      if (screen === "info") setScreen("date");
+      notify(t("slotPastPick"));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, store.date, store.time, riders, screen]);
+
+  function setParty(next: number) {
+    const count = Math.min(MAX_PARTY, Math.max(1, next));
+    const date = store.date;
+    const time = store.time;
+    if (!date) {
+      store.patch({ riders: count });
+      return;
+    }
+    const dayKind = live.dayOffer(date, count, todayIsoDate(), maxBookIsoDate());
+    const dayOk = dayKind === "recommended" || dayKind === "open";
+    if (!dayOk) {
+      store.patch({ riders: count, date: "", time: "" });
+      setDraftTime("");
+      setSlotOpen(false);
+      notify(t("partyChanged"));
+      return;
+    }
+    if (time && !live.slotOffer(date, time, count).canBook) {
+      store.patch({ riders: count, time: "" });
+      setDraftTime("");
+      setSlotOpen(true);
+      notify(t("partyChanged"));
+      return;
+    }
+    store.patch({ riders: count });
+  }
+
+  function setPhone(nextDial: string, nextNumber: string) {
+    setDial(nextDial);
+    setPhoneNumber(nextNumber);
+    store.patch({ phone: joinPhone(nextDial, nextNumber) });
+  }
+
   const selectedAddons = hydrated ? store.addonSlugs : [];
   const addonCards: AddonCardModel[] = addons.map((addon) => ({
     id: addon.id,
@@ -115,20 +251,39 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
 
   const step = Math.max(0, flow.indexOf(screen));
   const last = screen === "info";
+  const slotDate = hydrated ? store.date : "";
+  const slotOffers = slotDate ? live.daySlots(slotDate, riders) : [];
+  const draftOffer = draftTime ? slotOffers.find((item) => item.time === draftTime) : undefined;
+  const canConfirmTime = Boolean(draftOffer?.canBook);
+
+  function openSlots(iso: string) {
+    const same = iso === store.date;
+    if (!same) {
+      store.patch({ date: iso, time: "" });
+      setDraftTime("");
+    } else {
+      setDraftTime(store.time);
+    }
+    setSlotOpen(true);
+  }
+
+  function confirmTime() {
+    if (!draftOffer?.canBook) return;
+    store.patch({ time: draftOffer.time });
+    setSlotOpen(false);
+  }
 
   function canOpen(target: Screen) {
     const ti = flow.indexOf(target);
     if (ti < 0) return false;
     for (let i = 0; i < ti; i++) {
-      if (flow[i] === "date" && !store.date) return false;
-      if (flow[i] === "time" && !store.time) return false;
+      if (flow[i] === "date" && (!store.date || !store.time)) return false;
     }
     return true;
   }
 
   function goNext() {
-    if (screen === "date" && !store.date) return;
-    if (screen === "time" && !store.time) return;
+    if (screen === "date" && (!store.date || !store.time || !live.slotOffer(store.date, store.time, riders).canBook)) return;
     const next = flow[step + 1];
     if (next) setScreen(next);
   }
@@ -143,6 +298,23 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
     setNotes(next);
     store.patch({ licenseOk: true });
     setNotesOpen(false);
+    setErrors((cur) => ({ ...cur, notes: "" }));
+  }
+
+  function revealFormErrors(nextErrors: Record<string, string>) {
+    const order = ["name", "phone", "email", "licence", "notes"];
+    const first = order.find((key) => nextErrors[key]) || Object.keys(nextErrors)[0];
+    if (!first) return;
+    window.requestAnimationFrame(() => {
+      const node = document.getElementById(`book-field-${first}`);
+      node?.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (first === "notes") {
+        window.setTimeout(() => setNotesOpen(true), 420);
+        return;
+      }
+      const focusable = node?.querySelector<HTMLElement>("input, button");
+      focusable?.focus({ preventScroll: true });
+    });
   }
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -151,144 +323,242 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
       goNext();
       return;
     }
-    if (!store.date || !store.time || !notesOk || !store.name || !store.email || !store.phone || !passport) return;
+    const name = (hydrated ? store.name : "").trim();
+    const email = (hydrated ? store.email : "").trim();
+    const phone = joinPhone(dial, phoneNumber);
+    const licence = (hydrated ? store.licenceCountry : "") || "";
+    const nextErrors: Record<string, string> = {};
+    if (!name) nextErrors.name = t("errName");
+    if (!phoneNumber.replace(/[^\d]/g, "")) nextErrors.phone = t("errPhone");
+    else if (phoneNumber.replace(/[^\d]/g, "").length < 6) nextErrors.phone = t("errPhone");
+    if (!email) nextErrors.email = t("errEmail");
+    else if (!isEmail(email)) nextErrors.email = t("errEmail");
+    if (!licence) nextErrors.licence = t("errLicence");
+    if (!notesOk) nextErrors.notes = t("errNotes");
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      revealFormErrors(nextErrors);
+      return;
+    }
+    if (!store.date || !store.time) return;
+    store.patch({ name, email, phone, licenceCountry: licence });
     const result: BookingResult = {
       planSlug: plan.slug,
       riders,
       date: store.date,
       time: store.time,
       addonSlugs: selectedAddons,
-      name: store.name,
-      email: store.email,
-      phone: store.phone,
+      name,
+      email,
+      phone,
+      licenceCountry: licence,
+      nationality: store.nationality || "",
       licenseOk: true,
       affiliateCode: store.affiliateCode,
       ref: `OK-${Date.now().toString(36).toUpperCase()}`,
       planName: plan.translation.name,
       totalJpy: total,
-      passport,
-      nationality: nation,
-      note: request,
       storeId: DEFAULT_STORE_ID,
     };
     sessionStorage.setItem(BOOKING_RESULT_KEY, JSON.stringify(result));
     router.push(withSlash("/pay"));
   }
 
-  const nextLocked =
-    (screen === "date" && !store.date) ||
-    (screen === "time" && !store.time) ||
-    (last && !notesOk);
-
-  const planPane = (
-    <div className="book-pane-fill">
-      <div className="ok-pkg-list">
-        {plans.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={cn("ok-pkg-row", item.slug === plan.slug && "is-on")}
-            onClick={() => store.patch({ planSlug: item.slug, riders: 1 })}
-          >
-            <span className="ok-pkg-row-time">{item.duration_minutes}</span>
-            <span className="ok-pkg-row-copy">
-              <strong>{item.translation.name}</strong>
-            </span>
-            <span className="ok-pkg-row-price">{formatJpy(item.base_price_jpy, locale)}</span>
-          </button>
-        ))}
-      </div>
-      <IncludedAddonsList addons={includedAddons} prominent />
-    </div>
-  );
+  const nextLocked = screen === "date" && (!store.date || !store.time || !live.slotOffer(store.date, store.time, riders).canBook);
 
   const datePane = (
-    <MonthCalendar
-      locale={locale}
-      priceJpy={plan.base_price_jpy}
-      value={hydrated ? store.date : ""}
-      minIso={todayIsoDate()}
-      onChange={(iso) => {
-        store.patch({ date: iso, riders: live.clampRiders(store.riders, iso, store.time) });
-      }}
-    />
-  );
-
-  const timePane = (
-    <div className="book-slot-board">
-      {BOOKING_DAYPARTS.map((part) => (
-        <section key={part.id} className="book-slot-group">
-          <h3>{t(`parts.${part.id}`)}</h3>
-          <div className="book-slot-row">
-            {part.slots.map((slot) => {
-              const left = store.date ? live.remaining(store.date, slot) : 0;
-              const full = Boolean(store.date) && left <= 0;
-              return (
-                <label key={slot} className={cn("book-slot", store.time === slot && "is-on", full && "is-full")}>
-                  <input
-                    type="radio"
-                    name="time"
-                    value={slot}
-                    checked={hydrated && store.time === slot}
-                    disabled={full}
-                    onChange={() => {
-                      store.patch({ time: slot, riders: live.clampRiders(store.riders, store.date, slot) });
-                    }}
-                  />
-                  <span>{slot}</span>
-                  <small>{full ? t("full") : t("spotsLeft", { n: left })}</small>
-                </label>
-              );
-            })}
+    <div className="book-date-stage">
+      <div className="book-picked-plan">
+        <span>{t("selectedPlan")}</span>
+        <strong>{plan.translation.name}</strong>
+      </div>
+      <div className="book-riders">
+        <span>{t("guestsAsk")}</span>
+        <div className="book-riders-ctrl">
+          <button type="button" aria-label="-" disabled={riders <= 1} onClick={() => setParty(riders - 1)}>
+            −
+          </button>
+          <strong>{riders}</strong>
+          <button type="button" aria-label="+" disabled={riders >= MAX_PARTY} onClick={() => setParty(riders + 1)}>
+            +
+          </button>
+        </div>
+      </div>
+      <p className="book-date-label">{t("selectDate")}</p>
+      <MonthCalendar
+        locale={locale}
+        priceJpy={plan.base_price_jpy}
+        value={hydrated ? store.date : ""}
+        minIso={todayIsoDate()}
+        minRiders={riders}
+        partySize={riders}
+        hideSpots
+        onChange={openSlots}
+      />
+      <p className={cn("book-picked-slot", store.date && store.time && "is-on")}>
+        {store.date && store.time ? (
+          <>
+            <small>{t("pickedTime")}</small>
+            <b>{formatBookDate(store.date, locale)} · {store.time}</b>
+          </>
+        ) : (
+          t("needTime")
+        )}
+      </p>
+      {slotOpen && store.date ? (
+        <div className="book-slot-pop">
+          <button type="button" className="book-slot-scrim" aria-label="Close" onClick={() => setSlotOpen(false)} />
+          <div className="book-slot-sheet" role="dialog" aria-modal="true">
+            <p className="book-slot-title">{formatBookDate(store.date, locale)}</p>
+            <p className="book-slot-sub">{t("guestsN", { n: riders })}</p>
+            <p className="book-slot-kicker">{t("pickTime")}</p>
+            <div className="book-slot-list">
+              {slotOffers.map((offer) => {
+                const tag = offer.kind === "recommended"
+                  ? t("recommendGo")
+                  : offer.canBook
+                    ? t("slotOpen")
+                    : offer.past
+                      ? t("slotPast")
+                      : offer.kind === "short"
+                        ? t("slotShort", { n: riders })
+                        : t("slotFull");
+                return (
+                  <button
+                    key={offer.time}
+                    type="button"
+                    disabled={!offer.canBook}
+                    className={cn(
+                      "book-slot-opt",
+                      offer.kind === "recommended" && "is-recommend",
+                      draftTime === offer.time && "is-on",
+                      !offer.canBook && "is-off",
+                    )}
+                    onClick={() => setDraftTime(offer.time)}
+                  >
+                    <b>{offer.time}</b>
+                    <span className="book-slot-copy">
+                      <em>{tag}</em>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <button type="button" className="ok-btn book-slot-confirm" disabled={!canConfirmTime} onClick={confirmTime}>
+              {t("confirmTime")}
+            </button>
           </div>
-        </section>
-      ))}
+        </div>
+      ) : null}
     </div>
   );
 
   const infoPane = (
     <div className="book-info">
+      <article className="book-summary-card">
+        <div>
+          <p className="book-summary-kicker">{t("summary")}</p>
+          <strong>{plan.translation.name}</strong>
+          <p>
+            {store.date ? formatBookDateLong(store.date, locale) : "—"}
+            {store.time ? ` · ${store.time}` : ""}
+          </p>
+          <p>{t("guestsN", { n: riders })}</p>
+        </div>
+        <button type="button" className="book-summary-edit" onClick={() => setScreen("date")}>
+          {t("edit")}
+        </button>
+      </article>
+
+      <div className="book-lead">
+        <p className="book-lead-title">{t("leadTitle")}</p>
+        <label id="book-field-name" className={cn("book-field", errors.name && "is-bad")}>
+          <span>{t("fullName")} <i>{t("required")}</i></span>
+          <input
+            value={hydrated ? store.name : ""}
+            onChange={(e) => {
+              store.patch({ name: e.target.value });
+              setErrors((cur) => ({ ...cur, name: "" }));
+            }}
+            autoComplete="name"
+            name="name"
+          />
+          {errors.name ? <em className="book-field-err">{errors.name}</em> : null}
+        </label>
+        <div id="book-field-phone" className={cn("book-field", errors.phone && "is-bad")}>
+          <span>{t("whatsapp")} <i>{t("required")}</i></span>
+          <PhoneField
+            locale={locale}
+            dial={dial}
+            number={phoneNumber}
+            onDial={(value) => {
+              setPhone(value, phoneNumber);
+              setErrors((cur) => ({ ...cur, phone: "" }));
+            }}
+            onNumber={(value) => {
+              setPhone(dial, value);
+              setErrors((cur) => ({ ...cur, phone: "" }));
+            }}
+            error={errors.phone}
+          />
+          {errors.phone ? <em className="book-field-err">{errors.phone}</em> : null}
+        </div>
+        <label id="book-field-email" className={cn("book-field", errors.email && "is-bad")}>
+          <span>{t("email")} <i>{t("required")}</i></span>
+          <input
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            name="email"
+            value={hydrated ? store.email : ""}
+            onChange={(e) => {
+              store.patch({ email: e.target.value });
+              setErrors((cur) => ({ ...cur, email: "" }));
+            }}
+          />
+          {errors.email ? <em className="book-field-err">{errors.email}</em> : null}
+        </label>
+        <div id="book-field-licence" className={cn("book-field", errors.licence && "is-bad")}>
+          <span>{t("licenceCountry")} <i>{t("required")}</i></span>
+          <CountrySearch
+            locale={locale}
+            value={hydrated ? store.licenceCountry || "" : ""}
+            onChange={(code) => {
+              store.patch({ licenceCountry: code });
+              setErrors((cur) => ({ ...cur, licence: "" }));
+            }}
+            placeholder={t("searchCountry")}
+            error={errors.licence}
+          />
+          {errors.licence ? <em className="book-field-err">{errors.licence}</em> : null}
+        </div>
+        <div className="book-field">
+          <span>{t("nationality")} <i className="is-opt">{t("optional")}</i></span>
+          <CountrySearch
+            locale={locale}
+            value={hydrated ? store.nationality || "" : ""}
+            onChange={(code) => store.patch({ nationality: code })}
+            placeholder={t("searchCountry")}
+          />
+        </div>
+        {riders > 1 ? <p className="book-lead-hint">{t("leadHint")}</p> : null}
+      </div>
+
       <div className="book-addon-block">
         <p className="book-addon-kicker">{t("addons")}</p>
         <p className="book-wizard-hint">{t("stepAddonsHint")}</p>
         <AddonPicker addons={addonCards} ctaLabel={t("submit")} onCta={() => undefined} sticky={false} layout="rows" />
       </div>
-      <div className="book-grid">
-        <label className="book-field">
-          <span>{t("riders")}</span>
-          <select value={riders} disabled={cap <= 0} onChange={(e) => store.patch({ riders: Number(e.target.value) })}>
-            {(cap > 0 ? Array.from({ length: cap }, (_, i) => i + 1) : [1]).map((count) => (
-              <option key={count} value={count}>{count}</option>
-            ))}
-          </select>
-        </label>
-        <label className="book-field">
-          <span>{t("nationality")}</span>
-          <select value={nation} onChange={(e) => setNation(e.target.value)}>
-            {["USA", "China", "Japan", "United Kingdom", "Korea", "Taiwan", "Other"].map((item) => <option key={item}>{item}</option>)}
-          </select>
-        </label>
+      <div id="book-field-notes" className={cn("book-notes-block", errors.notes && "is-bad")}>
+        <button type="button" className={cn("book-notes-open", notesOk && "is-on", errors.notes && "is-bad")} onClick={() => setNotesOpen(true)}>
+          <span className="book-notes-open-copy">
+            <strong>{tn("title")}</strong>
+            <small>{notesOk ? tn("agreed") : errors.notes || tn("openHint")}</small>
+          </span>
+          <span className="book-notes-open-cta">{notesOk ? tn("view") : tn("open")}</span>
+        </button>
+        {errors.notes ? <em className="book-field-err">{errors.notes}</em> : null}
       </div>
-      <label className="book-field"><span>{t("name")}</span><input value={hydrated ? store.name : ""} onChange={(e) => store.patch({ name: e.target.value })} required={last} autoComplete="name" /></label>
-      <label className="book-field"><span>{t("email")}</span><input type="email" value={hydrated ? store.email : ""} onChange={(e) => store.patch({ email: e.target.value })} required={last} autoComplete="email" /></label>
-      <label className="book-field"><span>{t("phone")}</span><input value={hydrated ? store.phone : ""} onChange={(e) => store.patch({ phone: e.target.value })} required={last} autoComplete="tel" /></label>
-      <label className="book-field"><span>{t("passport")}</span><input value={passport} onChange={(e) => setPassport(e.target.value)} required={last} /></label>
-      <label className="book-field"><span>{t("request")}</span><textarea value={request} onChange={(e) => setRequest(e.target.value)} rows={2} /></label>
-      <button type="button" className={cn("book-notes-open", notesOk && "is-on")} onClick={() => setNotesOpen(true)}>
-        <span className="book-notes-open-copy">
-          <strong>{tn("title")}</strong>
-          <small>{notesOk ? tn("agreed") : tn("openHint")}</small>
-        </span>
-        <span className="book-notes-open-cta">{notesOk ? tn("view") : tn("open")}</span>
-      </button>
-      {!mobile ? (
-        <aside className="rounded-2xl border border-white/10 bg-[#12121A] p-4">
-          <p className="text-xs text-[#9CA3AF]">{t("summary")}</p>
-          <p className="mt-2 font-black">{plan.translation.name}</p>
-          <p className="text-sm text-[#9CA3AF]">{store.date} {store.time} · {riders}</p>
-          <p className="mt-3 text-2xl font-black text-neon-pink">{formatJpy(total, locale)}</p>
-        </aside>
-      ) : null}
     </div>
   );
 
@@ -309,22 +579,20 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
           </div>
           <p className="book-wizard-kicker">{step + 1} / {flow.length}</p>
           <h2 className="book-wizard-title">{t(STEP_COPY[screen])}</h2>
-          {screen !== "plan" ? (
-            <>
-              <p className="book-wizard-sub">{plan.translation.name}</p>
-              {includedAddons.length ? (
-                <p className="ok-included-strip">
-                  <b>{t("includedNow")}</b>
-                  {includedAddons.map((addon) => (
-                    <span key={addon.id}>{addon.translation.name}</span>
-                  ))}
-                </p>
-              ) : null}
-            </>
-          ) : null}
+          <>
+            <p className="book-wizard-sub">{plan.translation.name}</p>
+            {includedAddons.length ? (
+              <p className="ok-included-strip">
+                <b>{t("includedNow")}</b>
+                {includedAddons.map((addon) => (
+                  <span key={addon.id}>{addon.translation.name}</span>
+                ))}
+              </p>
+            ) : null}
+          </>
         </header>
       ) : (
-        <ol className="ok-steps">
+        <ol className="ok-steps is-2">
           {flow.map((key, index) => (
             <li key={key}>
               <button
@@ -345,9 +613,7 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
       )}
 
       <div className="book-wizard-pane">
-        {screen === "plan" ? planPane : null}
         {screen === "date" ? datePane : null}
-        {screen === "time" ? timePane : null}
         {screen === "info" ? infoPane : null}
       </div>
 
@@ -361,7 +627,7 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
             <button type="button" className="ok-btn-ghost book-wizard-back" onClick={goBack}>{t("back")}</button>
           ) : null}
           <button type="submit" className="ok-btn book-submit" disabled={nextLocked}>
-            {last ? t("submit") : t("next")}
+            {last ? t("continuePay") : t("continue")}
           </button>
         </div>
       </div>

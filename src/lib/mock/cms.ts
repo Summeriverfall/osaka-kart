@@ -154,7 +154,7 @@ export const MOCK_CMS: CmsState = {
     experienceTitle: L("體驗影片", "Experience videos", "体験動画", "체험 영상"),
     experienceLead: L("上路之後是什麼感覺，先看一段。", "See the streets before you ride.", "走る前に、公道の雰囲気を見てください。", "타기 전에 거리를 먼저 보세요."),
     reviewsTitle: L("用戶評價", "Guest reviews", "お客さまの声", "이용 후기"),
-    reviewsLead: L("來自 Google 地圖的真實評價。", "Real reviews from Google Maps.", "Google マップに投稿されたお客さまの声。", "구글 지도에 올라온 실제 후기."),
+    reviewsLead: L("來自 Google、Klook、Trip.com 等平台的真實評價。", "Real guest reviews from Google, Klook, Trip.com, and more.", "Google、Klook、Trip.com などに投稿されたお客さまの声。", "Google, Klook, Trip.com 등 실제 후기."),
     faqTitle: L("常見問題", "Frequently Asked Questions", "よくある質問", "자주 묻는 질문"),
     faqLead: L("上路前最常被問到的事。駕照規定因國家而異。", "The questions people ask before they ride. License rules differ by country.", "走行前によくある質問。免許の条件は国によって異なります。", "타기 전에 가장 많이 묻는 질문. 면허 규정은 나라마다 다릅니다."),
     pressTitle: L("新聞報道", "In the news", "メディア掲載", "뉴스 보도"),
@@ -232,8 +232,8 @@ export const MOCK_CMS: CmsState = {
         "고카트 투어를 망설이고 있다면 그냥 가세요! 전기 카트라 조용하고 배기가스가 없어서 앞차 매연을 마실 일이 없습니다. 가이드가 매우 친절했고 사진도 많이 찍어 주었으며, 길의 볼거리도 잘 알려 주었습니다. 일반 명소와 오사카성을 함께 가는 투어는 여기가 유일했습니다(저희는 2시간 코스). 페달은 두 개(오른쪽 액셀, 왼쪽 브레이크)라 익숙해질 시간이 필요하고, 방향지시등은 자동으로 꺼지지 않아 코너마다 직접 꺼야 합니다. 일반 차량과 함께 실제 도로를 달리니, 시내 운전에 익숙하지 않다면 한 번 더 생각해 보세요. 의상 덕분에 더 재미있었고 많은 사람이 손을 흔들고 사진을 찍었습니다. 후회하지 않을 거예요!",
       ),
       photo: "/images/reviews/r2.webp",
-      platform: "Google",
-      url: "https://maps.app.goo.gl/zjRVCLAokNTRG8d97",
+      platform: "Klook",
+      url: "https://www.klook.com/activity/152539-osaka-electric-go-kart-by-future-kart/",
       rating: 5,
       active: true,
       sort: 2,
@@ -249,8 +249,8 @@ export const MOCK_CMS: CmsState = {
         "후기가 많지 않아 다른 업체와 오래 고민했는데, 전기 카트 때문에 여기를 골랐고 정말 잘한 선택이었습니다. 배기가스가 없고, 가이드가 친절해서 빨간불마다 괜찮은지 확인해 줍니다. 사진도 많이 찍어 주었습니다. 고민 중이면 그냥 예약하세요. 다음에 또 올게요!",
       ),
       photo: "/images/reviews/r3.webp",
-      platform: "Google",
-      url: "https://maps.app.goo.gl/zjRVCLAokNTRG8d97",
+      platform: "Trip.com",
+      url: "https://www.trip.com/",
       rating: 5,
       active: true,
       sort: 3,
@@ -329,10 +329,10 @@ export const MOCK_CMS: CmsState = {
       sort: 6,
       q: L("需要國際駕照嗎？", "Do I need an international permit?", "国際免許は必要？", "국제운전면허가 필요한가요?"),
       a: L(
-        "取決於你的駕照簽發國。美國、日本通常本國駕照即可；中國、韓國駕照不能在日本公路駕駛，必須同時攜帶 1949 年日內瓦公約國際駕駛許可。",
-        "It depends on the issuing country. US and Japanese licenses are often fine. Chinese and Korean licenses are not valid on Japanese public roads — bring a 1949 Geneva IDP.",
-        "発行国によります。米国・日本の免許は多くの場合そのままで可。中国・韓国の免許は日本の公道では使えず、1949年ジュネーブ条約の国際免許が必要です。",
-        "발급 국가에 따라 다릅니다. 미국·일본 면허는 대개 그대로 가능합니다. 중국·한국 면허는 일본 일반 도로에서 쓸 수 없어 1949년 제네바 협약 국제운전면허가 필요합니다.",
+        "取決於駕照簽發地。美國、加拿大、澳洲須出示紙本國際駕照（小冊子，分類 A–E）或 SOFA。比利時、法國、德國、摩納哥、斯洛維尼亞、瑞士、台灣可出示原始駕照加官方日文譯本。其他國家須持 1949 年日內瓦公約國際駕照。塑膠卡無效。",
+        "It depends on where the licence was issued. US, Canada and Australia need a paper IDP booklet (categories A–E) or SOFA ID. Belgium, France, Germany, Monaco, Slovenia, Switzerland and Taiwan may use the original licence plus an official Japanese translation. Others need a 1949 Geneva IDP. Plastic IDP cards are not accepted.",
+        "発行地によります。米国・カナダ・オーストラリアは冊子の国際免許（区分A〜E）またはSOFAが必要です。ベルギー、フランス、ドイツ、モナコ、スロベニア、スイス、台湾は原本の免許と公式日本語翻訳で参加できます。その他は1949年ジュネーブ条約の国際免許が必要です。プラスチックカードは無効です。",
+        "발급지에 따라 다릅니다. 미국·캐나다·호주는 종이 IDP 소책자(분류 A–E) 또는 SOFA가 필요합니다. 벨기에, 프랑스, 독일, 모나코, 슬로베니아, 스위스, 대만은 원본 면허와 공식 일본어 번역본으로 가능합니다. 그 외는 1949년 제네바 협약 국제면허가 필요합니다. 플라스틱 카드는 무효입니다.",
       ),
     },
     {
@@ -355,10 +355,10 @@ export const MOCK_CMS: CmsState = {
       sort: 8,
       q: L("身高體重有限制嗎？", "Height or weight limits?", "身長・体重の制限は？", "키·몸무게 제한이 있나요?"),
       a: L(
-        "駕駛建議身高 145cm 以上。體重上限以現場車輛為準，報到時工作人員會幫你確認座艙是否合適。",
-        "Drivers should be about 145cm or taller. Weight depends on the kart that day — staff check the seat at check-in.",
-        "運転は145cm以上が目安。体重は当日の車両によります。受付でシートが合うか確認します。",
-        "운전자는 145cm 이상을 권장합니다. 체중 제한은 당일 차량에 따릅니다. 체크인 때 좌석을 확인합니다.",
+        "駕駛員身高必須介於 150–190 公分。體重上限以現場車輛為準，報到時工作人員會幫你確認座艙是否合適。",
+        "Drivers must be between 150 and 190 cm. Weight depends on the kart that day — staff check the seat at check-in.",
+        "運転者の身長は150〜190cm。体重は当日の車両によります。受付でシートが合うか確認します。",
+        "운전자 신장은 150–190cm여야 합니다. 체중 제한은 당일 차량에 따릅니다. 체크인 때 좌석을 확인합니다.",
       ),
     },
     {
@@ -663,7 +663,19 @@ export function mergeCms(seed: CmsState, extra?: Partial<CmsState> | null): CmsS
       poster: rewriteBundledMediaPath(item.poster) ?? item.poster,
     })),
     reviews: refreshBundledReviews(seed.reviews, extra.reviews),
-    faqs: Array.isArray(extra.faqs) ? extra.faqs : seed.faqs,
+    faqs: extra.faqs?.length
+      ? (() => {
+          const extraById = new Map(extra.faqs.map((item) => [item.id, item]));
+          const seedIds = new Set(seed.faqs.map((item) => item.id));
+          return [
+            ...seed.faqs.map((item) => {
+              const prev = extraById.get(item.id);
+              return prev ? { ...prev, ...item, active: prev.active, sort: prev.sort } : item;
+            }),
+            ...extra.faqs.filter((item) => !seedIds.has(item.id)),
+          ];
+        })()
+      : seed.faqs,
     press: refreshBundledPress(seed.press, extra.press),
     meetup: extra.meetup ? { ...seed.meetup, ...extra.meetup } : seed.meetup,
     howToBook: extra.howToBook ? { ...seed.howToBook, ...extra.howToBook } : seed.howToBook,

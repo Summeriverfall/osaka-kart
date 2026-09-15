@@ -1074,6 +1074,37 @@ html {
   display: none;
 }
 
+.cal-mark.is-recommended,
+.cal-legend .is-recommended {
+  display: inline-block;
+  border-top-color: #22c55e;
+}
+
+.cal-mark.is-blocked,
+.cal-legend .is-blocked {
+  display: inline-block;
+  border-top-color: rgb(107 114 128);
+}
+
+.cal-cell.is-recommended:not(:disabled) {
+  background: rgba(34, 197, 94, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.45);
+}
+
+.cal-tag {
+  display: block;
+  margin-top: 0.08rem;
+  color: #22c55e;
+  font-size: 0.58rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.cal-cell.is-on .cal-tag {
+  color: #fff;
+}
+
 .cal-legend {
   display: flex;
   flex-wrap: wrap;
@@ -2722,6 +2753,26 @@ html:not(:has(.admin-app)) .float-book {
   min-width: 0;
 }
 
+.pay-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 1.15rem;
+  padding: 0.48rem 0.95rem 0.48rem 0.7rem;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 6%);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.pay-back:hover {
+  background: rgb(255 255 255 / 12%);
+  color: #fff;
+}
+
 .pay-kicker {
   margin: 0;
   font-size: 0.78rem;
@@ -2992,12 +3043,40 @@ html:not(:has(.admin-app)) .float-book {
   flex-shrink: 0;
 }
 
-.ride-notes ul {
-  list-style: none;
-  margin: 0.9rem 0 0;
-  padding: 0;
+.ride-notes-doc {
   display: grid;
-  gap: 0.55rem;
+  gap: 1.15rem;
+}
+
+.ride-notes-doc section h3 {
+  margin: 0 0 0.45rem;
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+
+.ride-notes-doc section ul {
+  margin: 0;
+  padding: 0 0 0 1.05rem;
+  display: grid;
+  gap: 0.45rem;
+  list-style: disc;
+}
+
+.ride-notes-doc section li {
+  display: list-item;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.ride-notes-doc a {
+  color: var(--ok-pink, #ff2e93);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 
 .ride-notes li {

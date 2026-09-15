@@ -1,19 +1,9 @@
-"use client";
-
+import { BookingNoticeDoc } from "@/components/notes/ride-notes";
 import { HomeFaq } from "@/components/home/home-faq";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteNav } from "@/components/site/site-nav";
 import { Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-const COUNTRIES = [
-  { code: "US", name: "usName", body: "us" },
-  { code: "CN", name: "cnName", body: "cn" },
-  { code: "JP", name: "jpName", body: "jp" },
-  { code: "UK", name: "ukName", body: "uk" },
-  { code: "EU", name: "euName", body: "eu" },
-  { code: "OT", name: "otName", body: "ot" },
-] as const;
 
 export function HelpContent() {
   const t = useTranslations("Help");
@@ -38,15 +28,7 @@ export function HelpContent() {
             <h2>{t("licenseTitle")}</h2>
             <p className="ok-sec-lead">{t("licenseLead")}</p>
           </header>
-          <div className="ok-safety">
-            {COUNTRIES.map((item) => (
-              <article key={item.code}>
-                <p className="ok-kicker">{item.code}</p>
-                <h3>{t(item.name)}</h3>
-                <p>{t(item.body)}</p>
-              </article>
-            ))}
-          </div>
+          <BookingNoticeDoc />
         </div>
       </section>
 

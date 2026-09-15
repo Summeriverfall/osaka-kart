@@ -13,7 +13,17 @@ import { MOCK_PLANS, type MockPlan } from "@/lib/mock/plans";
 import type { MockSpecialDate } from "@/lib/mock/inventory";
 import type { MockSettings, MockStore } from "@/lib/mock/settings";
 import type { MockVehicle } from "@/lib/mock/vehicles";
-import { summarizeFleetSlot, slotBookableLeft } from "@/lib/fleet-inventory";
+import { BOOKING_SLOTS } from "@/lib/booking/slots";
+import { japanAppointmentPassed } from "@/lib/japan-time";
+import {
+  summarizeFleetSlot,
+  slotBookableLeft,
+  hasConfirmedDeparture,
+  offerFromFleetCell,
+  offerFromDaySlots,
+  type DayOfferKind,
+  type SlotOffer,
+} from "@/lib/fleet-inventory";
 import type { MockOrder } from "@/lib/mock/orders";
 import { vehicleIdsForStore } from "@/lib/ops-inventory";
 import { sortPlansByDuration, type AddonWithTranslation, type PlanWithTranslation } from "@/lib/plans/types";
@@ -313,6 +323,7 @@ export function liveSlotRemaining(
   plans: MockPlan[] = MOCK_PLANS,
 ) {
   if (!iso || !time) return 0;
+  if (japanAppointmentPassed(iso, time)) return 0;
   if (dateClosed(iso, specialDates, storeId)) return 0;
   if (!vehicles.length) return fallbackSlotRemaining(iso, time);
   return slotBookableLeft(
@@ -329,12 +340,57 @@ export function liveDayRemaining(
   orders: MockOrder[] = [],
   plans: MockPlan[] = MOCK_PLANS,
 ) {
-  const times = Array.from(new Set(slots.filter((cell) => cell.date === iso).map((cell) => cell.time)));
-  const list = times.length ? times : ["10:00", "11:30", "13:00", "14:30", "16:00", "17:30", "19:00"];
   return Math.max(
     0,
-    ...list.map((time) => liveSlotRemaining(iso, time, slots, vehicles, specialDates, storeId, orders, plans)),
+    ...BOOKING_SLOTS.map((time) => liveSlotRemaining(iso, time, slots, vehicles, specialDates, storeId, orders, plans)),
   );
+}
+
+export function liveSlotOffer(
+  iso: string,
+  time: string,
+  riders: number,
+  slots: VehicleSlotCell[],
+  vehicles: MockVehicle[],
+  specialDates: MockSpecialDate[],
+  storeId = DEFAULT_STORE_ID,
+  orders: MockOrder[] = [],
+  plans: MockPlan[] = MOCK_PLANS,
+): SlotOffer {
+  const cell = summarizeFleetSlot(iso, time, vehicles, slots, orders, specialDates, storeId, plans);
+  return offerFromFleetCell(cell, riders, hasConfirmedDeparture(iso, time, orders, storeId));
+}
+
+export function liveDaySlots(
+  iso: string,
+  riders: number,
+  slots: VehicleSlotCell[],
+  vehicles: MockVehicle[],
+  specialDates: MockSpecialDate[],
+  storeId = DEFAULT_STORE_ID,
+  orders: MockOrder[] = [],
+  plans: MockPlan[] = MOCK_PLANS,
+): SlotOffer[] {
+  return BOOKING_SLOTS.map((time) =>
+    liveSlotOffer(iso, time, riders, slots, vehicles, specialDates, storeId, orders, plans),
+  );
+}
+
+export function liveDayOffer(
+  iso: string,
+  riders: number,
+  minIso: string,
+  maxIso: string,
+  slots: VehicleSlotCell[],
+  vehicles: MockVehicle[],
+  specialDates: MockSpecialDate[],
+  storeId = DEFAULT_STORE_ID,
+  orders: MockOrder[] = [],
+  plans: MockPlan[] = MOCK_PLANS,
+): DayOfferKind {
+  if (iso < minIso || iso > maxIso) return "closed";
+  if (dateClosed(iso, specialDates, storeId)) return "closed";
+  return offerFromDaySlots(liveDaySlots(iso, riders, slots, vehicles, specialDates, storeId, orders, plans));
 }
 
 export function liveDayStatus(
@@ -345,13 +401,15 @@ export function liveDayStatus(
   vehicles: MockVehicle[],
   specialDates: MockSpecialDate[],
   storeId = DEFAULT_STORE_ID,
+  orders: MockOrder[] = [],
+  plans: MockPlan[] = MOCK_PLANS,
 ): DayStatus {
   if (iso < minIso || iso > maxIso) return "closed";
   if (dateClosed(iso, specialDates, storeId)) return "closed";
   const ids = new Set(vehicleIdsForStore(vehicles, storeId));
   const hasRows = slots.some((cell) => cell.date === iso && ids.has(cell.vehicleId));
   if (!hasRows) return dayStatus(iso, minIso, maxIso);
-  const left = liveDayRemaining(iso, slots, vehicles, specialDates, storeId);
+  const left = liveDayRemaining(iso, slots, vehicles, specialDates, storeId, orders, plans);
   if (left <= 0) return "closed";
   if (left <= 2) return "ask";
   if (left <= 6) return "busy";
@@ -394,9 +452,15 @@ export function useLiveInventory(storeId = DEFAULT_STORE_ID) {
       remaining,
       dayRemaining: dayLeft,
       dayStatus: (iso: string, minIso: string, maxIso: string) =>
-        liveDayStatus(iso, minIso, maxIso, vehicleSlots, vehicles, specialDates, storeId),
+        liveDayStatus(iso, minIso, maxIso, vehicleSlots, vehicles, specialDates, storeId, orders, plans),
       slotStatus: (iso: string, time: string, minIso: string, maxIso: string) =>
         liveSlotStatus(iso, time, minIso, maxIso, vehicleSlots, vehicles, specialDates, storeId, orders, plans),
+      slotOffer: (iso: string, time: string, riders: number) =>
+        liveSlotOffer(iso, time, riders, vehicleSlots, vehicles, specialDates, storeId, orders, plans),
+      daySlots: (iso: string, riders: number) =>
+        liveDaySlots(iso, riders, vehicleSlots, vehicles, specialDates, storeId, orders, plans),
+      dayOffer: (iso: string, riders: number, minIso: string, maxIso: string) =>
+        liveDayOffer(iso, riders, minIso, maxIso, vehicleSlots, vehicles, specialDates, storeId, orders, plans),
       riderCap: (date: string, time: string) => (date && time ? remaining(date, time) : 0),
       clampRiders: (riders: number, date: string, time: string) => {
         const cap = date && time ? remaining(date, time) : 0;

@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { MOCK_ADDONS, type MockAddon } from "@/lib/mock/addons";
 import { MOCK_LOGS, type LogType, type MockLog } from "@/lib/mock/logs";
-import { MOCK_ORDERS, buildWeekDemoOrders, isWebsiteLiveOrder, mergeFreshDemoOrders, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
+import { MOCK_ORDERS, buildWeekDemoOrders, isRolledDemoOrder, isWebsiteLiveOrder, mergeFreshDemoOrders, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import { MOCK_AFFILIATES, findAffiliateByCode, refreshBundledAffiliates, type MockAffiliate } from "@/lib/mock/affiliates";
 import { MOCK_PLANS, mergePlansWithSeed, type MockPlan } from "@/lib/mock/plans";
 import { MOCK_SPECIAL_DATES, type MockSpecialDate } from "@/lib/mock/inventory";
@@ -18,6 +18,8 @@ import { MOCK_ROLES, refreshBuiltinRoles, type MockRole } from "@/lib/mock/permi
 import { MOCK_CMS, isCustomCmsVideo, mergeCms, refreshBundledReviews, refreshBundledVideos, type CmsState } from "@/lib/mock/cms";
 import { applySlotPatch, syncOrderInventory } from "@/lib/ops-inventory";
 import { DEFAULT_STORE_ID, storeIdOf } from "@/lib/store-id";
+import { regionName } from "@/lib/geo/countries";
+import { japanAppointmentPassed } from "@/lib/japan-time";
 import { OPS_STORAGE_KEY, loadPersistedSlots, opsPersistStorage, savePersistedSlots } from "@/lib/ops-storage";
 import { confirmDueOrders } from "@/lib/order-settle";
 
@@ -34,6 +36,7 @@ export type WebsiteBookingInput = {
   phone: string;
   passport?: string;
   nationality?: string;
+  licenceCountry?: string;
   note?: string;
   totalJpy: number;
   storeId?: string;
@@ -139,6 +142,13 @@ function toWebsiteOrder(input: WebsiteBookingInput, addons: MockAddon[], affilia
     (slug) => addons.find((item) => item.slug === slug)?.name ?? slug,
   );
   const agent = findAffiliateByCode(affiliates, input.affiliateCode ?? "");
+  const licence = input.licenceCountry
+    ? `驾照签发地 ${regionName(input.licenceCountry, "zh-TW")} (${input.licenceCountry})`
+    : "";
+  const nation = input.nationality
+    ? `国籍 ${regionName(input.nationality, "zh-TW")} (${input.nationality})`
+    : "";
+  const extra = [licence, nation].filter(Boolean).join(" · ");
   return {
     id: input.ref,
     customer: input.name || "Guest",
@@ -158,7 +168,7 @@ function toWebsiteOrder(input: WebsiteBookingInput, addons: MockAddon[], affilia
     channel: "官网",
     status: "pending",
     paid: true,
-    note: input.note || "官网支付完成，待确认。",
+    note: [extra, input.note || "官网支付完成，待确认。"].filter(Boolean).join("\n"),
     logs: [orderLog("创建订单", agent ? `官网支付 · 代理 ${agent.code}` : "官网支付", "官网")],
     storeId: input.storeId || DEFAULT_STORE_ID,
     affiliateId: agent?.id,
@@ -414,6 +424,9 @@ export const useOpsStore = create<OpsState>()(
           ],
         })),
       commitWebsiteBooking: (input) => {
+        if (japanAppointmentPassed(input.date, input.time)) {
+          return { ok: false, already: false, order: null };
+        }
         const state = get();
         const existing = state.orders.find((item) => item.id === input.ref);
         if (existing) return { ok: true, already: true, order: existing };
@@ -461,7 +474,7 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 31,
+      version: 33,
       skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
@@ -793,10 +806,14 @@ export const useOpsStore = create<OpsState>()(
             ],
           };
         }
-        if (version < 31 && state.cms) {
+        if (version < 32 && state.cms) {
           const bundledIds = new Set(MOCK_CMS.reviews.map((item) => item.id));
           state.cms = {
             ...state.cms,
+            labels: {
+              ...state.cms.labels,
+              reviewsLead: MOCK_CMS.labels.reviewsLead,
+            },
             reviews: [
               ...MOCK_CMS.reviews.map((seed) => {
                 const prev = (state.cms?.reviews ?? []).find((item) => item.id === seed.id);
@@ -805,6 +822,11 @@ export const useOpsStore = create<OpsState>()(
               ...(state.cms.reviews ?? []).filter((item) => !bundledIds.has(item.id)),
             ],
           };
+        }
+        if (version < 33) {
+          state.orders = mergeFreshDemoOrders(
+            (state.orders ?? []).filter((item) => !isRolledDemoOrder(item)),
+          );
         }
         delete state.vehicleSlots;
         return state as OpsState;

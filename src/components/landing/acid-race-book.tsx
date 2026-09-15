@@ -94,6 +94,8 @@ export function AcidRaceBook({
       name: store.name,
       email: store.email,
       phone: store.phone,
+      licenceCountry: store.licenceCountry || "",
+      nationality: store.nationality || "",
       licenseOk: true,
       affiliateCode: store.affiliateCode,
       ref: `OK-${Date.now().toString(36).toUpperCase()}`,

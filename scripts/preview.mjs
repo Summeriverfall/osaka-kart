@@ -1,6 +1,7 @@
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import { handleStripe } from "./stripe-handler.mjs";
 
 const root = path.resolve("out");
 const port = Number(process.env.PORT || 3000);
@@ -42,7 +43,8 @@ function resolveFile(urlPath) {
   return candidates.find((file) => fs.existsSync(file) && fs.statSync(file).isFile()) ?? null;
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
+  if (await handleStripe(req, res)) return;
   const file = resolveFile(req.url);
   if (!file) {
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });

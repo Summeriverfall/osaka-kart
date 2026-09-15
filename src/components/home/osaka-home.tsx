@@ -53,11 +53,8 @@ export function OsakaHome({ plans, locale }: OsakaHomeProps) {
             </span>
           </div>
           <div className="ok-hero-actions">
-            <a className="ok-btn" href={appPageHref(withSlash("/booking"), locale)}>
-              {hero("bookTimes")}
-            </a>
-            <a className="ok-btn-ghost" href="#packages">
-              {hero("seeRoutes")}
+            <a className="ok-btn" href="#packages">
+              {hero("seeTimesAndPlans")}
             </a>
           </div>
           <p className="ok-hero-need">{hero("need")}</p>

@@ -6,12 +6,17 @@ import { Link } from "@/i18n/navigation";
 import { formatJpy } from "@/lib/format";
 import { withSlash } from "@/lib/paths";
 import { appPageHref } from "@/lib/file-href";
+import { finalizePaidBooking } from "@/lib/booking/finalize-pay";
+import { readStripeSession } from "@/lib/stripe/browser";
 import {
   BOOKING_RESULT_KEY,
   type BookingResult,
 } from "@/stores/booking-store";
+import { GuestDetails } from "@/components/booking/guest-details";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteNav } from "@/components/site/site-nav";
+import { scheduleOpsRehydrate } from "@/stores/ops-store";
+import { useToastStore } from "@/stores/toast-store";
 
 type SuccessViewProps = {
   locale: string;
@@ -19,16 +24,44 @@ type SuccessViewProps = {
 
 export function SuccessView({ locale }: SuccessViewProps) {
   const t = useTranslations("Success");
+  const pay = useTranslations("Pay");
+  const notify = useToastStore((state) => state.notify);
   const [result, setResult] = useState<BookingResult | null>(null);
 
   useEffect(() => {
+    scheduleOpsRehydrate(true);
+    let stored: BookingResult | null = null;
     try {
       const raw = sessionStorage.getItem(BOOKING_RESULT_KEY);
-      if (raw) setResult(JSON.parse(raw) as BookingResult);
+      stored = raw ? (JSON.parse(raw) as BookingResult) : null;
     } catch {
-      setResult(null);
+      stored = null;
     }
-  }, []);
+    if (stored) setResult(stored);
+
+    const sessionId = new URLSearchParams(window.location.search).get("session_id") || "";
+    if (!sessionId || !stored || stored.paid) return;
+
+    let cancelled = false;
+    void readStripeSession(sessionId)
+      .then((session) => {
+        if (cancelled) return;
+        if (!session.paid) return;
+        if (session.ref && session.ref !== stored.ref) return;
+        const done = finalizePaidBooking(stored);
+        if (!done.ok) {
+          notify(pay("timePassed"));
+          return;
+        }
+        setResult(done.result);
+      })
+      .catch(() => {
+        if (!cancelled) notify(pay("stripeOffline"));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [notify, pay]);
 
   return (
     <div className="ok-page ok-page-pad">
@@ -56,11 +89,16 @@ export function SuccessView({ locale }: SuccessViewProps) {
               </dd>
             </div>
             <div>
+              <dt>{t("guests")}</dt>
+              <dd>{result.riders}</dd>
+            </div>
+            <div>
               <dt>{t("total")}</dt>
               <dd>{formatJpy(result.totalJpy, locale)}</dd>
             </div>
           </dl>
         )}
+        {result ? <GuestDetails locale={locale} result={result} /> : null}
         <div className="mt-8 flex flex-col gap-3">
           {result && !result.paid ? (
             <Link href={withSlash("/pay")} className="ok-btn">

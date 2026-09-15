@@ -359,17 +359,18 @@ html[lang="ja"] .gateway-main h1 {
 }
 
 .brand-mark span {
-  font-size: 0.82rem;
+  font-size: 1.05rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .brand-mark strong {
-  font-size: 0.98rem;
+  font-size: 1.05rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--neon-pink);
+  color: inherit;
 }
 
 @media (min-width: 800px) {
@@ -379,11 +380,11 @@ html[lang="ja"] .gateway-main h1 {
   }
 
   .brand-mark span {
-    font-size: 1.08rem;
+    font-size: 1.2rem;
   }
 
   .brand-mark strong {
-    font-size: 1.42rem;
+    font-size: 1.2rem;
   }
 }
 
@@ -419,12 +420,9 @@ html[lang="ja"] .gateway-main h1 {
     gap: 0.18em;
   }
 
-  .brand-mark span {
-    font-size: 0.7rem;
-  }
-
+  .brand-mark span,
   .brand-mark strong {
-    font-size: 0.84rem;
+    font-size: 0.82rem;
     letter-spacing: 0.08em;
   }
 }

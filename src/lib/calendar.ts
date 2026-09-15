@@ -1,4 +1,5 @@
 import { BOOKING_SLOTS } from "@/lib/booking/slots";
+import { japanAppointmentPassed } from "@/lib/japan-time";
 
 export type DayStatus = "open" | "busy" | "ask" | "closed";
 
@@ -156,6 +157,7 @@ export function dayStatus(iso: string, minIso: string, maxIso: string): DayStatu
 
 export function slotRemaining(iso: string, time: string): number {
   if (!iso || !time) return 0;
+  if (japanAppointmentPassed(iso, time)) return 0;
   const day = Number(iso.slice(8));
   const hour = Number(time.slice(0, 2)) || 0;
   const minute = Number(time.slice(3, 5)) || 0;

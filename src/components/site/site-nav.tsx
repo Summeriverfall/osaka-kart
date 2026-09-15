@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useAppPathname } from "@/lib/use-app-pathname";
 import { LiveBrandMark } from "@/components/site/live-brand-mark";
-import { NavBookingContact } from "@/components/site/contact-ticker";
 import { LocaleLinks, LocaleSwitcher } from "@/components/site/locale-switcher";
 import { withSlash } from "@/lib/paths";
 import { appPageHref, isFileProtocol, navigateToHref } from "@/lib/file-href";
@@ -25,6 +24,9 @@ export function SiteNav({ look }: SiteNavProps) {
   const onTheme = isSiteTheme(segment);
   const onHome = !segment;
   const onLanding = onHome || onTheme;
+  const onBooking = pathname.startsWith("/booking");
+  const onPay = pathname.startsWith("/pay");
+  const hideBookCta = onBooking || onPay || onLanding;
   const [open, setOpen] = useState(false);
 
   const items = [
@@ -43,7 +45,24 @@ export function SiteNav({ look }: SiteNavProps) {
     window.location.href = appPageHref(href, locale);
   }
 
-  const contact = <NavBookingContact onClick={() => setOpen(false)} />;
+  const contactBtn = (
+    <button
+      type="button"
+      className="ok-nav-sheet-contact-btn"
+      onClick={() => {
+        setOpen(false);
+        const foot = document.getElementById("footer");
+        const hidden = !foot || foot.offsetParent === null;
+        if (hidden) {
+          go(withSlash("/#footer"));
+          return;
+        }
+        foot.scrollIntoView({ behavior: "smooth", block: "start" });
+      }}
+    >
+      {t("contact")}
+    </button>
+  );
 
   return (
     <>
@@ -78,18 +97,20 @@ export function SiteNav({ look }: SiteNavProps) {
           </nav>
           <div className="ok-nav-end">
             <LocaleSwitcher />
-            <a
-              href={appPageHref(withSlash("/booking"), locale)}
-              className="ok-nav-cta"
-              suppressHydrationWarning
-              onClick={(event) => {
-                if (!isFileProtocol()) return;
-                event.preventDefault();
-                go(withSlash("/booking"));
-              }}
-            >
-              {t("booking")}
-            </a>
+            {!hideBookCta ? (
+              <a
+                href={appPageHref(withSlash("/booking"), locale)}
+                className="ok-nav-cta"
+                suppressHydrationWarning
+                onClick={(event) => {
+                  if (!isFileProtocol()) return;
+                  event.preventDefault();
+                  go(withSlash("/booking"));
+                }}
+              >
+                {t("booking")}
+              </a>
+            ) : null}
             <button
               type="button"
               className={open ? "ok-nav-menu is-open" : "ok-nav-menu"}
@@ -130,20 +151,22 @@ export function SiteNav({ look }: SiteNavProps) {
               <p>{t("language")}</p>
               <LocaleLinks onPicked={() => setOpen(false)} />
             </div>
-            <div className="ok-nav-sheet-contact">{contact}</div>
-            <a
-              href={appPageHref(withSlash("/booking"), locale)}
-              className="ok-btn ok-nav-sheet-cta"
-              suppressHydrationWarning
-              onClick={(event) => {
-                setOpen(false);
-                if (!isFileProtocol()) return;
-                event.preventDefault();
-                go(withSlash("/booking"));
-              }}
-            >
-              {t("booking")}
-            </a>
+            <div className="ok-nav-sheet-contact">{contactBtn}</div>
+            {!hideBookCta ? (
+              <a
+                href={appPageHref(withSlash("/booking"), locale)}
+                className="ok-btn ok-nav-sheet-cta"
+                suppressHydrationWarning
+                onClick={(event) => {
+                  setOpen(false);
+                  if (!isFileProtocol()) return;
+                  event.preventDefault();
+                  go(withSlash("/booking"));
+                }}
+              >
+                {t("booking")}
+              </a>
+            ) : null}
           </div>
         ) : null}
       </header>

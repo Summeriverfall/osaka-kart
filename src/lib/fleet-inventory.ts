@@ -1,4 +1,5 @@
 import { BOOKING_SLOTS } from "@/lib/booking/slots";
+import { japanAppointmentPassed } from "@/lib/japan-time";
 import { isAllStores, storeIdOf } from "@/lib/store-id";
 import type { MockOrder } from "@/lib/mock/orders";
 import { MOCK_PLANS, type MockPlan } from "@/lib/mock/plans";
@@ -289,8 +290,84 @@ export function summarizeFleetSlot(
 }
 
 export function slotBookableLeft(cell: FleetCell) {
+  if (japanAppointmentPassed(cell.date, cell.time)) return 0;
   if (cell.closed) return 0;
+  if (cell.races >= MAX_CONCURRENT_RACES) return 0;
   return cell.left;
+}
+
+export function departingOrders(
+  date: string,
+  time: string,
+  orders: MockOrder[],
+  storeId?: string,
+) {
+  const clock = time.slice(0, 5);
+  return orders.filter((order) => {
+    if (!isActiveRace(order, date, storeId)) return false;
+    return order.time.slice(0, 5) === clock;
+  });
+}
+
+export function hasConfirmedDeparture(
+  date: string,
+  time: string,
+  orders: MockOrder[],
+  storeId?: string,
+) {
+  return departingOrders(date, time, orders, storeId).some(
+    (order) => order.status === "confirmed" || order.status === "completed",
+  );
+}
+
+export type SlotOfferKind = "recommended" | "open" | "short" | "full" | "closed";
+
+export type SlotOffer = {
+  time: string;
+  left: number;
+  races: number;
+  confirmed: boolean;
+  canBook: boolean;
+  past: boolean;
+  kind: SlotOfferKind;
+};
+
+export function offerFromFleetCell(cell: FleetCell, riders: number, confirmed: boolean): SlotOffer {
+  const party = Math.max(1, riders);
+  const past = japanAppointmentPassed(cell.date, cell.time);
+  const leaderOk = cell.races < MAX_CONCURRENT_RACES;
+  const canBook = !past && !cell.closed && leaderOk && cell.left >= party;
+  let kind: SlotOfferKind;
+  if (past || (cell.closed && cell.left <= 0)) {
+    kind = "closed";
+  } else if (canBook && confirmed) {
+    kind = "recommended";
+  } else if (canBook) {
+    kind = "open";
+  } else if (cell.left <= 0 || !leaderOk) {
+    kind = "full";
+  } else {
+    kind = "short";
+  }
+  return {
+    time: cell.time,
+    left: past ? 0 : cell.left,
+    races: cell.races,
+    confirmed,
+    canBook,
+    past,
+    kind,
+  };
+}
+
+export type DayOfferKind = SlotOfferKind;
+
+export function offerFromDaySlots(slots: SlotOffer[]): DayOfferKind {
+  if (slots.some((item) => item.kind === "recommended" && item.canBook)) return "recommended";
+  if (slots.some((item) => item.canBook)) return "open";
+  if (slots.some((item) => item.kind === "short")) return "short";
+  if (slots.length && slots.every((item) => item.kind === "closed")) return "closed";
+  return "full";
 }
 
 export function occupancyRate(

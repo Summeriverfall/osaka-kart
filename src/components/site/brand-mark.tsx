@@ -39,8 +39,12 @@ export function BrandMark({ className, look, name, short, suffix, logo }: BrandM
         <img src={logoSrc(mark)} alt="" className="brand-mark-logo" />
       ) : (
         <>
-          <span>{displayShort}</span>
-          <strong>{displaySuffix}</strong>
+          {(displayShort + " " + displaySuffix)
+            .trim()
+            .split(/\s+/)
+            .map((word) => (
+              <span key={word}>{word}</span>
+            ))}
         </>
       )}
     </Link>
