@@ -308,11 +308,11 @@
   "Calendar": {
     "title": "Pick a date",
     "noteTitle": "Booking note",
-    "noteBody": "Set party size first. Recommended days already have a confirmed departure. Grey days cannot take this party. Tap a date to pick a time.",
+    "noteBody": "Set party size first. Normally lit cards are bookable. A small green dot means a confirmed departure that day. Dim grey dates cannot be booked or tapped.",
     "open": "Available",
     "busy": "Filling",
     "ask": "Ask us",
-    "recommend": "Recommended",
+    "recommend": "Recommended (confirmed group)",
     "blocked": "Unavailable",
     "spots": "{n} left",
     "select": "Continue to booking",

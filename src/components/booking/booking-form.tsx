@@ -13,6 +13,7 @@ import { PhoneField } from "@/components/booking/phone-field";
 import { Modal } from "@/components/ui/modal";
 import { maxBookIsoDate, todayIsoDate } from "@/lib/booking/slots";
 import { defaultDial, isEmail, joinPhone, parsePhone } from "@/lib/geo/countries";
+import { dayOfferClickable } from "@/lib/fleet-inventory";
 import { useLiveCatalog, useLiveInventory } from "@/lib/live-catalog";
 import { addonUnitLabel } from "@/lib/mock/addons";
 import { DEFAULT_STORE_ID } from "@/lib/store-id";
@@ -173,7 +174,7 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
   useEffect(() => {
     if (!hydrated || !store.date) return;
     const dayKind = live.dayOffer(store.date, riders, todayIsoDate(), maxBookIsoDate());
-    const dayOk = dayKind === "recommended" || dayKind === "open";
+    const dayOk = dayOfferClickable(dayKind);
     if (!dayOk) {
       store.patch({ date: "", time: "" });
       setDraftTime("");
@@ -203,7 +204,7 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
       return;
     }
     const dayKind = live.dayOffer(date, count, todayIsoDate(), maxBookIsoDate());
-    const dayOk = dayKind === "recommended" || dayKind === "open";
+    const dayOk = dayOfferClickable(dayKind);
     if (!dayOk) {
       store.patch({ riders: count, date: "", time: "" });
       setDraftTime("");

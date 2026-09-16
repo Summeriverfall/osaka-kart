@@ -362,6 +362,33 @@ export function offerFromFleetCell(cell: FleetCell, riders: number, confirmed: b
 
 export type DayOfferKind = SlotOfferKind;
 
+export function dayOfferClickable(kind: DayOfferKind): boolean {
+  return kind === "open" || kind === "recommended";
+}
+
+export function dayOfferRecommended(kind: DayOfferKind): boolean {
+  return kind === "recommended";
+}
+
+export type DayCellFlags = {
+  kind: DayOfferKind;
+  clickable: boolean;
+  disabled: boolean;
+  recommended: boolean;
+  selected: boolean;
+};
+
+export function dayCellFlags(kind: DayOfferKind, selectedIso: string, iso: string): DayCellFlags {
+  const clickable = dayOfferClickable(kind);
+  return {
+    kind,
+    clickable,
+    disabled: !clickable,
+    recommended: dayOfferRecommended(kind),
+    selected: selectedIso === iso && clickable,
+  };
+}
+
 export function offerFromDaySlots(slots: SlotOffer[]): DayOfferKind {
   if (slots.some((item) => item.kind === "recommended" && item.canBook)) return "recommended";
   if (slots.some((item) => item.canBook)) return "open";

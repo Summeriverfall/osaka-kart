@@ -3103,67 +3103,125 @@ html:not(:has(.admin-app)) .ok-included.is-loud .addon-included {
   grid-auto-rows: 1fr;
 }
 
-.ok-book-page .cal-board.is-booking .cal-cell {
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.04);
+.ok-book-page .cal-board.is-booking .cal-cell,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell {
+  overflow: visible;
+  border: 1px solid transparent;
+  background: transparent;
   box-shadow: none;
+  color: #9ca3af;
+  cursor: default;
 }
 
-.ok-book-page .cal-board.is-booking .cal-cell.is-recommended:not(:disabled) {
-  background: rgba(8, 12, 18, 0.55);
-  border-color: rgba(34, 197, 94, 0.72);
-  box-shadow: none;
+.ok-book-page .cal-board.is-booking .cal-cell.is-clickable,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-clickable {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
-.ok-book-page .cal-board.is-booking .cal-cell.is-recommended:not(:disabled) .cal-tag,
-.ok-book-page .cal-board.is-booking .cal-tag.is-recommend {
-  color: #4ade80;
+.ok-book-page .cal-board.is-booking .cal-cell.is-clickable b,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-clickable b {
+  color: #fff;
+  font-weight: 700;
 }
 
-.ok-book-page .cal-board.is-booking .cal-cell.is-open:not(:disabled) .cal-tag,
-.ok-book-page .cal-board.is-booking .cal-tag.is-open {
-  color: rgba(255, 255, 255, 0.55);
-  font-weight: 650;
+.ok-book-page .cal-board.is-booking .cal-cell.is-clickable.is-recommended,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-clickable.is-recommended {
+  border-color: rgba(74, 222, 128, 0.42);
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.ok-book-page .cal-board.is-booking .cal-cell:not(:disabled):not(.is-on):hover {
-  background: rgba(255, 255, 255, 0.07);
+.ok-book-page .cal-board.is-booking .cal-cell.is-clickable:not(.is-on):hover,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-clickable:not(.is-on):hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.42);
+}
+
+.ok-book-page .cal-board.is-booking .cal-cell.is-clickable.is-recommended:not(.is-on):hover,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-clickable.is-recommended:not(.is-on):hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(74, 222, 128, 0.58);
+}
+
+.ok-book-page .cal-board.is-booking .cal-rec,
+.ok-book-page:has(.book-form.is-wizard) .cal-rec {
+  position: absolute;
+  top: 0.32rem;
+  right: 0.32rem;
+  z-index: 2;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.16);
+  pointer-events: none;
+}
+
+.ok-book-page .cal-board.is-booking .cal-cell.is-on .cal-rec,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on .cal-rec {
+  background: #bbf7d0;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
 }
 
 .ok-book-page .cal-board.is-booking .cal-cell.is-empty,
-.ok-book-page .cal-board.is-booking .cal-cell:disabled {
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-empty {
   border: 0;
   background: transparent;
   box-shadow: none;
-  opacity: 0.38;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.ok-book-page .cal-board.is-booking .cal-cell:disabled b {
-  color: #6b7280;
+.ok-book-page .cal-board.is-booking .cal-cell.is-blocked,
+.ok-book-page .cal-board.is-booking .cal-cell:disabled,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-blocked,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell:disabled {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: transparent;
+  box-shadow: none;
+  opacity: 0.34;
+  pointer-events: none;
+  cursor: default;
+}
+
+.ok-book-page .cal-board.is-booking .cal-cell.is-blocked b,
+.ok-book-page .cal-board.is-booking .cal-cell:disabled b,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-blocked b,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell:disabled b {
+  color: #9ca3af;
   font-weight: 500;
 }
 
-.ok-book-page .cal-board.is-booking .cal-cell:disabled:hover {
+.ok-book-page .cal-board.is-booking .cal-cell.is-blocked:hover,
+.ok-book-page .cal-board.is-booking .cal-cell:disabled:hover,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-blocked:hover,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell:disabled:hover {
   background: transparent;
 }
 
-.ok-book-page .cal-board.is-booking .cal-cell.is-on {
+.ok-book-page .cal-board.is-booking .cal-cell.is-on,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on {
   outline: 0;
-  border-color: transparent;
-  background: var(--ok-grad);
-  box-shadow: 0 8px 22px rgba(255, 0, 110, 0.28);
-  opacity: 1;
+  border-color: transparent !important;
+  background: var(--ok-grad) !important;
+  box-shadow: 0 8px 22px rgba(131, 56, 236, 0.38);
+  color: #fff;
+  opacity: 1 !important;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
-.ok-book-page .cal-board.is-booking .cal-cell.is-on .cal-tag.is-recommend {
-  color: #86efac;
+.ok-book-page .cal-board.is-booking .cal-cell.is-on b,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on b,
+.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on .cal-spots {
+  color: #fff;
 }
 
-.ok-book-page .cal-board.is-booking .cal-cell.is-on .cal-tag.is-open {
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.ok-book-page .cal-board.is-booking .cal-legend {
+.ok-book-page .cal-board.is-booking .cal-legend,
+.ok-book-page:has(.book-form.is-wizard) .cal-legend {
   justify-content: center;
   margin-top: 0.55rem;
   gap: 0.7rem 0.95rem;
@@ -3171,34 +3229,39 @@ html:not(:has(.admin-app)) .ok-included.is-loud .addon-included {
   color: rgba(255, 255, 255, 0.62);
 }
 
-.ok-book-page .cal-board.is-booking .cal-legend li {
+.ok-book-page .cal-board.is-booking .cal-legend li,
+.ok-book-page:has(.book-form.is-wizard) .cal-legend li {
   gap: 0.32rem;
 }
 
-.ok-book-page .cal-board.is-booking .cal-dot {
+.ok-book-page .cal-board.is-booking .cal-swatch,
+.ok-book-page:has(.book-form.is-wizard) .cal-swatch {
   display: inline-block;
-  width: 0.42rem;
-  height: 0.42rem;
-  border-radius: 999px;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 0.22rem;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
-.ok-book-page .cal-board.is-booking .cal-dot.is-recommended {
-  background: #22c55e;
+.ok-book-page .cal-board.is-booking .cal-swatch.is-open,
+.ok-book-page:has(.book-form.is-wizard) .cal-swatch.is-open {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.32);
 }
 
-.ok-book-page .cal-board.is-booking .cal-dot.is-open {
-  background: #e5e7eb;
+.ok-book-page .cal-board.is-booking .cal-swatch.is-recommended,
+.ok-book-page:has(.book-form.is-wizard) .cal-swatch.is-recommended {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(74, 222, 128, 0.5);
+  box-shadow: inset -0.16rem 0.16rem 0 #4ade80;
 }
 
-.ok-book-page .cal-board.is-booking .cal-dot.is-blocked {
-  background: #6b7280;
-}
-
-.ok-book-page .cal-board.is-booking .cal-tag {
-  margin-top: 0;
-  font-size: 0.52rem;
-  letter-spacing: 0.02em;
+.ok-book-page .cal-board.is-booking .cal-swatch.is-blocked,
+.ok-book-page:has(.book-form.is-wizard) .cal-swatch.is-blocked {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 0.45;
 }
 
 .ok-book-page:has(.book-form.is-wizard) .cal-cell {
@@ -3206,75 +3269,11 @@ html:not(:has(.admin-app)) .ok-included.is-loud .addon-included {
   height: 100%;
   justify-content: center;
   gap: 0.08rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 0.9rem;
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow: none;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-open:not(:disabled) {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-recommended:not(:disabled) {
-  background: rgba(8, 12, 18, 0.55);
-  border-color: rgba(34, 197, 94, 0.72);
-  box-shadow: none;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-recommended:not(:disabled) .cal-tag {
-  color: #4ade80;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-open:not(:disabled) .cal-tag {
-  color: rgba(255, 255, 255, 0.55);
-  font-weight: 650;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-cell:not(:disabled):not(.is-on):hover {
-  background: rgba(255, 255, 255, 0.07);
 }
 
 .ok-book-page:has(.book-form.is-wizard) .book-picked-plan {
   display: none;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on .cal-tag.is-recommend {
-  color: #86efac;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on .cal-tag.is-open {
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-empty,
-.ok-book-page:has(.book-form.is-wizard) .cal-cell:disabled {
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  opacity: 0.38;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-cell:disabled b {
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-cell:disabled:hover {
-  background: transparent;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on {
-  outline: 0;
-  border-color: transparent;
-  background: var(--ok-grad);
-  box-shadow: 0 8px 22px rgba(255, 0, 110, 0.28);
-  opacity: 1;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on b,
-.ok-book-page:has(.book-form.is-wizard) .cal-cell.is-on .cal-spots {
-  color: #fff;
 }
 
 .ok-book-page:has(.book-form.is-wizard) .cal-cell b {
@@ -3292,41 +3291,6 @@ html:not(:has(.admin-app)) .ok-included.is-loud .addon-included {
 
 .ok-book-page:has(.book-form.is-wizard) .cal-legend {
   flex-shrink: 0;
-  justify-content: center;
-  margin-top: 0.55rem;
-  gap: 0.7rem 0.95rem;
-  font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.62);
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-legend li {
-  gap: 0.32rem;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-dot {
-  display: inline-block;
-  width: 0.42rem;
-  height: 0.42rem;
-  border-radius: 999px;
-  flex-shrink: 0;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-dot.is-recommended {
-  background: #22c55e;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-dot.is-open {
-  background: #e5e7eb;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-dot.is-blocked {
-  background: #6b7280;
-}
-
-.ok-book-page:has(.book-form.is-wizard) .cal-tag {
-  margin-top: 0;
-  font-size: 0.52rem;
-  letter-spacing: 0.02em;
 }
 
 html:not(:has(.admin-app)) .ok-book-page:has(.book-form.is-wizard) .book-slot-board {

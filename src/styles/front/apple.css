@@ -362,7 +362,7 @@ html:not(:has(.admin-app)) .cal-cell {
   border-radius: 0.9rem;
 }
 
-html:not(:has(.admin-app)) .cal-cell.is-on {
+html:not(:has(.admin-app)):not(:has(.ok-book-page)) .cal-cell.is-on {
   background: rgb(255 46 151 / 16%) !important;
   outline-color: #ff2e97 !important;
 }

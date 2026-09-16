@@ -10,9 +10,8 @@ import {
   monthLabel,
   parseIsoDate,
   weekdayLabels,
-  type DayStatus,
 } from "@/lib/calendar";
-import type { DayOfferKind } from "@/lib/fleet-inventory";
+import { dayCellFlags } from "@/lib/fleet-inventory";
 import { useLiveInventory } from "@/lib/live-catalog";
 import { maxBookIsoDate, tomorrowIsoDate } from "@/lib/booking/slots";
 import { cn } from "@/lib/utils";
@@ -53,8 +52,8 @@ export function MonthCalendar({
   const cellPrice = formatYenCell(priceJpy);
   const bookingMode = partySize != null;
 
-  function pick(iso: string, blocked: boolean) {
-    if (blocked) return;
+  function pick(iso: string, clickable: boolean) {
+    if (!clickable) return;
     onChange(iso);
   }
 
@@ -81,42 +80,58 @@ export function MonthCalendar({
           if (!cell.iso || cell.day == null) {
             return <div key={`e-${index}`} className="cal-cell is-empty" />;
           }
-          const offer = bookingMode
-            ? live.dayOffer(cell.iso, partySize, startIso, maxIso)
-            : null;
+
+          if (bookingMode && partySize != null) {
+            const kind = live.dayOffer(cell.iso, partySize, startIso, maxIso);
+            const flags = dayCellFlags(kind, value, cell.iso);
+            const stateLabel = flags.recommended
+              ? t("recommend")
+              : flags.clickable
+                ? t("open")
+                : t("blocked");
+            return (
+              <button
+                key={cell.iso}
+                type="button"
+                className={cn(
+                  "cal-cell",
+                  flags.clickable ? "is-open is-clickable" : "is-blocked",
+                  flags.recommended && "is-recommended",
+                  flags.selected && "is-on",
+                )}
+                disabled={flags.disabled}
+                aria-disabled={flags.disabled}
+                aria-pressed={flags.selected}
+                aria-label={`${cell.day} ${stateLabel}`}
+                onClick={() => pick(cell.iso!, flags.clickable)}
+              >
+                {flags.recommended ? <i className="cal-rec" aria-hidden /> : null}
+                <b>{cell.day}</b>
+              </button>
+            );
+          }
+
           const status = time
             ? live.slotStatus(cell.iso, time, startIso, maxIso)
             : live.dayStatus(cell.iso, startIso, maxIso);
           const left = time ? live.remaining(cell.iso, time) : live.dayRemaining(cell.iso);
           const selected = value === cell.iso;
           const short = left < minRiders;
-          const kind: DayStatus | DayOfferKind = offer ?? (short ? "closed" : status);
-          const blocked = offer
-            ? kind === "closed" || kind === "full" || kind === "short"
-            : status === "closed" || short;
-          const tag = bookingMode
-            ? kind === "recommended"
-              ? t("recommend")
-              : kind === "open" && !blocked
-                ? t("open")
-                : null
-            : kind === "recommended"
-              ? t("recommend")
-              : hideSpots || blocked
-                ? null
-                : undefined;
+          const kind = short ? "closed" : status;
+          const clickable = kind !== "closed";
+          const tag = hideSpots || !clickable ? null : undefined;
           return (
             <button
               key={cell.iso}
               type="button"
               className={cn("cal-cell", `is-${kind}`, selected && "is-on")}
-              disabled={blocked}
-              onClick={() => pick(cell.iso!, blocked)}
+              disabled={!clickable}
+              onClick={() => pick(cell.iso!, clickable)}
             >
-              {bookingMode ? null : <i className={cn("cal-mark", `is-${kind}`)} />}
+              <i className={cn("cal-mark", `is-${kind}`)} />
               <b>{cell.day}</b>
               {tag ? (
-                <em className={cn("cal-tag", kind === "recommended" ? "is-recommend" : "is-open")}>{tag}</em>
+                <em className="cal-tag is-recommend">{tag}</em>
               ) : tag === undefined ? (
                 <>
                   <small className="cal-price">{cellPrice}</small>
@@ -131,15 +146,15 @@ export function MonthCalendar({
       {bookingMode ? (
         <ul className="cal-legend">
           <li>
-            <i className="cal-dot is-recommended" />
-            {t("recommend")}
-          </li>
-          <li>
-            <i className="cal-dot is-open" />
+            <i className="cal-swatch is-open" />
             {t("open")}
           </li>
           <li>
-            <i className="cal-dot is-blocked" />
+            <i className="cal-swatch is-recommended" />
+            {t("recommend")}
+          </li>
+          <li>
+            <i className="cal-swatch is-blocked" />
             {t("blocked")}
           </li>
         </ul>
