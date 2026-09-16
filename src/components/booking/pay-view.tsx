@@ -36,7 +36,7 @@ export function PayView({ locale }: PayViewProps) {
   const notify = useToastStore((state) => state.notify);
   const methods = enabledPayMethods(settings);
   const [result, setResult] = useState<BookingResult | null>(null);
-  const [method, setMethod] = useState<PayMethod>("stripe");
+  const [method, setMethod] = useState<PayMethod>("card");
   const [number, setNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvc, setCvc] = useState("");
@@ -54,7 +54,7 @@ export function PayView({ locale }: PayViewProps) {
   }, []);
 
   useEffect(() => {
-    if (!methods.includes(method)) setMethod(methods.includes("stripe") ? "stripe" : (methods[0] ?? "card"));
+    if (!methods.includes(method)) setMethod(methods.includes("card") ? "card" : (methods[0] ?? "stripe"));
   }, [methods, method]);
 
   async function payWithStripe() {
@@ -205,19 +205,19 @@ export function PayView({ locale }: PayViewProps) {
                   <label>
                     <span>{t("number")}</span>
                     <input
+                      type="tel"
                       inputMode="numeric"
-                      autoComplete="cc-number"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck={false}
+                      name="cardnumber"
                       placeholder="ACCT-000015"
                       value={number}
-                      onChange={(event) =>
-                        setNumber(
-                          event.target.value
-                            .replace(/[^\d]/g, "")
-                            .slice(0, 16)
-                            .replace(/(\d{4})(?=\d)/g, "$1 ")
-                            .trim(),
-                        )
-                      }
+                      onChange={(event) => {
+                        const digits = event.target.value.replace(/\D/g, "").slice(0, 16);
+                        setNumber(digits.replace(/(\d{4})(?=\d)/g, "$1 "));
+                      }}
                       required
                     />
                   </label>
@@ -225,12 +225,16 @@ export function PayView({ locale }: PayViewProps) {
                     <label>
                       <span>{t("expiry")}</span>
                       <input
+                        type="tel"
                         inputMode="numeric"
-                        autoComplete="cc-exp"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        name="cc-exp"
                         placeholder="MM / YY"
                         value={expiry}
                         onChange={(event) => {
-                          const digits = event.target.value.replace(/[^\d]/g, "").slice(0, 4);
+                          const digits = event.target.value.replace(/\D/g, "").slice(0, 4);
                           setExpiry(digits.length > 2 ? `${digits.slice(0, 2)} / ${digits.slice(2)}` : digits);
                         }}
                         required
@@ -239,11 +243,15 @@ export function PayView({ locale }: PayViewProps) {
                     <label>
                       <span>{t("cvc")}</span>
                       <input
+                        type="tel"
                         inputMode="numeric"
-                        autoComplete="cc-csc"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        name="cvc"
                         placeholder="123"
                         value={cvc}
-                        onChange={(event) => setCvc(event.target.value.replace(/[^\d]/g, "").slice(0, 4))}
+                        onChange={(event) => setCvc(event.target.value.replace(/\D/g, "").slice(0, 4))}
                         required
                       />
                     </label>
@@ -251,7 +259,11 @@ export function PayView({ locale }: PayViewProps) {
                   <label>
                     <span>{t("holder")}</span>
                     <input
-                      autoComplete="cc-name"
+                      type="text"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      name="ccname"
                       value={holder}
                       onChange={(event) => setHolder(event.target.value)}
                       required

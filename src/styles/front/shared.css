@@ -2955,7 +2955,14 @@ html:not(:has(.admin-app)) .float-book {
   border-radius: 0.7rem;
   border: 1px solid rgb(255 255 255 / 16%);
   background: rgb(0 0 0 / 28%);
-  color: inherit;
+  color: #f5f5f7;
+  caret-color: #fff;
+  font-size: 16px;
+  pointer-events: auto;
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .pay-card-row {

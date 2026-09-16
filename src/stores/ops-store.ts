@@ -11,7 +11,7 @@ import {
   buildVehicleTimelineForDate,
   type VehicleSlotCell,
 } from "@/lib/mock/vehicle-timeline";
-import { MOCK_SETTINGS, MOCK_EMAIL_TEMPLATES, MOCK_STORES, refreshBundledChannels, type MockSettings, type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
+import { MOCK_SETTINGS, MOCK_EMAIL_TEMPLATES, MOCK_PAYMENTS, MOCK_STORES, refreshBundledChannels, refreshBundledPayments, type MockSettings, type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
 import { MOCK_VEHICLES, type MockVehicle } from "@/lib/mock/vehicles";
 import { MOCK_STAFF, type MockStaff } from "@/lib/mock/staff";
 import { MOCK_ROLES, refreshBuiltinRoles, type MockRole } from "@/lib/mock/permissions";
@@ -474,7 +474,7 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 33,
+      version: 34,
       skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
@@ -828,6 +828,19 @@ export const useOpsStore = create<OpsState>()(
             (state.orders ?? []).filter((item) => !isRolledDemoOrder(item)),
           );
         }
+        if (version < 34) {
+          state.settings = {
+            ...MOCK_SETTINGS,
+            ...state.settings,
+            payments: refreshBundledPayments(MOCK_PAYMENTS, state.settings?.payments),
+            channels: refreshBundledChannels(
+              MOCK_SETTINGS.channels,
+              state.settings?.channels,
+              state.settings?.removedChannelIds,
+            ),
+            removedChannelIds: state.settings?.removedChannelIds ?? MOCK_SETTINGS.removedChannelIds,
+          };
+        }
         delete state.vehicleSlots;
         return state as OpsState;
       },
@@ -873,6 +886,7 @@ export const useOpsStore = create<OpsState>()(
             ...MOCK_SETTINGS,
             ...extra.settings,
             refundPolicy: extra.settings?.refundPolicy ?? MOCK_SETTINGS.refundPolicy,
+            payments: refreshBundledPayments(MOCK_PAYMENTS, extra.settings?.payments),
             channels: refreshBundledChannels(
               MOCK_SETTINGS.channels,
               extra.settings?.channels,

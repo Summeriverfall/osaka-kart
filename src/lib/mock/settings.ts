@@ -69,9 +69,21 @@ export const MOCK_PAYMENTS: MockPayChannel[] = [
   { id: "stripe", name: "VISA / Stripe", enabled: true, reserved: false, testMode: true, fieldLabel: "API Key", fieldValue: "sk_test_osaka_kart" },
   { id: "apple", name: "Apple Pay", enabled: true, reserved: false, fieldLabel: "Merchant ID", fieldValue: "merchant.jp.osakakart" },
   { id: "google", name: "Google Pay", enabled: false, reserved: false, fieldLabel: "Merchant ID", fieldValue: "" },
-  { id: "alipay", name: "支付宝跨境", enabled: false, reserved: true },
-  { id: "wechat", name: "微信支付跨境", enabled: false, reserved: true },
+  { id: "alipay", name: "支付宝跨境", enabled: true, reserved: false },
+  { id: "wechat", name: "微信支付跨境", enabled: true, reserved: false },
 ];
+
+export function refreshBundledPayments(seed: MockPayChannel[], extra?: MockPayChannel[]) {
+  const extraById = new Map((extra ?? []).map((item) => [item.id, item]));
+  return seed.map((seedItem) => {
+    const prev = extraById.get(seedItem.id);
+    if (!prev) return seedItem;
+    if (seedItem.id === "alipay" || seedItem.id === "wechat") {
+      return { ...prev, ...seedItem };
+    }
+    return { ...seedItem, ...prev, id: seedItem.id };
+  });
+}
 
 export const MOCK_BOOK_CHANNELS: MockBookChannel[] = [
   { id: "官网", enabled: true, locked: true, sort: 0, kind: "direct", contact: "官网客服", cut: 0 },

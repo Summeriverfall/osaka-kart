@@ -483,8 +483,8 @@ export function enabledPayMethods(settings: MockSettings): PayMethod[] {
   }
   if (settings.paypay) methods.push("paypay");
   if (on("apple") || settings.applePay) methods.push("apple");
-  if (on("alipay")) methods.push("alipay");
-  if (on("wechat")) methods.push("wechat");
+  if (on("alipay") || Boolean(channel("alipay"))) methods.push("alipay");
+  if (on("wechat") || Boolean(channel("wechat"))) methods.push("wechat");
   return methods.length ? methods : ["card"];
 }
 
