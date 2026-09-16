@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import { adminCopy, adminDaypart, adminVehicleStatus } from "@/lib/admin/copy";
+import { b2Copy } from "@/lib/admin/b2-copy";
 import { BOOKING_DAYPARTS, BOOKING_SLOTS, todayIsoDate } from "@/lib/booking/slots";
 import { type MockVehicle, type VehicleStatus } from "@/lib/mock/vehicles";
 import {
@@ -78,6 +79,7 @@ function summarize(cells: VehicleSlotCell[]) {
 export function InventoryTimeline() {
   const locale = useLocale();
   const copy = adminCopy(locale);
+  const b2 = b2Copy(locale);
   const {
     addSpecialDate,
     patchVehicleSlot,
@@ -712,7 +714,7 @@ export function InventoryTimeline() {
         }
       >
         <p className="text-sm text-slate-500">
-          {confirm === "clear" ? copy.inventory.clearLead : copy.inventory.resetLead}
+          {confirm === "clear" ? `${copy.inventory.clearLead} ${b2.lockDayImpact(picked)}` : copy.inventory.resetLead}
         </p>
       </Modal>
 

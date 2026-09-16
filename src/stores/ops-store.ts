@@ -21,6 +21,8 @@ import { DEFAULT_STORE_ID, storeIdOf } from "@/lib/store-id";
 import { regionName } from "@/lib/geo/countries";
 import { japanAppointmentPassed } from "@/lib/japan-time";
 import { OPS_STORAGE_KEY, loadPersistedSlots, opsPersistStorage, savePersistedSlots } from "@/lib/ops-storage";
+import { catalogTotalJpy } from "@/lib/catalog-total";
+import { writePayEnabled } from "@/lib/pay-enabled";
 import { confirmDueOrders } from "@/lib/order-settle";
 
 export type WebsiteBookingInput = {
@@ -137,7 +139,12 @@ function orderLog(action: string, note = "", actor = "后台") {
   return { time: nowStamp(), actor, action, note };
 }
 
-function toWebsiteOrder(input: WebsiteBookingInput, addons: MockAddon[], affiliates: MockAffiliate[]): MockOrder {
+function toWebsiteOrder(
+  input: WebsiteBookingInput,
+  plans: MockPlan[],
+  addons: MockAddon[],
+  affiliates: MockAffiliate[],
+): MockOrder {
   const labels = input.addonSlugs.map(
     (slug) => addons.find((item) => item.slug === slug)?.name ?? slug,
   );
@@ -164,7 +171,7 @@ function toWebsiteOrder(input: WebsiteBookingInput, addons: MockAddon[], affilia
     male: Math.max(1, input.riders),
     female: 0,
     addons: labels,
-    totalJpy: input.totalJpy,
+    totalJpy: catalogTotalJpy(plans, addons, input.planSlug, input.riders, input.addonSlugs),
     channel: "官网",
     status: "pending",
     paid: true,
@@ -344,10 +351,14 @@ export const useOpsStore = create<OpsState>()(
           };
         }),
       patchSettings: (patch) =>
-        set((state) => ({
-          settings: { ...state.settings, ...patch },
-          logs: [makeLog("员工变更", "更新系统设置"), ...state.logs],
-        })),
+        set((state) => {
+          const settings = { ...state.settings, ...patch };
+          if (patch.payments) writePayEnabled(patch.payments);
+          return {
+            settings,
+            logs: [makeLog("员工变更", "更新系统设置"), ...state.logs],
+          };
+        }),
       upsertVehicle: (vehicle) => set((state) => ({ vehicles: replaceById(state.vehicles, vehicle) })),
       patchVehicle: (id, patch) =>
         set((state) => ({
@@ -430,7 +441,7 @@ export const useOpsStore = create<OpsState>()(
         const state = get();
         const existing = state.orders.find((item) => item.id === input.ref);
         if (existing) return { ok: true, already: true, order: existing };
-        const order = toWebsiteOrder(input, state.addons, state.affiliates);
+        const order = toWebsiteOrder(input, state.plans, state.addons, state.affiliates);
         set({
           orders: [order, ...state.orders],
           vehicleSlots: state.vehicleSlots.length
@@ -928,11 +939,11 @@ export function rehydrateOpsStore() {
 
 export function scheduleOpsRehydrate(urgent = false) {
   if (typeof window === "undefined") return;
-  if (useOpsStore.persist.hasHydrated()) return;
   if (urgent) {
     void rehydrateOpsStore();
     return;
   }
+  if (useOpsStore.persist.hasHydrated()) return;
   if (hydrateStarted || hydrateScheduled) return;
   hydrateScheduled = true;
   const start = () => {

@@ -26,6 +26,8 @@ import {
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 import { asset } from "@/lib/asset";
+import { b2Copy } from "@/lib/admin/b2-copy";
+import { appPageHref } from "@/lib/file-href";
 
 export type CmsSection = "videos" | "reviews" | "faq" | "press" | "meetup" | "how" | "site";
 
@@ -297,6 +299,7 @@ function LogoField({
 export function AdminCmsView({ section }: { section: CmsSection }) {
   const locale = useLocale();
   const copy = adminCopy(locale);
+  const b2 = b2Copy(locale);
   const cms = useOpsStore((state) => state.cms);
   const patchCms = useOpsStore((state) => state.patchCms);
   const notify = useToastStore((state) => state.notify);
@@ -310,6 +313,7 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
   const [removeId, setRemoveId] = useState<string | null>(null);
   const [videoTab, setVideoTab] = useState<"home" | "group">("home");
   const [editingVideos, setEditingVideos] = useState(cms.videos);
+  const [askHideOnline, setAskHideOnline] = useState(false);
 
   useEffect(() => {
     setMeetup(cms.meetup);
@@ -348,6 +352,9 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
         <div className="flex flex-wrap gap-2">
           <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { patchCms({ meetup }); notify(copy.cms.saved); }}>{copy.common.save}</button>
           <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => { setMeetup(MOCK_CMS.meetup); patchCms({ meetup: MOCK_CMS.meetup }); notify(copy.cms.saved); }}>{copy.cms.restore}</button>
+          <a className="rounded-full border border-slate-200 px-4 py-2 text-sm text-blue-600" href={appPageHref("/#access", locale)} target="_blank" rel="noreferrer">
+            {b2.previewMeetup}
+          </a>
         </div>
       </div>
     );
@@ -364,7 +371,16 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
           <article className="rounded-2xl border border-slate-200 bg-white p-4">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-semibold text-slate-800">{copy.cms.showOnline}</p>
-              <NeonToggle checked={how.showOnline !== false} onChange={(on) => setHow({ ...how, showOnline: on })} />
+              <NeonToggle
+                checked={how.showOnline !== false}
+                onChange={(on) => {
+                  if (how.showOnline !== false && !on) {
+                    setAskHideOnline(true);
+                    return;
+                  }
+                  setHow({ ...how, showOnline: on });
+                }}
+              />
             </div>
             <div className="mt-3">
               <LocaleField locale={locale} labels={langLabels(copy)} emptyLabel={copy.plans.unfilled} label={copy.cms.onlineLabel} value={how.onlineLabel} onChange={(onlineLabel) => setHow({ ...how, onlineLabel })} />
@@ -414,7 +430,36 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
             </label>
           </article>
         </div>
-        <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { patchCms({ howToBook: how }); notify(copy.cms.saved); }}>{copy.common.save}</button>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { patchCms({ howToBook: how }); notify(copy.cms.saved); }}>{copy.common.save}</button>
+          <a className="rounded-full border border-slate-200 px-4 py-2 text-sm text-blue-600" href={appPageHref("/#book", locale)} target="_blank" rel="noreferrer">
+            {b2.previewBook}
+          </a>
+        </div>
+        <Modal
+          open={askHideOnline}
+          title={b2.hideOnlineAsk}
+          onClose={() => setAskHideOnline(false)}
+          footer={
+            <>
+              <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setAskHideOnline(false)}>
+                {copy.common.cancel}
+              </button>
+              <button
+                type="button"
+                className="cta-btn px-5 py-2.5"
+                onClick={() => {
+                  setHow({ ...how, showOnline: false });
+                  setAskHideOnline(false);
+                }}
+              >
+                {copy.common.save}
+              </button>
+            </>
+          }
+        >
+          <p className="text-sm text-slate-500">{b2.hideOnlineAsk}</p>
+        </Modal>
       </div>
     );
   }
@@ -462,6 +507,9 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
         <div className="flex flex-wrap gap-2">
           <button type="button" className="cta-btn px-5 py-2.5" onClick={() => { patchCms({ site }); notify(copy.cms.saved); }}>{copy.common.save}</button>
           <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => { setSite(MOCK_CMS.site); patchCms({ site: MOCK_CMS.site }); notify(copy.cms.saved); }}>{copy.cms.restore}</button>
+          <a className="rounded-full border border-slate-200 px-4 py-2 text-sm text-blue-600" href={appPageHref("/", locale)} target="_blank" rel="noreferrer">
+            {b2.previewFront}
+          </a>
         </div>
       </div>
     );

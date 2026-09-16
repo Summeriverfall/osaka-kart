@@ -30,6 +30,7 @@ import { sortPlansByDuration, type AddonWithTranslation, type PlanWithTranslatio
 import { DEFAULT_STORE_ID, storeIdOf } from "@/lib/store-id";
 import { scheduleOpsRehydrate, useOpsStore } from "@/stores/ops-store";
 import type { PayMethod } from "@/components/booking/pay-icons";
+import { readPayEnabled } from "@/lib/pay-enabled";
 import type { VehicleSlotCell } from "@/lib/mock/vehicle-timeline";
 
 export function useOpsHydrated() {
@@ -43,7 +44,8 @@ export function useOpsHydrated() {
       return;
     }
     const unsub = useOpsStore.persist.onFinishHydration(() => setReady(true));
-    scheduleOpsRehydrate();
+    scheduleOpsRehydrate(true);
+    if (useOpsStore.persist.hasHydrated()) setReady(true);
     return unsub;
   }, []);
 
@@ -472,20 +474,21 @@ export function useLiveInventory(storeId = DEFAULT_STORE_ID) {
 }
 
 export function enabledPayMethods(settings: MockSettings): PayMethod[] {
+  const overlay = readPayEnabled();
   const channel = (id: string) => settings.payments.find((item) => item.id === id);
   const on = (id: string) => {
     const row = channel(id);
-    return Boolean(row?.enabled && !row.reserved);
+    if (!row || row.reserved) return false;
+    if (overlay && Object.prototype.hasOwnProperty.call(overlay, id)) return Boolean(overlay[id]);
+    return Boolean(row.enabled);
   };
   const methods: PayMethod[] = [];
-  if (on("stripe") || settings.stripe) {
-    methods.push("card", "stripe");
-  }
+  if (on("stripe")) methods.push("card", "stripe");
   if (settings.paypay) methods.push("paypay");
-  if (on("apple") || settings.applePay) methods.push("apple");
-  if (on("alipay") || Boolean(channel("alipay"))) methods.push("alipay");
-  if (on("wechat") || Boolean(channel("wechat"))) methods.push("wechat");
-  return methods.length ? methods : ["card"];
+  if (on("apple")) methods.push("apple");
+  if (on("alipay")) methods.push("alipay");
+  if (on("wechat")) methods.push("wechat");
+  return methods;
 }
 
 export function liveStoreContact(stores: MockStore[]) {

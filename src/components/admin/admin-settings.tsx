@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import { NeonToggle } from "@/components/ui/neon-toggle";
@@ -14,12 +14,17 @@ import {
 } from "@/lib/admin/copy";
 import { type MockEmailTemplate, type MockStore } from "@/lib/mock/settings";
 import { b2Copy } from "@/lib/admin/b2-copy";
+import { writePayEnabled } from "@/lib/pay-enabled";
 import { sendTestMail } from "@/lib/ops-notify";
 import { useOpsStore } from "@/stores/ops-store";
 import { useToastStore } from "@/stores/toast-store";
 import { AdminChannelsView } from "@/components/admin/admin-channels";
 
 export type SettingsSection = "pay" | "channels" | "stores" | "email" | "refund";
+
+function livePay(id: string) {
+  return id === "stripe";
+}
 
 export function AdminSettingsView({ section }: { section: SettingsSection }) {
   const locale = useLocale();
@@ -30,7 +35,12 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
   const [tpl, setTpl] = useState<MockEmailTemplate | null>(null);
   const [store, setStore] = useState<MockStore | null>(null);
   const [testing, setTesting] = useState(false);
+  const [mailDraft, setMailDraft] = useState({ publicKey: "", serviceId: "", templateId: "" });
+  const [mailReplace, setMailReplace] = useState({ publicKey: false, serviceId: false, templateId: false });
   const payments = settings.payments;
+  useEffect(() => {
+    if (section === "pay") writePayEnabled(payments);
+  }, [section, payments]);
   const templateGroups = useMemo(() => {
     const map = new Map<string, MockEmailTemplate[]>();
     for (const item of templates) {
@@ -63,16 +73,27 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
 
       {section === "pay" ? (
         <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
+          <p className="text-sm leading-6 text-slate-500">{b2.payKeyHint}</p>
           {payments.map((item, index) => (
             <div key={item.id} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-black">{adminPayName(locale, item.id, item.name)}</p>
-                  {item.reserved ? (
-                    <span className="text-xs text-[#6B7280]">{copy.settings.reserved}</span>
-                  ) : (
-                    <span className="text-xs text-emerald-600">{item.enabled ? copy.settings.on : copy.settings.off}</span>
-                  )}
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    {item.reserved ? (
+                      <span className="text-xs text-[#6B7280]">{copy.settings.reserved}</span>
+                    ) : livePay(item.id) ? (
+                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">{b2.payLive}</span>
+                    ) : (
+                      <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-600">{b2.payDemo}</span>
+                    )}
+                    {item.reserved ? null : (
+                      <span className={item.enabled ? "text-xs text-emerald-600" : "text-xs text-slate-500"}>
+                        {item.enabled ? copy.settings.on : copy.settings.off}
+                      </span>
+                    )}
+                  </div>
+                  {item.reserved ? null : <p className="mt-2 text-xs leading-5 text-slate-500">{b2.paySwitchHint}</p>}
                 </div>
                 <NeonToggle
                   checked={item.enabled}
@@ -84,30 +105,29 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
                 />
               </div>
               {item.id === "stripe" ? (
-                <div className="mt-3 flex items-center justify-between gap-3 text-sm">
-                  <span>{copy.settings.testMode}</span>
-                  <NeonToggle
-                    checked={Boolean(item.testMode)}
-                    onChange={(on) => {
-                      const next = payments.map((row, i) => (i === index ? { ...row, testMode: on } : row));
-                      patchSettings({ payments: next });
-                    }}
-                  />
-                </div>
-              ) : null}
-              {item.fieldLabel && !item.reserved ? (
-                <label className="admin-field mt-3 min-w-0">
-                  {item.fieldLabel}
-                  <input
-                    className="admin-input"
-                    type="password"
-                    value={item.fieldValue ?? ""}
-                    onChange={(e) => {
-                      const next = payments.map((row, i) => (i === index ? { ...row, fieldValue: e.target.value } : row));
-                      patchSettings({ payments: next });
-                    }}
-                  />
-                </label>
+                <>
+                  <div className="mt-3 flex items-center justify-between gap-3 text-sm">
+                    <span>{copy.settings.testMode}</span>
+                    <NeonToggle
+                      checked={Boolean(item.testMode)}
+                      onChange={(on) => {
+                        const next = payments.map((row, i) => (i === index ? { ...row, testMode: on } : row));
+                        patchSettings({ payments: next });
+                      }}
+                    />
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+                    <span className="rounded-full bg-white px-3 py-1 text-xs text-slate-600">{b2.payConfigured}</span>
+                    <a
+                      className="text-blue-600"
+                      href="https://dashboard.stripe.com"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {b2.payStripeDash}
+                    </a>
+                  </div>
+                </>
               ) : null}
             </div>
           ))}
@@ -198,32 +218,89 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
           </label>
           <label className="admin-field">
             EmailJS Public Key
-            <input
-              className="admin-input"
-              type="password"
-              autoComplete="off"
-              value={settings.mailPublicKey ?? ""}
-              onChange={(event) => patchSettings({ mailPublicKey: event.target.value })}
-            />
+            {settings.mailPublicKey && !mailReplace.publicKey ? (
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">{b2.payConfigured}</span>
+                <button
+                  type="button"
+                  className="text-xs text-blue-600"
+                  onClick={() => setMailReplace((cur) => ({ ...cur, publicKey: true }))}
+                >
+                  {b2.mailReplace}
+                </button>
+              </div>
+            ) : (
+              <input
+                className="admin-input"
+                type="password"
+                autoComplete="off"
+                placeholder={b2.mailReplacePh}
+                value={mailDraft.publicKey}
+                onChange={(event) => setMailDraft((cur) => ({ ...cur, publicKey: event.target.value }))}
+              />
+            )}
           </label>
           <label className="admin-field">
             Service ID
-            <input
-              className="admin-input"
-              value={settings.mailServiceId ?? ""}
-              onChange={(event) => patchSettings({ mailServiceId: event.target.value })}
-            />
+            {settings.mailServiceId && !mailReplace.serviceId ? (
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">{b2.payConfigured}</span>
+                <button
+                  type="button"
+                  className="text-xs text-blue-600"
+                  onClick={() => setMailReplace((cur) => ({ ...cur, serviceId: true }))}
+                >
+                  {b2.mailReplace}
+                </button>
+              </div>
+            ) : (
+              <input
+                className="admin-input"
+                autoComplete="off"
+                placeholder={b2.mailReplacePh}
+                value={mailDraft.serviceId}
+                onChange={(event) => setMailDraft((cur) => ({ ...cur, serviceId: event.target.value }))}
+              />
+            )}
           </label>
           <label className="admin-field">
             Template ID
-            <input
-              className="admin-input"
-              value={settings.mailTemplateId ?? ""}
-              onChange={(event) => patchSettings({ mailTemplateId: event.target.value })}
-            />
+            {settings.mailTemplateId && !mailReplace.templateId ? (
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">{b2.payConfigured}</span>
+                <button
+                  type="button"
+                  className="text-xs text-blue-600"
+                  onClick={() => setMailReplace((cur) => ({ ...cur, templateId: true }))}
+                >
+                  {b2.mailReplace}
+                </button>
+              </div>
+            ) : (
+              <input
+                className="admin-input"
+                autoComplete="off"
+                placeholder={b2.mailReplacePh}
+                value={mailDraft.templateId}
+                onChange={(event) => setMailDraft((cur) => ({ ...cur, templateId: event.target.value }))}
+              />
+            )}
           </label>
           <div className="flex flex-wrap gap-3">
-            <button type="button" className="cta-btn px-5 py-2.5" onClick={() => notify(copy.settings.sendSaved)}>
+            <button
+              type="button"
+              className="cta-btn px-5 py-2.5"
+              onClick={() => {
+                patchSettings({
+                  ...(mailDraft.publicKey.trim() ? { mailPublicKey: mailDraft.publicKey.trim() } : {}),
+                  ...(mailDraft.serviceId.trim() ? { mailServiceId: mailDraft.serviceId.trim() } : {}),
+                  ...(mailDraft.templateId.trim() ? { mailTemplateId: mailDraft.templateId.trim() } : {}),
+                });
+                setMailDraft({ publicKey: "", serviceId: "", templateId: "" });
+                setMailReplace({ publicKey: false, serviceId: false, templateId: false });
+                notify(copy.settings.sendSaved);
+              }}
+            >
               {copy.common.save}
             </button>
             <button
@@ -232,8 +309,21 @@ export function AdminSettingsView({ section }: { section: SettingsSection }) {
               disabled={testing}
               onClick={() => {
                 setTesting(true);
-                void sendTestMail(useOpsStore.getState().settings, locale)
-                  .then((result) => notify(result.message))
+                const next = {
+                  ...useOpsStore.getState().settings,
+                  mailPublicKey: mailDraft.publicKey.trim() || useOpsStore.getState().settings.mailPublicKey,
+                  mailServiceId: mailDraft.serviceId.trim() || useOpsStore.getState().settings.mailServiceId,
+                  mailTemplateId: mailDraft.templateId.trim() || useOpsStore.getState().settings.mailTemplateId,
+                };
+                void sendTestMail(next, locale)
+                  .then((result) => {
+                    if (result.ok) notify(result.message);
+                    else notify(b2.mailTestFail(result.message), "err");
+                  })
+                  .catch((error) => {
+                    const detail = error instanceof Error && error.message ? error.message : "network";
+                    notify(b2.mailTestFail(detail), "err");
+                  })
                   .finally(() => setTesting(false));
               }}
             >

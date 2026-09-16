@@ -38,6 +38,7 @@ export function AdminVehiclesView() {
   const notify = useToastStore((state) => state.notify);
   const [editing, setEditing] = useState<MockVehicle | null>(null);
   const [logs, setLogs] = useState<MockVehicle | null>(null);
+  const [askOffline, setAskOffline] = useState(false);
   const repair = vehicles.filter((item) => item.status === "repair").length;
   const available = vehicles.filter((item) => item.status === "available").length;
   const [logDraft, setLogDraft] = useState("");
@@ -104,6 +105,13 @@ export function AdminVehiclesView() {
             className="cta-btn px-5 py-2.5"
             onClick={() => {
               if (!editing) return;
+              const prev = vehicles.find((item) => item.id === editing.id);
+              const wasUp = !prev || prev.status === "available";
+              const nowDown = editing.status === "repair" || editing.status === "retired";
+              if (wasUp && nowDown) {
+                setAskOffline(true);
+                return;
+              }
               upsertVehicle({ ...editing, storeId: editing.storeId || storeId });
               setEditing(null);
               notify(copy.vehicles.saved);
@@ -261,6 +269,35 @@ export function AdminVehiclesView() {
             <p className="vehicle-log-empty">{copy.vehicles.logEmpty}</p>
           )}
         </div>
+      </Modal>
+
+      <Modal
+        open={askOffline}
+        title={b2.vehicleOfflineAsk}
+        layer="nested"
+        onClose={() => setAskOffline(false)}
+        footer={
+          <>
+            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setAskOffline(false)}>
+              {copy.common.cancel}
+            </button>
+            <button
+              type="button"
+              className="cta-btn px-5 py-2.5"
+              onClick={() => {
+                if (!editing) return;
+                upsertVehicle({ ...editing, storeId: editing.storeId || storeId });
+                setAskOffline(false);
+                setEditing(null);
+                notify(copy.vehicles.saved);
+              }}
+            >
+              {copy.common.save}
+            </button>
+          </>
+        }
+      >
+        <p className="text-sm text-slate-500">{b2.vehicleOfflineAsk}</p>
       </Modal>
     </div>
   );

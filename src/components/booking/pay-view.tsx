@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ArrowLeft, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -18,6 +18,7 @@ import { PayMethodMark, type PayMethod } from "@/components/booking/pay-icons";
 import { RideNotes } from "@/components/notes/ride-notes";
 import { SiteNav } from "@/components/site/site-nav";
 import { enabledPayMethods } from "@/lib/live-catalog";
+import { PAY_ENABLED_KEY } from "@/lib/pay-enabled";
 import { japanAppointmentPassed } from "@/lib/japan-time";
 import { cn } from "@/lib/utils";
 import { useBookingStore } from "@/stores/booking-store";
@@ -34,7 +35,8 @@ export function PayView({ locale }: PayViewProps) {
   const router = useRouter();
   const settings = useOpsStore((state) => state.settings);
   const notify = useToastStore((state) => state.notify);
-  const methods = enabledPayMethods(settings);
+  const [payTick, setPayTick] = useState(0);
+  const methods = useMemo(() => enabledPayMethods(settings), [settings, payTick]);
   const [result, setResult] = useState<BookingResult | null>(null);
   const [method, setMethod] = useState<PayMethod>("card");
   const [number, setNumber] = useState("");
@@ -45,16 +47,30 @@ export function PayView({ locale }: PayViewProps) {
 
   useEffect(() => {
     scheduleOpsRehydrate(true);
+    setPayTick((n) => n + 1);
+    function refresh() {
+      setPayTick((n) => n + 1);
+    }
+    function onStorage(event: StorageEvent) {
+      if (event.key === PAY_ENABLED_KEY || event.key === "osaka-kart-ops") refresh();
+    }
+    window.addEventListener("osaka-pay-enabled", refresh);
+    window.addEventListener("storage", onStorage);
     try {
       const raw = sessionStorage.getItem(BOOKING_RESULT_KEY);
       if (raw) setResult(JSON.parse(raw) as BookingResult);
     } catch {
       setResult(null);
     }
+    return () => {
+      window.removeEventListener("osaka-pay-enabled", refresh);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   useEffect(() => {
-    if (!methods.includes(method)) setMethod(methods.includes("card") ? "card" : (methods[0] ?? "stripe"));
+    if (!methods.length) return;
+    if (!methods.includes(method)) setMethod(methods.includes("card") ? "card" : methods[0]);
   }, [methods, method]);
 
   async function payWithStripe() {
@@ -194,7 +210,7 @@ export function PayView({ locale }: PayViewProps) {
                   ))}
               </div>
 
-              {method === "stripe" ? (
+              {method === "stripe" && methods.includes("stripe") ? (
                 <>
                   <p className="pay-card-note">{t("stripeLead")}</p>
                   {isStripeTestMode() ? <p className="pay-wallet-note">{t("testHint")}</p> : null}

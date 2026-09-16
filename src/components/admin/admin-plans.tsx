@@ -227,6 +227,8 @@ export function AdminPlansView() {
   const [removingAddon, setRemovingAddon] = useState<MockAddon | null>(null);
   const [copyOpen, setCopyOpen] = useState(-1);
   const [copyLang, setCopyLang] = useState<AdminLangKey>(() => adminLangFromLocale(locale));
+  const [askPrice, setAskPrice] = useState(false);
+  const [askUnlist, setAskUnlist] = useState<string | null>(null);
 
   function openEditor(plan: MockPlan) {
     const included = plan.includedAddonIds ?? [];
@@ -307,7 +309,16 @@ export function AdminPlansView() {
                   {plan.distanceKm != null ? ` · ${plan.distanceKm} ${copy.km}` : ""}
                 </p>
               </div>
-              <NeonToggle checked={plan.active} onChange={(on) => patchPlan(plan.id, { active: on })} />
+              <NeonToggle
+                checked={plan.active}
+                onChange={(on) => {
+                  if (plan.active && !on) {
+                    setAskUnlist(plan.id);
+                    return;
+                  }
+                  patchPlan(plan.id, { active: on });
+                }}
+              />
             </div>
 
             <p className="mt-4 text-xs text-slate-500">
@@ -340,6 +351,15 @@ export function AdminPlansView() {
             className="cta-btn px-5 py-2.5"
             onClick={() => {
               if (!editing) return;
+              const prev = plans.find((item) => item.id === editing.id);
+              if (prev && prev.priceJpy !== editing.priceJpy) {
+                setAskPrice(true);
+                return;
+              }
+              if (prev?.active && !editing.active) {
+                setAskUnlist(editing.id);
+                return;
+              }
               upsertPlan(editing);
               setEditing(null);
               notify(copy.saved);
@@ -459,11 +479,18 @@ export function AdminPlansView() {
 
             <label className="admin-field">
               {copy.slug}
-              <input
-                className="admin-input"
-                value={editing.slug}
-                onChange={(event) => setEditing({ ...editing, slug: event.target.value.trim() })}
-              />
+              {plans.some((item) => item.id === editing.id) ? (
+                <>
+                  <input className="admin-input bg-slate-50 text-slate-500" value={editing.slug} readOnly />
+                  <span className="text-xs text-slate-500">{b2.slugLocked}</span>
+                </>
+              ) : (
+                <input
+                  className="admin-input"
+                  value={editing.slug}
+                  onChange={(event) => setEditing({ ...editing, slug: event.target.value.trim() })}
+                />
+              )}
             </label>
             <label className="admin-field">
               {copy.price}
@@ -641,6 +668,73 @@ export function AdminPlansView() {
         }
       >
         <p className="text-sm text-slate-500">{addonCopy.delLead}</p>
+      </Modal>
+
+      <Modal
+        open={askPrice}
+        title={b2.priceAsk}
+        layer="nested"
+        onClose={() => setAskPrice(false)}
+        footer={
+          <>
+            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setAskPrice(false)}>
+              {common.cancel}
+            </button>
+            <button
+              type="button"
+              className="cta-btn px-5 py-2.5"
+              onClick={() => {
+                if (!editing) return;
+                const prev = plans.find((item) => item.id === editing.id);
+                setAskPrice(false);
+                if (prev?.active && !editing.active) {
+                  setAskUnlist(editing.id);
+                  return;
+                }
+                upsertPlan(editing);
+                setEditing(null);
+                notify(copy.saved);
+              }}
+            >
+              {copy.save}
+            </button>
+          </>
+        }
+      >
+        <p className="text-sm text-slate-500">{b2.priceAsk}</p>
+      </Modal>
+
+      <Modal
+        open={Boolean(askUnlist)}
+        title={b2.unlistAsk}
+        layer="nested"
+        onClose={() => setAskUnlist(null)}
+        footer={
+          <>
+            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setAskUnlist(null)}>
+              {common.cancel}
+            </button>
+            <button
+              type="button"
+              className="cta-btn px-5 py-2.5"
+              onClick={() => {
+                if (!askUnlist) return;
+                if (editing?.id === askUnlist) {
+                  upsertPlan({ ...editing, active: false });
+                  setEditing(null);
+                  notify(copy.saved);
+                } else {
+                  patchPlan(askUnlist, { active: false });
+                }
+                setAskUnlist(null);
+              }}
+            >
+              {copy.save}
+            </button>
+          </>
+        }
+      >
+        <p className="text-sm text-slate-500">{b2.unlistAsk}</p>
       </Modal>
     </div>
   );

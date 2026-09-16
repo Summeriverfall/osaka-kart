@@ -99,16 +99,21 @@ export async function sendNewBookingMail(order: MockOrder, settings: MockSetting
 
 export async function sendTestMail(settings: MockSettings, uiLocale = "zh-TW") {
   const copy = adminCopy(uiLocale);
-  if (!isMailConfigured(settings)) {
-    return { ok: false as const, message: copy.notify.testNeed };
+  try {
+    if (!isMailConfigured(settings)) {
+      return { ok: false as const, message: copy.notify.testNeed };
+    }
+    const mail = mailSettingsOf(settings);
+    const result = await sendMail({
+      to: mail.to,
+      subject: copy.notify.testSubject,
+      body: copy.notify.testBody(mail.from, mail.to),
+      settings,
+    });
+    if (result.ok) return { ok: true as const, message: copy.notify.testOk(mail.to) };
+    return { ok: false as const, message: result.message };
+  } catch (error) {
+    const detail = error instanceof Error && error.message ? error.message : "network";
+    return { ok: false as const, message: detail };
   }
-  const mail = mailSettingsOf(settings);
-  const result = await sendMail({
-    to: mail.to,
-    subject: copy.notify.testSubject,
-    body: copy.notify.testBody(mail.from, mail.to),
-    settings,
-  });
-  if (result.ok) return { ok: true as const, message: copy.notify.testOk(mail.to) };
-  return result;
 }

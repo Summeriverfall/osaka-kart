@@ -149,7 +149,9 @@ export function navigateToHref(href: string, locale?: string) {
     return;
   }
   if (trimmed.startsWith("/")) {
-    window.location.href = toFileHref(trimmed, locale);
+    window.location.href = isFileProtocol()
+      ? toFileHref(trimmed, locale)
+      : appPageHref(trimmed, locale);
     return;
   }
   window.location.href = new URL(trimmed, window.location.href).href;

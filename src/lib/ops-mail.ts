@@ -34,29 +34,34 @@ export async function sendMail(options: {
   const to = options.to.trim();
   if (!to) return { ok: false as const, message: "没有收件地址" };
 
-  const res = await fetch(EMAILJS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      service_id: mail.serviceId,
-      template_id: mail.templateId,
-      user_id: mail.publicKey,
-      template_params: {
-        to_email: to,
-        to_name: to,
-        from_name: "Future Kart Osaka",
-        from_email: mail.from,
-        reply_to: mail.from,
-        subject: options.subject,
-        message: options.body,
-      },
-    }),
-  });
-  const text = (await res.text()).trim();
-  if (!res.ok) {
-    return { ok: false as const, message: text || `发信失败（${res.status}）` };
+  try {
+    const res = await fetch(EMAILJS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        service_id: mail.serviceId,
+        template_id: mail.templateId,
+        user_id: mail.publicKey,
+        template_params: {
+          to_email: to,
+          to_name: to,
+          from_name: "Future Kart Osaka",
+          from_email: mail.from,
+          reply_to: mail.from,
+          subject: options.subject,
+          message: options.body,
+        },
+      }),
+    });
+    const text = (await res.text()).trim();
+    if (!res.ok) {
+      return { ok: false as const, message: text || `发信失败（${res.status}）` };
+    }
+    return { ok: true as const, message: "OK" };
+  } catch (error) {
+    const detail = error instanceof Error && error.message ? error.message : "网络错误";
+    return { ok: false as const, message: detail };
   }
-  return { ok: true as const, message: "OK" };
 }
 
 export async function sendMailToAll(options: {

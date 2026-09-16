@@ -176,6 +176,7 @@ export function FleetInventoryGrid() {
   const [range, setRange] = useState<SlotRange | null>(null);
   const [dragging, setDragging] = useState(false);
   const [askCancel, setAskCancel] = useState(false);
+  const [askLock, setAskLock] = useState(false);
   const [draft, setDraft] = useState<MockOrder | null>(null);
   const { vehicles, vehicleSlots, orders, specialDates, storeId, plans } = useStoreData();
   const { shopId, focusStore } = useAdminShopFocus();
@@ -264,7 +265,7 @@ export function FleetInventoryGrid() {
     });
   }
 
-  function toggleLock() {
+  function applyLockToggle() {
     if (!range || !canEdit("inventory") || dayClosed) return;
     for (const time of selectedTimes) {
       const cell = selectedCells.find((item) => item.time === time);
@@ -281,6 +282,15 @@ export function FleetInventoryGrid() {
         });
       }
     }
+  }
+
+  function toggleLock() {
+    if (!range || !canEdit("inventory") || dayClosed) return;
+    if (!slotLocked) {
+      setAskLock(true);
+      return;
+    }
+    applyLockToggle();
   }
 
   function createOrder() {
@@ -585,6 +595,31 @@ export function FleetInventoryGrid() {
         }
       >
         <p className="perm-hint">{b2.cancelRangeAsk(liveHolds.length)}</p>
+      </Modal>
+
+      <Modal
+        open={askLock}
+        title={b2.lockSlot}
+        onClose={() => setAskLock(false)}
+        footer={
+          <>
+            <button type="button" className="rounded-full border border-slate-200 px-4 py-2 text-sm" onClick={() => setAskLock(false)}>
+              {copy.common.cancel}
+            </button>
+            <button
+              type="button"
+              className="cta-btn"
+              onClick={() => {
+                applyLockToggle();
+                setAskLock(false);
+              }}
+            >
+              {b2.lockSlot}
+            </button>
+          </>
+        }
+      >
+        <p className="perm-hint">{range ? b2.lockSlotAsk(range.date, range.start, range.end) : ""}</p>
       </Modal>
     </section>
   );
