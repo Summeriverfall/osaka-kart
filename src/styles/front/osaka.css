@@ -3940,16 +3940,16 @@ html[lang="zh-TW"] .ok-hero h1 {
   margin: auto 0 1rem;
 }
 
-.ok-hero .hero-trust li {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 236, 244, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  color: #4a1830;
-  font-size: 0.92rem;
-  font-weight: 700;
-  padding: 0.4rem 0.88rem;
+html:not(:has(.admin-app)) .ok-hero .hero-trust li {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255, 236, 244, 0.82) !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  color: #4a1830 !important;
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  padding: 0.4rem 0.88rem !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }

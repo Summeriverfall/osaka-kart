@@ -102,7 +102,7 @@ export function OsakaHome({ plans, locale }: OsakaHomeProps) {
       <section className="ok-cta">
         <div className="ok-cta-inner">
           <h2>{cta("title")}</h2>
-          <p>{cta("subtitle")}</p>
+          <p>{copy.footerLead}</p>
           <a className="ok-btn" href={appPageHref(withSlash("/booking"), locale)}>
             {cta("button")}
           </a>

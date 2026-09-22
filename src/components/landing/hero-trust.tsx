@@ -1,16 +1,17 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
+import { homeCopy } from "@/lib/home-storefront";
 
 export function HeroTrust() {
-  const shop = useTranslations("Shop");
+  const locale = useLocale();
+  const tags = homeCopy(locale).tags;
 
   return (
     <ul className="hero-trust">
-      <li>{shop("legal")}</li>
-      <li>{shop("tax")}</li>
-      <li>{shop("license")}</li>
-      <li>{shop("media")}</li>
+      {tags.map((tag) => (
+        <li key={tag}>{tag}</li>
+      ))}
     </ul>
   );
 }
