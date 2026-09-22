@@ -46,6 +46,7 @@ export const ADMIN_SETTINGS_NAV: AdminNavItem[] = [
   { href: "/admin/settings/stores", label: "门店管理", roles: ["admin"] },
   { href: "/admin/settings/email", label: "邮件设置", roles: ["admin"] },
   { href: "/admin/settings/refund", label: "退款政策", roles: ["admin"] },
+  { href: "/admin/settings/social", label: "侧栏按钮", roles: ["admin"] },
   { href: "/admin/settings/logs", label: "操作日志", roles: ["admin"] },
 ];
 
@@ -84,6 +85,7 @@ export const ADMIN_PAGE_META: Record<string, { title: string; lead: string }> = 
   "/admin/settings/stores": { title: "门店管理", lead: "电话、地址和营业时间会同步到官网。" },
   "/admin/settings/email": { title: "邮件设置", lead: "绑定发信箱，并按客人语言编辑确认、提醒和退款文案。" },
   "/admin/settings/refund": { title: "退款政策", lead: "填写退款说明文本。具体扣款逻辑稍后接入。" },
+  "/admin/settings/social": { title: "侧栏按钮", lead: "控制首页右侧「关注我们」按钮。关掉的不显示，链接改完前台马上更新。" },
   "/admin/settings/send": { title: "邮件设置", lead: "绑定发信箱，并按客人语言编辑确认、提醒和退款文案。" },
   "/admin/settings/mail": { title: "邮件设置", lead: "绑定发信箱，并按客人语言编辑确认、提醒和退款文案。" },
   "/admin/settings/logs": { title: "操作日志", lead: "查看全部后台操作记录。" },

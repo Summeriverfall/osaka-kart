@@ -14,6 +14,7 @@ import { AdminReportsView } from "@/components/admin/admin-reports";
 import { AdminAnalyticsView } from "@/components/admin/admin-analytics";
 import { AdminRoleGate } from "@/components/admin/admin-role-gate";
 import { AdminSettingsView } from "@/components/admin/admin-settings";
+import { AdminSocialDockView } from "@/components/admin/admin-social-dock";
 import { AdminStaffView } from "@/components/admin/admin-staff";
 import { AdminVehiclesView } from "@/components/admin/admin-vehicles";
 import { AdminCmsView } from "@/components/admin/admin-cms";
@@ -158,6 +159,12 @@ function viewFor(tab: string) {
       return (
         <AdminRoleGate allow={["admin"]}>
           <AdminSettingsView section="refund" />
+        </AdminRoleGate>
+      );
+    case "/admin/settings/social":
+      return (
+        <AdminRoleGate allow={["admin"]}>
+          <AdminSocialDockView />
         </AdminRoleGate>
       );
     case "/admin/settings/logs":

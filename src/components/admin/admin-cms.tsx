@@ -487,12 +487,12 @@ export function AdminCmsView({ section }: { section: CmsSection }) {
         <div className="rounded-2xl border border-slate-200 bg-white p-4">
           <p className="mb-3 text-sm font-semibold text-slate-700">{copy.cms.social}</p>
           <div className="grid gap-3 sm:grid-cols-2">
-            {(["instagram", "youtube", "x", "facebook", "tiktok", "line"] as const).map((key) => (
+            {(["instagram", "youtube", "x", "facebook", "tiktok", "line", "tripadvisor"] as const).map((key) => (
               <label key={key} className="admin-field">
                 {key === "youtube" ? copy.cms.youtubeSocial : copy.cms[key]}
                 <input
                   className="admin-input"
-                  value={site.social[key]}
+                  value={site.social[key] ?? ""}
                   onChange={(event) => setSite({ ...site, social: { ...site.social, [key]: event.target.value } })}
                 />
               </label>

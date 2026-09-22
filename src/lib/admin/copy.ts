@@ -147,6 +147,8 @@ export type AdminCopy = {
     facebook: string;
     tiktok: string;
     line: string;
+    tripadvisor: string;
+    twitter: string;
     footerCompany: string;
     saved: string;
     remove: string;
@@ -658,6 +660,7 @@ const zh: AdminCopy = {
     "/admin/settings/stores": "门店管理",
     "/admin/settings/email": "邮件设置",
     "/admin/settings/refund": "退款政策",
+    "/admin/settings/social": "侧栏按钮",
     "/admin/settings/send": "邮件设置",
     "/admin/settings/mail": "邮件设置",
     "/admin/settings/logs": "操作日志",
@@ -693,6 +696,7 @@ const zh: AdminCopy = {
     "/admin/settings/stores": { title: "门店管理", lead: "电话、地址和营业时间会同步到官网。" },
     "/admin/settings/email": { title: "邮件设置", lead: "绑定发信箱，并按客人语言编辑确认、提醒和退款文案。" },
     "/admin/settings/refund": { title: "退款政策", lead: "填写退款说明文本。具体扣款逻辑稍后接入。" },
+    "/admin/settings/social": { title: "侧栏按钮", lead: "控制首页右侧「关注我们」按钮。关掉的不显示，链接改完前台马上更新。" },
     "/admin/settings/send": { title: "邮件设置", lead: "绑定发信箱，并按客人语言编辑确认、提醒和退款文案。" },
     "/admin/settings/mail": { title: "邮件设置", lead: "绑定发信箱，并按客人语言编辑确认、提醒和退款文案。" },
     "/admin/settings/logs": { title: "操作日志", lead: "查看全部后台操作记录。" },
@@ -821,6 +825,8 @@ const zh: AdminCopy = {
     facebook: "Facebook",
     tiktok: "TikTok",
     line: "LINE",
+    tripadvisor: "TripAdvisor",
+    twitter: "Twitter",
     footerCompany: "页脚公司行",
     saved: "已保存，前台会马上更新。",
     remove: "删除",
@@ -1402,6 +1408,7 @@ const en: AdminCopy = {
     "/admin/settings/stores": "Stores",
     "/admin/settings/email": "Email",
     "/admin/settings/refund": "Refund policy",
+    "/admin/settings/social": "Side buttons",
     "/admin/settings/send": "Email",
     "/admin/settings/mail": "Email",
     "/admin/settings/logs": "Activity log",
@@ -1437,6 +1444,7 @@ const en: AdminCopy = {
     "/admin/settings/stores": { title: "Stores", lead: "Phone, address and hours sync to the public site." },
     "/admin/settings/email": { title: "Email", lead: "Connect the sending inbox and edit confirm, reminder and refund copy per guest language." },
     "/admin/settings/refund": { title: "Refund policy", lead: "Policy text for staff and guests. Charge logic comes later." },
+    "/admin/settings/social": { title: "Side buttons", lead: "Control the homepage Follow us buttons. Hidden ones stay off the site. Links update immediately." },
     "/admin/settings/send": { title: "Email", lead: "Connect the sending inbox and edit confirm, reminder and refund copy per guest language." },
     "/admin/settings/mail": { title: "Email", lead: "Connect the sending inbox and edit confirm, reminder and refund copy per guest language." },
     "/admin/settings/logs": { title: "Activity log", lead: "Every admin action." },
@@ -1565,6 +1573,8 @@ const en: AdminCopy = {
     facebook: "Facebook",
     tiktok: "TikTok",
     line: "LINE",
+    tripadvisor: "TripAdvisor",
+    twitter: "Twitter",
     footerCompany: "Footer company line",
     saved: "Saved. The public site updates right away.",
     remove: "Delete",
@@ -2146,6 +2156,7 @@ const ja: AdminCopy = {
     "/admin/settings/stores": "店舗",
     "/admin/settings/email": "メール設定",
     "/admin/settings/refund": "返金ポリシー",
+    "/admin/settings/social": "サイドボタン",
     "/admin/settings/send": "メール設定",
     "/admin/settings/mail": "メール設定",
     "/admin/settings/logs": "操作ログ",
@@ -2181,6 +2192,7 @@ const ja: AdminCopy = {
     "/admin/settings/stores": { title: "店舗管理", lead: "電話・住所・営業時間はサイトにも同期されます。" },
     "/admin/settings/email": { title: "メール設定", lead: "送信元メールアドレスを設定し、お客様の言語に応じて予約確認・リマインダー・返金メールの文面を編集します。" },
     "/admin/settings/refund": { title: "返金ポリシー", lead: "スタッフ／お客様向けの説明文です。課金ロジックは後ほど接続します。" },
+    "/admin/settings/social": { title: "サイドボタン", lead: "トップ右側のフォローボタンを管理します。オフにした項目は表示されません。" },
     "/admin/settings/send": { title: "メール設定", lead: "送信元メールアドレスを設定し、お客様の言語に応じて予約確認・リマインダー・返金メールの文面を編集します。" },
     "/admin/settings/mail": { title: "メール設定", lead: "送信元メールアドレスを設定し、お客様の言語に応じて予約確認・リマインダー・返金メールの文面を編集します。" },
     "/admin/settings/logs": { title: "操作ログ", lead: "管理画面上のすべての操作履歴を確認できます。" },
@@ -2309,6 +2321,8 @@ const ja: AdminCopy = {
     facebook: "Facebook",
     tiktok: "TikTok",
     line: "LINE",
+    tripadvisor: "TripAdvisor",
+    twitter: "Twitter",
     footerCompany: "フッターの会社行",
     saved: "保存しました。サイトにすぐ反映されます。",
     remove: "削除",

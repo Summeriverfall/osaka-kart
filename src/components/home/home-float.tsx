@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { bookingContact, useLiveCms } from "@/lib/live-cms";
-import { homeCopy, TRIPADVISOR_SEARCH } from "@/lib/home-storefront";
+import { homeCopy } from "@/lib/home-storefront";
 import { SITE_CONTACT } from "@/lib/contact";
+import { socialDockOf } from "@/lib/mock/cms";
 
 type PopKind = "ask" | "social" | null;
 
@@ -44,14 +45,15 @@ export function HomeFloat({ locale }: { locale: string }) {
 
   const socials = useMemo(() => {
     const s = cms.site.social;
+    const dock = socialDockOf(cms.site);
     return [
-      { id: "instagram", label: "Instagram", href: s.instagram?.trim() || SITE_CONTACT.instagram, icon: <InstagramIcon /> },
-      { id: "tiktok", label: "TikTok", href: s.tiktok?.trim() || SITE_CONTACT.tiktok, icon: <TikTokIcon /> },
-      { id: "facebook", label: "Facebook", href: s.facebook?.trim() || SITE_CONTACT.facebook, icon: <FacebookIcon /> },
-      { id: "tripadvisor", label: "TripAdvisor", href: TRIPADVISOR_SEARCH, icon: <TripAdvisorIcon /> },
-      { id: "twitter", label: "Twitter", href: s.x?.trim() || SITE_CONTACT.x, icon: <XIcon /> },
-    ];
-  }, [cms.site.social]);
+      { id: "instagram" as const, label: "Instagram", href: s.instagram?.trim() || SITE_CONTACT.instagram, icon: <InstagramIcon /> },
+      { id: "tiktok" as const, label: "TikTok", href: s.tiktok?.trim() || SITE_CONTACT.tiktok, icon: <TikTokIcon /> },
+      { id: "facebook" as const, label: "Facebook", href: s.facebook?.trim() || SITE_CONTACT.facebook, icon: <FacebookIcon /> },
+      { id: "tripadvisor" as const, label: "TripAdvisor", href: s.tripadvisor?.trim() || SITE_CONTACT.tripadvisor, icon: <TripAdvisorIcon /> },
+      { id: "twitter" as const, label: "Twitter", href: s.x?.trim() || SITE_CONTACT.x, icon: <XIcon /> },
+    ].filter((item) => dock[item.id]);
+  }, [cms.site]);
 
   const wa =
     contact.whatsapp?.trim() ||

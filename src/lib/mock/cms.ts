@@ -82,7 +82,24 @@ export type CmsSocial = {
   facebook: string;
   tiktok: string;
   line: string;
+  tripadvisor: string;
 };
+
+export const SOCIAL_DOCK_KEYS = ["instagram", "tiktok", "facebook", "tripadvisor", "twitter"] as const;
+export type SocialDockKey = (typeof SOCIAL_DOCK_KEYS)[number];
+export type CmsSocialDock = Record<SocialDockKey, boolean>;
+
+export const DEFAULT_SOCIAL_DOCK: CmsSocialDock = {
+  instagram: true,
+  tiktok: true,
+  facebook: true,
+  tripadvisor: true,
+  twitter: true,
+};
+
+export function socialDockOf(site?: { socialDock?: Partial<CmsSocialDock> | null }): CmsSocialDock {
+  return { ...DEFAULT_SOCIAL_DOCK, ...site?.socialDock };
+}
 
 export type CmsSite = {
   brandName: string;
@@ -94,6 +111,7 @@ export type CmsSite = {
   hours: string;
   whatsapp: string;
   social: CmsSocial;
+  socialDock: CmsSocialDock;
   footerCompany: LocaleText;
 };
 
@@ -506,7 +524,9 @@ export const MOCK_CMS: CmsState = {
       facebook: SITE_CONTACT.facebook,
       tiktok: SITE_CONTACT.tiktok,
       line: SITE_CONTACT.line,
+      tripadvisor: SITE_CONTACT.tripadvisor,
     },
+    socialDock: { ...DEFAULT_SOCIAL_DOCK },
     footerCompany: L("Future Kart Osaka · 大阪", "Future Kart Osaka · Osaka, Japan", "Future Kart Osaka · 大阪", "Future Kart Osaka · 오사카"),
   },
 };
@@ -680,7 +700,12 @@ export function mergeCms(seed: CmsState, extra?: Partial<CmsState> | null): CmsS
     meetup: extra.meetup ? { ...seed.meetup, ...extra.meetup } : seed.meetup,
     howToBook: extra.howToBook ? { ...seed.howToBook, ...extra.howToBook } : seed.howToBook,
     site: extra.site
-      ? { ...seed.site, ...extra.site, social: { ...seed.site.social, ...extra.site.social } }
+      ? {
+          ...seed.site,
+          ...extra.site,
+          social: { ...seed.site.social, ...extra.site.social },
+          socialDock: socialDockOf({ socialDock: { ...seed.site.socialDock, ...extra.site.socialDock } }),
+        }
       : seed.site,
     labels: extra.labels ? { ...seed.labels, ...extra.labels } : seed.labels,
   };

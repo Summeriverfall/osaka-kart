@@ -11,6 +11,7 @@ export const SITE_CONTACT = {
   facebook: "https://facebook.com/",
   tiktok: "https://www.tiktok.com/",
   line: "https://line.me/",
+  tripadvisor: "https://www.tripadvisor.com/Search?q=Future%20Kart%20Osaka",
 } as const;
 
 export const PRESS_CARDS = [
