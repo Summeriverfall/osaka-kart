@@ -2,15 +2,25 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
 import { routeOf } from "@/lib/media";
+import { isFileProtocol, navigateToHref } from "@/lib/file-href";
 import type { PlanWithTranslation } from "@/lib/plans/types";
 
 export function RouteMapLightbox({
   plan,
+  title,
+  kicker,
+  bookHref,
+  bookLabel,
+  closeLabel = "Close",
   onClose,
 }: {
   plan: PlanWithTranslation | null;
+  title?: string;
+  kicker?: string;
+  bookHref?: string;
+  bookLabel?: string;
+  closeLabel?: string;
   onClose: () => void;
 }) {
   const [mounted, setMounted] = useState(false);
@@ -18,6 +28,7 @@ export function RouteMapLightbox({
   const open = Boolean(plan && src);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
+  const heading = title || plan?.translation.name || "";
 
   useEffect(() => {
     setMounted(true);
@@ -47,17 +58,37 @@ export function RouteMapLightbox({
   if (!mounted || !open || !plan) return null;
 
   return createPortal(
-    <div className="ok-route-layer" role="dialog" aria-modal="true" aria-labelledby="ok-route-title">
-      <button type="button" className="ok-route-scrim" aria-label="Close" onClick={() => closeRef.current()} />
-      <div className="ok-route-sheet">
-        <header className="ok-route-head">
-          <h2 id="ok-route-title">{plan.translation.name}</h2>
-          <button type="button" className="ok-route-x" onClick={() => closeRef.current()} aria-label="Close">
-            <X className="size-4" />
-          </button>
-        </header>
-        <img src={src} alt="" />
-        {plan.translation.route_summary ? <p>{plan.translation.route_summary}</p> : null}
+    <div className="ok-plan-modal" role="presentation" onClick={() => closeRef.current()}>
+      <div
+        className="ok-plan-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ok-route-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button type="button" className="ok-plan-close" aria-label={closeLabel} onClick={() => closeRef.current()}>
+          ×
+        </button>
+        {kicker ? <p className="ok-plan-kicker">{kicker}</p> : null}
+        <h3 id="ok-route-title">{heading}</h3>
+        {plan.translation.route_summary ? <p className="ok-plan-meta">{plan.translation.route_summary}</p> : null}
+        <div className="ok-plan-panel">
+          <img src={src} alt={heading} />
+        </div>
+        {bookHref && bookLabel ? (
+          <a
+            className="ok-btn ok-plan-book"
+            href={bookHref}
+            onClick={(event) => {
+              if (!isFileProtocol()) return;
+              event.preventDefault();
+              navigateToHref(bookHref);
+              closeRef.current();
+            }}
+          >
+            {bookLabel}
+          </a>
+        ) : null}
       </div>
     </div>,
     document.body,

@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { ChevronDown } from "lucide-react";
 import { useLocale } from "next-intl";
 import { adminOrderStatus } from "@/lib/admin/copy";
 import { type OrderStatus } from "@/lib/mock/orders";
@@ -54,11 +55,9 @@ export function StatusSelect({ status, onChange, allowComplete = true }: Props) 
       setOpen(false);
     }
     document.addEventListener("mousedown", close);
-    window.addEventListener("scroll", onScrollOrResize, true);
     window.addEventListener("resize", onScrollOrResize);
     return () => {
       document.removeEventListener("mousedown", close);
-      window.removeEventListener("scroll", onScrollOrResize, true);
       window.removeEventListener("resize", onScrollOrResize);
     };
   }, [open]);
@@ -68,13 +67,14 @@ export function StatusSelect({ status, onChange, allowComplete = true }: Props) 
       <button
         ref={btn}
         type="button"
-        className={cn("inline-flex rounded-full border px-2.5 py-0.5 text-xs font-semibold", TONE[status])}
+        className={cn("inline-flex items-center gap-0.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold", TONE[status])}
         onClick={(event) => {
           event.stopPropagation();
           setOpen((value) => !value);
         }}
       >
         {adminOrderStatus(locale, status)}
+        <ChevronDown className="size-3 opacity-70" />
       </button>
       {open && typeof document !== "undefined"
         ? createPortal(

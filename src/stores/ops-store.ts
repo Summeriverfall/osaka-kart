@@ -485,7 +485,7 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 34,
+      version: 35,
       skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
@@ -850,6 +850,23 @@ export const useOpsStore = create<OpsState>()(
               state.settings?.removedChannelIds,
             ),
             removedChannelIds: state.settings?.removedChannelIds ?? MOCK_SETTINGS.removedChannelIds,
+          };
+        }
+        if (version < 35 && state.cms?.reviews) {
+          const bundledIds = new Set(MOCK_CMS.reviews.map((item) => item.id));
+          state.cms = {
+            ...state.cms,
+            reviews: [
+              ...MOCK_CMS.reviews.map((seed) => {
+                const prev = (state.cms?.reviews ?? []).find((item) => item.id === seed.id);
+                return {
+                  ...seed,
+                  photo: prev?.photo || seed.photo,
+                  active: prev?.active ?? seed.active,
+                };
+              }),
+              ...(state.cms.reviews ?? []).filter((item) => !bundledIds.has(item.id)),
+            ],
           };
         }
         delete state.vehicleSlots;

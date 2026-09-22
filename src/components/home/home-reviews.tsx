@@ -38,7 +38,10 @@ function ReviewCard({ item, locale }: { item: CmsReview; locale: string }) {
   const t = useTranslations("ReviewsHome");
   const shop = useTranslations("Shop");
   const href = item.url?.trim();
-  const text = localeText(item.quote, locale);
+  const text = localeText(item.quote, locale)
+    .replace(/\s*🇯🇵\s*/g, "")
+    .replace(/^[\s\u201c\u201d\u2018\u2019"「『]+/, "")
+    .replace(/[\u201c\u201d\u2018\u2019"」』]+\s*$/, "");
   const [open, setOpen] = useState(false);
   const quoteEl = useRef<HTMLQuoteElement>(null);
   const [overflow, setOverflow] = useState(false);
@@ -100,7 +103,7 @@ function ReviewCard({ item, locale }: { item: CmsReview; locale: string }) {
         ))}
       </p>
       <blockquote ref={quoteEl} className={clamp ? "is-clamp" : undefined} style={quoteStyle}>
-        “{text}”
+        {text}
       </blockquote>
       <div className="ok-review-more">
         {overflow || open ? (

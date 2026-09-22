@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatJpy } from "@/lib/format";
 import { useLivePlans } from "@/lib/live-catalog";
+import { homeCopy, homePlanOverlay, PLAN_BADGES } from "@/lib/home-storefront";
 import { coverOf, routeOf } from "@/lib/media";
 import { RouteMapLightbox } from "@/components/plan/route-map-dialog";
 import { appPageHref, isFileProtocol, navigateToHref } from "@/lib/file-href";
@@ -23,11 +24,13 @@ export function HomePlans({ plans: seedPlans, locale, sectionId = "plans", kicke
   const t = useTranslations("PlansHome");
   const planT = useTranslations("Plan");
   const nav = useTranslations("Nav");
+  const copy = homeCopy(locale);
   const plans = useLivePlans(seedPlans, locale);
   const trackRef = useRef<HTMLDivElement>(null);
   const [pager, setPager] = useState({ prev: false, next: false });
   const [routeId, setRouteId] = useState<string | null>(null);
   const routePlan = plans.find((item) => item.id === routeId) ?? null;
+  const routeOverlay = routePlan ? homePlanOverlay(locale, routePlan.slug) : null;
 
   function updatePager() {
     const el = trackRef.current;
@@ -70,6 +73,7 @@ export function HomePlans({ plans: seedPlans, locale, sectionId = "plans", kicke
   }, [plans.length]);
 
   const go = (path: string) => (event: MouseEvent<HTMLAnchorElement>) => {
+    event.stopPropagation();
     if (!isFileProtocol()) return;
     event.preventDefault();
     navigateToHref(path, locale);
@@ -103,21 +107,36 @@ export function HomePlans({ plans: seedPlans, locale, sectionId = "plans", kicke
       ) : null}
       <div className="ok-pack-grid" ref={trackRef}>
         {plans.map((plan) => {
-          const points = plan.translation.highlights.slice(0, 3);
+          const overlay = homePlanOverlay(locale, plan.slug);
+          const name = overlay?.title ?? plan.translation.name;
+          const desc = overlay?.desc ?? plan.translation.description;
+          const points = (overlay?.points ?? plan.translation.highlights).slice(0, 3);
           const bookPath = withSlash(`/booking?plan=${plan.slug}`);
+          const badgeId = PLAN_BADGES[plan.slug];
+          const rec = badgeId === "rec";
+          const openRoute = () => {
+            if (routeOf(plan)) setRouteId(plan.id);
+          };
           return (
-            <article key={plan.id} className="ok-pack-card">
+            <article
+              key={plan.id}
+              className={rec ? "ok-pack-card is-rec" : "ok-pack-card"}
+              onClick={openRoute}
+            >
               <div className="ok-pack-photo">
                 <img src={coverOf(plan)} alt="" />
                 <span className="ok-pack-chip">{planT("minutes", { n: plan.duration_minutes })}</span>
               </div>
               <div className="ok-pack-copy">
-                <h3>{plan.translation.name}</h3>
+                {badgeId ? (
+                  <span className={rec ? "ok-pack-badge is-rec" : "ok-pack-badge"}>{copy.badges[badgeId]}</span>
+                ) : null}
+                <h3>{name}</h3>
                 <p className="ok-pack-meta">
                   {planT("minutes", { n: plan.duration_minutes })}
                   {plan.distance_km != null ? ` · ${planT("km", { n: plan.distance_km })}` : ""}
                 </p>
-                <p className="ok-pack-desc">{plan.translation.description}</p>
+                <p className="ok-pack-desc">{desc}</p>
                 {points.length ? (
                   <ul className="ok-pack-points">
                     {points.map((item) => (
@@ -133,18 +152,21 @@ export function HomePlans({ plans: seedPlans, locale, sectionId = "plans", kicke
                   <a className="ok-btn" href={appPageHref(bookPath, locale)} onClick={go(bookPath)}>
                     {nav("booking")}
                   </a>
-                  {routeOf(plan) ? (
-                    <button type="button" className="ok-btn-ghost" onClick={() => setRouteId(plan.id)}>
-                      {t("details")}
-                    </button>
-                  ) : null}
                 </div>
               </div>
             </article>
           );
         })}
       </div>
-      <RouteMapLightbox plan={routePlan} onClose={() => setRouteId(null)} />
+      <RouteMapLightbox
+        plan={routePlan}
+        title={routeOverlay?.title ?? routePlan?.translation.name}
+        kicker={copy.routeLabel}
+        bookHref={routePlan ? appPageHref(withSlash(`/booking?plan=${routePlan.slug}`), locale) : ""}
+        bookLabel={copy.book}
+        closeLabel={copy.close}
+        onClose={() => setRouteId(null)}
+      />
     </div>
   );
 

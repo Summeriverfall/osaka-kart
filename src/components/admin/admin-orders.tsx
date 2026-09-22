@@ -314,7 +314,7 @@ export function AdminOrdersView() {
     patchOrder(refund.id, {
       refunds: [...(refund.refunds ?? []), { time: stamp, note: refundNote.trim() || b2.refundReserved }],
     });
-    notify(b2.refundReserved);
+    notify(b2.refundSavedNote);
     setRefund(null);
     setRefundNote("");
   }
@@ -479,6 +479,9 @@ export function AdminOrdersView() {
                 <td>{formatYenShort(order.totalJpy)}</td>
                 <td>
                   <StatusSelect status={order.status} allowComplete={canCompleteOrder()} onChange={(next) => changeStatus(order.id, next)} />
+                  {(order.refunds ?? []).length ? (
+                    <span className="mt-1 block text-[11px] text-slate-500">{b2.refundLog} {(order.refunds ?? []).length}</span>
+                  ) : null}
                 </td>
                 <td className="order-ops-cell">
                   <OrderOps
@@ -509,6 +512,9 @@ export function AdminOrdersView() {
               <div className="flex shrink-0 flex-col items-end gap-2">
                 <ChannelBadge channel={order.channel} />
                 <StatusSelect status={order.status} allowComplete={canCompleteOrder()} onChange={(next) => changeStatus(order.id, next)} />
+                {(order.refunds ?? []).length ? (
+                  <span className="text-[11px] text-slate-500">{b2.refundLog} {(order.refunds ?? []).length}</span>
+                ) : null}
               </div>
             </div>
             <div className="order-ops-mobile">

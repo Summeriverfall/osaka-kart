@@ -175,7 +175,7 @@ export function AdminOrderDetailView({ id }: { id: string }) {
                 refunds: [...(order.refunds ?? []), { time: stamp, note: refundNote.trim() || b2.refundReserved }],
               });
               setRefundNote("");
-              notify(b2.refundReserved);
+              notify(b2.refundSavedNote);
             }}
           >
             {b2.refundAction}

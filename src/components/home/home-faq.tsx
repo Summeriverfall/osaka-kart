@@ -8,6 +8,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { localeText, localizedList, useLiveCms } from "@/lib/live-cms";
+import { HIDE_FAQ_IDS, HIDE_FAQ_Q } from "@/lib/home-storefront";
 
 export function HomeFaq({ kicker }: { kicker?: string }) {
   const t = useTranslations("Faq");
@@ -30,7 +31,9 @@ export function HomeFaq({ kicker }: { kicker?: string }) {
     { id: "q9", q: t("q9"), a: t("a9") },
     { id: "q10", q: t("q10"), a: t("a10") },
   ];
-  const list = items.length ? items : fallback;
+  const list = (items.length ? items : fallback).filter(
+    (item) => !HIDE_FAQ_IDS.has(item.id) && !HIDE_FAQ_Q.test(item.q),
+  );
   const title = localeText(cms.labels.faqTitle, locale, t("title"));
 
   return (

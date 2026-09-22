@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { LiveBrandMark } from "@/components/site/live-brand-mark";
 import { SocialLinks } from "@/components/site/social-links";
 import { localeText, mailHref, telHref, useLiveCms } from "@/lib/live-cms";
+import { homeCopy } from "@/lib/home-storefront";
 import { appPageHref } from "@/lib/file-href";
 import { withSlash } from "@/lib/paths";
 
@@ -19,6 +20,7 @@ export function SiteFooter() {
   const address = localeText(cms.meetup.address, locale);
   const walk = localeText(cms.meetup.walk, locale);
   const maps = cms.meetup.mapsUrl?.trim();
+  const copy = homeCopy(locale);
 
   return (
     <footer id="footer" className="ok-foot">
@@ -26,7 +28,7 @@ export function SiteFooter() {
         <div className="ok-foot-brand">
           <LiveBrandMark className="ok-brand" />
           <p className="mt-4">{company}</p>
-          <p className="mt-2">{t("blurb")}</p>
+          <p className="mt-2">{copy.footerLead}</p>
           <SocialLinks className="ok-foot-social" />
         </div>
         <div>
@@ -36,7 +38,6 @@ export function SiteFooter() {
             <a className="block" href={appPageHref(withSlash("/help#license"), locale)}>{t("license")}</a>
             <a className="block" href={appPageHref(withSlash("/help#safety"), locale)}>{t("safety")}</a>
             <a className="block" href={appPageHref(withSlash("/booking"), locale)}>{nav("booking")}</a>
-            <a className="block" href={appPageHref(withSlash("/looks"), locale)}>{t("looks")}</a>
           </div>
         </div>
         <div>

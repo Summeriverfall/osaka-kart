@@ -160,9 +160,9 @@ const planTranslations: Record<string, PlanTranslation[]> = {
     },
     {
       locale: "zh-TW",
-      name: "難波60分鐘套餐",
+      name: "難波 60 分鐘",
       description:
-        "在大阪市中心的難波，體驗60分鐘的冒險。您可以一邊欣賞熱門景點和熱鬧街景，一邊感受速度的激情。路線專為新手設計，即使是第一次體驗的人也能放心參與，在短時間內充分感受大阪的活力氛圍。",
+        "在大阪市中心的難波，體驗 60 分鐘的街景騎行。一邊看熱鬧景點，一邊感受速度。路線專為新手設計，第一次來也能放心玩。",
       highlights: ["難波 60 分鐘", "熱門街景", "適合新手"],
       route_summary: "難波集合 → 道頓堀環線 → 心齋橋返回。",
       includes: [...includes["zh-TW"]],
@@ -212,9 +212,9 @@ const planTranslations: Record<string, PlanTranslation[]> = {
     },
     {
       locale: "zh-TW",
-      name: "通天閣90分鐘套餐",
+      name: "通天閣 90 分鐘",
       description:
-        "以大阪地標通天閣為中心，體驗90分鐘的行程。感受地道風情，遊覽多處著名景點，深入體驗大阪的獨特魅力。路線較長，亮點豐富，讓您可以悠閒地享受並充分體驗冒險的樂趣。",
+        "以大阪地標通天閣為中心，體驗 90 分鐘行程。地道街巷和著名景點更多，路線更長，可以慢慢把城市看一遍。",
       highlights: ["通天閣 90 分鐘", "地道風情", "著名景點"],
       route_summary: "難波 → 日本橋 → 新世界／通天閣 → 返回。",
       includes: [...includes["zh-TW"]],
@@ -264,9 +264,9 @@ const planTranslations: Record<string, PlanTranslation[]> = {
     },
     {
       locale: "zh-TW",
-      name: "大阪城120分鐘套餐",
+      name: "大阪城 120 分鐘",
       description:
-        "以歷史悠久的大阪城為背景，體驗120分鐘的特別卡丁車之旅。遊覽大阪歷史與現代交融的景點，充分享受卡丁車的樂趣。非常適合喜歡悠閒遊覽大阪代表性景點的遊客。",
+        "以大阪城為背景的 120 分鐘行程。歷史街區和現代街景串在一條路上，適合想把代表性景點慢慢看完的人。",
       highlights: ["大阪城 120 分鐘", "歷史與現代", "悠閒遊覽"],
       route_summary: "難波 → 大阪城環線 → 返回集合點。",
       includes: [...includes["zh-TW"]],

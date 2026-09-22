@@ -15,7 +15,7 @@ export default async function HomePage({ params }: PageProps) {
 
   return (
     <>
-      <link rel="preload" as="image" href={`${BASE_PATH}/images/hero/poster.webp`} fetchPriority="high" />
+      <link rel="preload" as="image" href={`${BASE_PATH}/images/social/22.webp`} fetchPriority="high" />
       <OsakaHome plans={plans} locale={locale} />
     </>
   );

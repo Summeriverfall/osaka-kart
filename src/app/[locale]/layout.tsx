@@ -51,6 +51,12 @@ export default async function LocaleLayout({
       className={`${geistSans.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@900&family=Noto+Sans+TC:wght@900&family=Bungee&display=swap"
+        />
+      </head>
       <body className="min-h-dvh bg-black text-[#F5F5F7] antialiased">
         <script dangerouslySetInnerHTML={{ __html: acidPaletteBootScript() }} />
         <NextIntlClientProvider

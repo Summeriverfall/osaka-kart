@@ -491,7 +491,7 @@ export function LandingReviews({ copy, theme }: { copy: LandingCopy; theme: Site
                   <Star key={star} className="size-4 fill-current" />
                 ))}
               </p>
-              <blockquote>“{localeText(item.quote, locale)}”</blockquote>
+              <blockquote>{localeText(item.quote, locale)}</blockquote>
               <footer>
                 <strong>{item.name}</strong>
                 {item.country ? <span>{item.country}</span> : null}
