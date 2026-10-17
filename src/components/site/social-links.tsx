@@ -1,5 +1,6 @@
 "use client";
 
+import { usableHref } from "@/lib/contact";
 import { useLiveCms } from "@/lib/live-cms";
 
 type SocialLinksProps = {
@@ -17,7 +18,7 @@ const LINKS = [
 
 export function SocialLinks({ className }: SocialLinksProps) {
   const cms = useLiveCms();
-  const items = LINKS.map((item) => ({ ...item, href: cms.site.social[item.key]?.trim() })).filter((item) => item.href);
+  const items = LINKS.map((item) => ({ ...item, href: usableHref(cms.site.social[item.key]) })).filter((item) => item.href);
 
   if (!items.length) return null;
 

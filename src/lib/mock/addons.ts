@@ -7,6 +7,7 @@ export type MockAddon = {
   name: string;
   nameEn: string;
   nameJa: string;
+  nameTw?: string;
   description: string;
   descriptionEn?: string;
   descriptionJa?: string;
@@ -26,6 +27,7 @@ export const MOCK_ADDONS: MockAddon[] = [
     name: "GoPro 租赁",
     nameEn: "GoPro rental",
     nameJa: "GoProレンタル",
+    nameTw: "GoPro 租賃",
     description: "高清运动相机租赁，含防水壳",
     descriptionEn: "HD action camera rental with a waterproof case.",
     descriptionJa: "高画質アクションカメラのレンタル。防水ケース付き。",
@@ -42,6 +44,7 @@ export const MOCK_ADDONS: MockAddon[] = [
     name: "赛车服升级",
     nameEn: "Racing suit upgrade",
     nameJa: "レーシングスーツへのアップグレード",
+    nameTw: "賽車服升級",
     description: "专业防火赛车服，多色可选",
     descriptionEn: "A proper racing suit. Several colors available.",
     descriptionJa: "本格的なレーシングスーツ。複数カラーから選択できます。",
@@ -58,6 +61,7 @@ export const MOCK_ADDONS: MockAddon[] = [
     name: "专业跟拍照片",
     nameEn: "Pro photo follow",
     nameJa: "プロによる撮影写真",
+    nameTw: "專業跟拍照片",
     description: "赛道摄影师跟拍，含5张精修原片",
     descriptionEn: "A pro photographer rides with you. Five high-quality photos included.",
     descriptionJa: "プロカメラマンによる走行中の撮影。高画質写真5枚付き。",
@@ -71,12 +75,14 @@ export const MOCK_ADDONS: MockAddon[] = [
   {
     id: "addon-insurance",
     slug: "insurance",
-    name: "额外保险",
-    nameEn: "Extra insurance",
-    nameJa: "追加保険",
-    description: "在基础保险之外加保人身意外",
-    descriptionEn: "Extra injury cover on top of the basic insurance, while you ride.",
-    descriptionJa: "基本保険に加えて、搭乗中の傷害補償を追加できます。",
+    name: "基础保险",
+    nameEn: "Basic insurance",
+    nameJa: "基本保険",
+    nameTw: "基礎保險",
+    description: "套餐价已含的人身保险。未含此套餐时可选加。",
+    descriptionEn: "Injury cover included in most plans. Add it if your plan does not already include it.",
+    descriptionJa: "多くのプランに含まれる傷害保険。含まれていないプランでは追加できます。",
+    descriptionKo: "대부분 패키지에 포함된 상해보험. 포함되지 않은 코스에서는 추가할 수 있습니다.",
     priceJpy: 500,
     unit: "person",
     unitLabel: "/ 人",

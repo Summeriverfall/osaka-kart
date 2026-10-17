@@ -402,7 +402,7 @@ export const MOCK_STORES: MockStore[] = [
     address: "〒542-0072 大阪府大阪市中央区高津2丁目4-21 おおきに道頓堀ビル",
     phone: "+81-6-0000-0000",
     hours: "10:00 – 21:00",
-    maps: "https://www.google.com/maps/search/?api=1&query=%E3%81%8A%E3%81%8A%E3%81%8D%E3%81%AB%E9%81%93%E9%A0%93%E5%A0%80%E3%83%93%E3%83%AB",
+    maps: "https://maps.app.goo.gl/wLwUcA8YABaQCB6p8",
     status: "营业中",
     created: "2025-11-01",
   },

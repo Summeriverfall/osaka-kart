@@ -5,7 +5,7 @@ import { MOCK_LOGS, type LogType, type MockLog } from "@/lib/mock/logs";
 import { MOCK_ORDERS, buildWeekDemoOrders, isRolledDemoOrder, isWebsiteLiveOrder, mergeFreshDemoOrders, type MockOrder, type OrderStatus } from "@/lib/mock/orders";
 import { MOCK_AFFILIATES, findAffiliateByCode, refreshBundledAffiliates, type MockAffiliate } from "@/lib/mock/affiliates";
 import { MOCK_PLANS, mergePlansWithSeed, type MockPlan } from "@/lib/mock/plans";
-import { MOCK_SPECIAL_DATES, type MockSpecialDate } from "@/lib/mock/inventory";
+import { MOCK_SPECIAL_DATES, mergeFreshSpecialDates, type MockSpecialDate } from "@/lib/mock/inventory";
 import {
   buildVehicleTimeline,
   buildVehicleTimelineForDate,
@@ -485,7 +485,7 @@ export const useOpsStore = create<OpsState>()(
     }),
     {
       name: OPS_STORAGE_KEY,
-      version: 35,
+      version: 37,
       skipHydration: true,
       storage: opsPersistStorage,
       migrate: (persisted, version) => {
@@ -869,6 +869,62 @@ export const useOpsStore = create<OpsState>()(
             ],
           };
         }
+        if (version < 36) {
+          state.specialDates = mergeFreshSpecialDates(state.specialDates ?? []);
+          state.orders = mergeFreshDemoOrders(state.orders ?? []);
+        }
+        if (version < 37 && state.cms) {
+          const cms = mergeCms(MOCK_CMS, state.cms);
+          state.cms = {
+            ...cms,
+            meetup: {
+              ...cms.meetup,
+              address: MOCK_CMS.meetup.address,
+              lead: MOCK_CMS.meetup.lead,
+              mapsUrl: MOCK_CMS.meetup.mapsUrl,
+            },
+            site: {
+              ...cms.site,
+              whatsapp: MOCK_CMS.site.whatsapp,
+              social: { ...MOCK_CMS.site.social },
+            },
+            howToBook: {
+              ...cms.howToBook,
+              whatsapp: MOCK_CMS.howToBook.whatsapp,
+              showWhatsapp: MOCK_CMS.howToBook.showWhatsapp,
+            },
+            faqs: (cms.faqs ?? []).map((item) =>
+              item.id === "f3"
+                ? { ...item, a: MOCK_CMS.faqs.find((row) => row.id === "f3")?.a ?? item.a }
+                : item,
+            ),
+          };
+          state.plans = (state.plans ?? MOCK_PLANS).map((row) => {
+            const seed =
+              MOCK_PLANS.find((item) => item.id === row.id) ?? MOCK_PLANS.find((item) => item.slug === row.slug);
+            if (!seed) return row;
+            return { ...row, nameTw: seed.nameTw, nameKo: seed.nameKo || row.nameKo };
+          });
+          state.addons = (state.addons ?? MOCK_ADDONS).map((row) => {
+            const seed =
+              MOCK_ADDONS.find((item) => item.id === row.id) ?? MOCK_ADDONS.find((item) => item.slug === row.slug);
+            if (!seed) return row;
+            return {
+              ...row,
+              name: seed.name,
+              nameEn: seed.nameEn,
+              nameJa: seed.nameJa,
+              nameTw: seed.nameTw,
+              description: seed.description,
+              descriptionEn: seed.descriptionEn,
+              descriptionJa: seed.descriptionJa,
+            };
+          });
+          state.stores = (state.stores ?? MOCK_STORES).map((store) =>
+            store.id === "namba" ? { ...store, maps: MOCK_STORES[0].maps, address: MOCK_STORES[0].address } : store,
+          );
+          state.orders = mergeFreshDemoOrders((state.orders ?? []).filter((item) => !isRolledDemoOrder(item)));
+        }
         delete state.vehicleSlots;
         return state as OpsState;
       },
@@ -908,6 +964,7 @@ export const useOpsStore = create<OpsState>()(
             };
           }),
           orders: mergeFreshDemoOrders(extra.orders ?? current.orders),
+          specialDates: mergeFreshSpecialDates(extra.specialDates ?? current.specialDates),
           affiliates: refreshBundledAffiliates(extra.affiliates?.length ? extra.affiliates : current.affiliates),
           roles: refreshBuiltinRoles(extra.roles?.length ? extra.roles : MOCK_ROLES),
           settings: {

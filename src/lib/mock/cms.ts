@@ -310,7 +310,7 @@ export const MOCK_CMS: CmsState = {
       a: L(
         "集合在難波・道頓堀，おおきに道頓堀ビル。從難波站步行約 5 分鐘。",
         "We meet at おおきに道頓堀ビル in Kozu, near Namba / Dotonbori. About 5 min walk from Namba Station.",
-        "大阪・難波周辺です。正確な集合場所は、ご予約後にお送りします。",
+        "〒542-0072 大阪府大阪市中央区高津2丁目4-21 おおきに道頓堀ビル。難波駅から徒歩約5分。",
         "집합은 난바·도톤보리의 おおきに道頓堀ビル. 난바역에서 도보 약 5분.",
       ),
     },
@@ -481,7 +481,7 @@ export const MOCK_CMS: CmsState = {
     address: L(
       "〒542-0072 大阪市中央區高津2丁目4-21 おおきに道頓堀ビル",
       "〒542-0072 Osaka, Chuo Ward, Kozu, 2 Chome−4−21 おおきに道頓堀ビル",
-      "大阪・難波周辺",
+      "〒542-0072 大阪府大阪市中央区高津2丁目4-21 おおきに道頓堀ビル",
       "〒542-0072 오사카시 주오구 고즈 2초메 4-21 おおきに道頓堀ビル",
     ),
     station: L("難波站", "Namba Station", "難波駅", "난바역"),
@@ -489,7 +489,7 @@ export const MOCK_CMS: CmsState = {
     lead: L(
       "集合在難波・道頓堀。大樓門口見。",
       "Meet in Namba / Dotonbori, at the building entrance.",
-      "集合場所は難波周辺です。正確な集合場所はご予約後にお送りします。",
+      "難波・道頓堀、おおきに道頓堀ビルの入口で集合します。",
       "집합은 난바·도톤보리. 건물 입구에서 만납니다.",
     ),
     mapsUrl: "https://maps.app.goo.gl/wLwUcA8YABaQCB6p8",
@@ -499,7 +499,7 @@ export const MOCK_CMS: CmsState = {
     onlineLabel: L("線上填寫預約", "Book online", "オンラインで予約", "온라인 예약"),
     showOnline: true,
     whatsappHint: L("訊息回覆通常更快", "Usually the fastest reply", "返信が早いことが多いです", "보통 답장이 더 빠릅니다"),
-    showWhatsapp: true,
+    showWhatsapp: false,
     whatsapp: SITE_CONTACT.whatsapp,
     showPhone: true,
     phone: SITE_CONTACT.phone,

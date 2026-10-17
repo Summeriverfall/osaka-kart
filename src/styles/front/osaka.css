@@ -3860,20 +3860,26 @@ html:not(:has(.admin-app)) .admin-modal-overlay {
   font-size: 1rem;
 }
 
-html[lang="zh-TW"] :is(h1, h2, .hero-title) {
-  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-  font-weight: 900;
+html[lang="zh-TW"] :is(h1, h2, .hero-title, .book-wizard-title) {
+  font-family: "Microsoft JhengHei", "PingFang TC", "Microsoft YaHei", sans-serif;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
-html[lang="ja"] :is(h1, h2, .hero-title) {
-  font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
-  font-weight: 900;
+html[lang="ja"] :is(h1, h2, .hero-title, .book-wizard-title) {
+  font-family: "Hiragino Sans", "Yu Gothic", "Yu Gothic UI", Meiryo, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+html[lang="ko"] :is(h1, h2, .hero-title, .book-wizard-title) {
+  font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
 html[lang="en"] :is(.ok-hero h1, .hero-title) {
-  font-family: "Bungee", "Arial Black", sans-serif;
+  font-family: "Arial Black", Impact, sans-serif;
   font-weight: 400;
   letter-spacing: 0.01em;
   text-transform: none;

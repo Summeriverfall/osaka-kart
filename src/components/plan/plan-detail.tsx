@@ -5,6 +5,7 @@ import { PlanExperience } from "@/components/plan/plan-experience";
 import { PlanSummaryCard } from "@/components/plan/plan-summary";
 import { LivePlanHeading } from "@/components/plan/live-plan-heading";
 import { LivePlanCover, LivePlanDescription, LivePlanRoute } from "@/components/plan/live-plan-media";
+import { SITE_MAPS_EMBED } from "@/lib/contact";
 import type { AddonWithTranslation, PlanWithTranslation } from "@/lib/plans/types";
 
 type PlanDetailViewProps = {
@@ -66,7 +67,7 @@ export async function PlanDetailView({ plan, plans, addons, locale }: PlanDetail
             />
             <iframe
               title={t("map")}
-              src="https://maps.google.com/maps?q=Namba%20Station%20Osaka&z=16&output=embed"
+              src={SITE_MAPS_EMBED}
               className="mt-4 h-64 w-full rounded-2xl border-0"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"

@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   },
   description: "Street kart experience in Osaka",
   referrer: "strict-origin-when-cross-origin",
+  openGraph: {
+    title: SITE_BRAND,
+    description: "Street-legal karts through Osaka. Book a slot in Namba.",
+    images: [{ url: "/images/hero/poster.webp" }],
+  },
 };
 
 export const viewport: Viewport = {

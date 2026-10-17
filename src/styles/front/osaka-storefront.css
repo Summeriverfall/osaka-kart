@@ -1,22 +1,26 @@
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@900&family=Noto+Sans+TC:wght@900&family=Bungee&display=swap");
-
 /* Homepage / neon hero: more air, keep tags, don't clip titles. */
 
-/* Conventional heavy gothic for Chinese and Japanese; street signage face (Bungee) for English. */
-html[lang="zh-TW"] :is(h1, h2, .hero-title) {
-  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif !important;
-  font-weight: 900 !important;
+/* System CJK / Latin only — no Google Fonts (Nanjing and CN clients cannot load them). */
+html[lang="zh-TW"] :is(h1, h2, .hero-title, .book-wizard-title) {
+  font-family: "Microsoft JhengHei", "PingFang TC", "Microsoft YaHei", sans-serif !important;
+  font-weight: 700 !important;
   letter-spacing: 0 !important;
 }
 
-html[lang="ja"] :is(h1, h2, .hero-title) {
-  font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif !important;
-  font-weight: 900 !important;
+html[lang="ja"] :is(h1, h2, .hero-title, .book-wizard-title) {
+  font-family: "Hiragino Sans", "Yu Gothic", "Yu Gothic UI", Meiryo, sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+html[lang="ko"] :is(h1, h2, .hero-title, .book-wizard-title) {
+  font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif !important;
+  font-weight: 700 !important;
   letter-spacing: 0 !important;
 }
 
 html[lang="en"] :is(.ok-hero h1, .hero-title) {
-  font-family: "Bungee", "Arial Black", sans-serif !important;
+  font-family: "Arial Black", Impact, sans-serif !important;
   font-weight: 400 !important;
   letter-spacing: 0.01em !important;
   text-transform: none !important;

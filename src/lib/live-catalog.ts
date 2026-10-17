@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { SITE_CONTACT } from "@/lib/contact";
+import { SITE_CONTACT, SITE_MAPS_URL } from "@/lib/contact";
 import {
   dayStatus,
   slotRemaining as fallbackSlotRemaining,
@@ -55,6 +55,7 @@ export function useOpsHydrated() {
 function localePlanName(plan: MockPlan, locale: string, fallback: string) {
   if (locale.startsWith("ja") && plan.nameJa) return plan.nameJa;
   if (locale.startsWith("en") && plan.nameEn) return plan.nameEn;
+  if (locale === "zh-TW" && plan.nameTw) return plan.nameTw;
   if (locale.startsWith("ko") && plan.nameKo) return plan.nameKo;
   return plan.name || fallback;
 }
@@ -85,6 +86,7 @@ function localePlanIncludes(plan: MockPlan, locale: string, fallback: string[]) 
 function localeAddonName(addon: MockAddon, locale: string, fallback: string) {
   if (locale.startsWith("ja") && addon.nameJa) return addon.nameJa;
   if (locale.startsWith("en") && addon.nameEn) return addon.nameEn;
+  if (locale === "zh-TW" && addon.nameTw) return addon.nameTw;
   if (locale.startsWith("ko") && addon.nameEn) return addon.nameEn;
   return addon.name || fallback;
 }
@@ -499,7 +501,7 @@ export function liveStoreContact(stores: MockStore[]) {
     address: namba?.address ?? "",
     hours: namba?.hours || SITE_CONTACT.hours,
     phone: placeholder ? SITE_CONTACT.phone : namba.phone,
-    maps: namba?.maps ?? SITE_CONTACT.whatsapp,
+    maps: namba?.maps ?? SITE_MAPS_URL,
   };
 }
 

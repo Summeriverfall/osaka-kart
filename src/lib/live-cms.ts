@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { asset } from "@/lib/asset";
 import { localeText, originalLocaleText, parseYoutubeId, youtubeThumb } from "@/lib/cms-text";
-import { SITE_CONTACT } from "@/lib/contact";
+import { SITE_CONTACT, usableHref } from "@/lib/contact";
 import { useLiveStoreContact, useOpsHydrated } from "@/lib/live-catalog";
 import { LOOK_VIDEO, type SiteTheme } from "@/lib/visual-theme";
 import { MOCK_CMS, cmsBySlot, type CmsState, type CmsVideo } from "@/lib/mock/cms";
@@ -88,8 +88,8 @@ export function bookingContact(cms: CmsState, store?: { phone?: string; hours?: 
   const how = cms.howToBook;
   const phone = how.phone?.trim() || store?.phone || cms.site.phone || SITE_CONTACT.phone;
   const email = how.email?.trim() || cms.site.email || SITE_CONTACT.email;
-  const whatsapp = how.whatsapp?.trim() || cms.site.whatsapp || SITE_CONTACT.whatsapp;
-  const line = how.line?.trim() || cms.site.social.line || SITE_CONTACT.line;
+  const whatsapp = usableHref(how.whatsapp) || usableHref(cms.site.whatsapp) || usableHref(SITE_CONTACT.whatsapp);
+  const line = usableHref(how.line) || usableHref(cms.site.social.line) || usableHref(SITE_CONTACT.line);
   const hours = store?.hours || cms.site.hours || SITE_CONTACT.hours;
   return {
     phone,

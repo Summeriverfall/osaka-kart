@@ -4,15 +4,49 @@ export const SITE_CONTACT = {
   email: "book@osakakart.jp",
   mailto: "mailto:book@osakakart.jp?subject=Future%20Kart%20Osaka%20Booking",
   hours: "10:00～21:00",
-  whatsapp: "https://wa.me/81677710100",
-  instagram: "https://instagram.com/",
-  youtube: "https://youtube.com/",
-  x: "https://x.com/",
-  facebook: "https://facebook.com/",
-  tiktok: "https://www.tiktok.com/",
-  line: "https://line.me/",
-  tripadvisor: "https://www.tripadvisor.com/Search?q=Future%20Kart%20Osaka",
+  whatsapp: "",
+  instagram: "",
+  youtube: "",
+  x: "",
+  facebook: "",
+  tiktok: "",
+  line: "",
+  tripadvisor: "",
 } as const;
+
+export const SITE_MAPS_URL = "https://maps.app.goo.gl/wLwUcA8YABaQCB6p8";
+export const SITE_MAPS_EMBED =
+  "https://maps.google.com/maps?q=%E3%81%8A%E3%81%8A%E3%81%8D%E3%81%AB%E9%81%93%E9%A0%93%E5%A0%80%E3%83%93%E3%83%AB&hl=ja&z=17&output=embed";
+
+const SOCIAL_ROOTS = new Set([
+  "instagram.com",
+  "x.com",
+  "twitter.com",
+  "youtube.com",
+  "youtu.be",
+  "tiktok.com",
+  "facebook.com",
+  "line.me",
+  "tripadvisor.com",
+]);
+
+export function usableHref(href?: string | null) {
+  const value = href?.trim() ?? "";
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+    const path = url.pathname.replace(/\/+$/, "");
+    if (SOCIAL_ROOTS.has(host) && (!path || path === "/Search")) return "";
+    if (host === "wa.me") {
+      const digits = url.pathname.replace(/\D/g, "");
+      if (!digits || (/^81/.test(digits) && !/^81(70|80|90)/.test(digits))) return "";
+    }
+    return value;
+  } catch {
+    return "";
+  }
+}
 
 export const PRESS_CARDS = [
   { img: "/images/news/n1.webp", sourceKey: "s1" as const, titleKey: "n1" as const },

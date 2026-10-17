@@ -6,7 +6,7 @@ html:not(:has(.admin-app)) button,
 html:not(:has(.admin-app)) input,
 html:not(:has(.admin-app)) select,
 html:not(:has(.admin-app)) textarea {
-  font-family: "Microsoft YaHei", "PingFang SC", "PingFang TC", "Hiragino Sans", "Noto Sans JP", sans-serif !important;
+  font-family: "Microsoft JhengHei", "Microsoft YaHei", "PingFang SC", "PingFang TC", "Hiragino Sans", "Yu Gothic", sans-serif !important;
 }
 
 html:not(:has(.admin-app)) {

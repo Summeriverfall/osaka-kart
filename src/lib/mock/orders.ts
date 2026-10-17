@@ -1,5 +1,5 @@
-import { addDaysIso, eachIso, monthEndIso, monthStartIso, parseIsoDate } from "@/lib/calendar";
-import { todayIsoDate } from "@/lib/booking/slots";
+import { addDaysIso, eachIso, monthStartIso, parseIsoDate } from "@/lib/calendar";
+import { maxBookIsoDate, todayIsoDate } from "@/lib/booking/slots";
 
 export type OrderStatus = "pending" | "confirmed" | "cancelled" | "completed";
 export type OrderChannel = string;
@@ -106,9 +106,7 @@ function log(time: string, actor: string, action: string, note = ""): OrderLog {
   return { time, actor, action, note };
 }
 
-function storeOf(dayOffset: number, index: number) {
-  if (index === 3 && dayOffset % 3 === 0) return "shinsaibashi";
-  if (index === 2 && dayOffset % 2 === 0) return "umeda";
+function storeOf(_dayOffset: number, _index: number) {
   return "namba";
 }
 
@@ -139,7 +137,7 @@ export function isWebsiteLiveOrder(order: MockOrder) {
 
 export function buildWeekDemoOrders(today = todayIsoDate()): MockOrder[] {
   const rows: MockOrder[] = [];
-  const dates = eachIso(monthStartIso(today), monthEndIso(today));
+  const dates = eachIso(monthStartIso(today), maxBookIsoDate());
   dates.forEach((date, dayIndex) => {
     const dayOffset = Math.round(
       (parseIsoDate(date).getTime() - parseIsoDate(today).getTime()) / 86400000,

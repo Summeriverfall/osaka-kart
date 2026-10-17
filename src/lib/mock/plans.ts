@@ -6,6 +6,7 @@ export type MockPlan = {
   name: string;
   nameEn: string;
   nameJa: string;
+  nameTw?: string;
   nameKo?: string;
   durationMinutes: number;
   distanceKm: number;
@@ -42,6 +43,7 @@ export const MOCK_PLANS: MockPlan[] = [
     name: "黄昏湾岸 45 分钟",
     nameEn: "Twilight Bay 45 min",
     nameJa: "トワイライトベイ45分",
+    nameTw: "黃昏灣岸 45 分鐘",
     nameKo: "트와일라이트 베이 45분",
     durationMinutes: 45,
     distanceKm: 6,
@@ -67,6 +69,7 @@ export const MOCK_PLANS: MockPlan[] = [
     name: "难波 60 分钟",
     nameEn: "Namba 60 min",
     nameJa: "難波60分",
+    nameTw: "難波 60 分鐘",
     nameKo: "난바 60분 코스",
     durationMinutes: 60,
     distanceKm: 8,
@@ -97,6 +100,7 @@ export const MOCK_PLANS: MockPlan[] = [
     name: "通天阁 90 分钟",
     nameEn: "Tsutenkaku 90 min",
     nameJa: "通天閣90分",
+    nameTw: "通天閣 90 分鐘",
     nameKo: "츠텐카쿠 90분 코스",
     durationMinutes: 90,
     distanceKm: 10,
@@ -127,6 +131,7 @@ export const MOCK_PLANS: MockPlan[] = [
     name: "大阪城 120 分钟",
     nameEn: "Osaka Castle 120 min",
     nameJa: "大阪城120分",
+    nameTw: "大阪城 120 分鐘",
     nameKo: "오사카성 120분 코스",
     durationMinutes: 120,
     distanceKm: 15,
@@ -157,6 +162,8 @@ export const MOCK_PLANS: MockPlan[] = [
     name: "夜间霓虹 90 分钟",
     nameEn: "Neon night 90 min",
     nameJa: "ネオンナイト90分",
+    nameTw: "夜間霓虹 90 分鐘",
+    nameKo: "네온 나이트 90분",
     durationMinutes: 90,
     distanceKm: 11,
     priceJpy: 15000,
@@ -199,6 +206,8 @@ export function mergePlansWithSeed(rows: MockPlan[] | undefined): MockPlan[] {
       descriptionEn: row.descriptionEn,
       descriptionJa: row.descriptionJa || seed.descriptionJa,
       descriptionKo: row.descriptionKo,
+      nameTw: row.nameTw || seed.nameTw,
+      nameKo: row.nameKo || seed.nameKo,
       highlights: row.highlights,
       highlightsEn: row.highlightsEn,
       highlightsJa: row.highlightsJa?.length ? row.highlightsJa : seed.highlightsJa,

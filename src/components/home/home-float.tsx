@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { bookingContact, useLiveCms } from "@/lib/live-cms";
 import { homeCopy } from "@/lib/home-storefront";
-import { SITE_CONTACT } from "@/lib/contact";
+import { SITE_CONTACT, usableHref } from "@/lib/contact";
 import { socialDockOf } from "@/lib/mock/cms";
 
 type PopKind = "ask" | "social" | null;
@@ -47,30 +47,29 @@ export function HomeFloat({ locale }: { locale: string }) {
     const s = cms.site.social;
     const dock = socialDockOf(cms.site);
     return [
-      { id: "instagram" as const, label: "Instagram", href: s.instagram?.trim() || SITE_CONTACT.instagram, icon: <InstagramIcon /> },
-      { id: "tiktok" as const, label: "TikTok", href: s.tiktok?.trim() || SITE_CONTACT.tiktok, icon: <TikTokIcon /> },
-      { id: "facebook" as const, label: "Facebook", href: s.facebook?.trim() || SITE_CONTACT.facebook, icon: <FacebookIcon /> },
-      { id: "tripadvisor" as const, label: "TripAdvisor", href: s.tripadvisor?.trim() || SITE_CONTACT.tripadvisor, icon: <TripAdvisorIcon /> },
-      { id: "twitter" as const, label: "Twitter", href: s.x?.trim() || SITE_CONTACT.x, icon: <XIcon /> },
-    ].filter((item) => dock[item.id]);
+      { id: "instagram" as const, label: "Instagram", href: usableHref(s.instagram) || usableHref(SITE_CONTACT.instagram), icon: <InstagramIcon /> },
+      { id: "tiktok" as const, label: "TikTok", href: usableHref(s.tiktok) || usableHref(SITE_CONTACT.tiktok), icon: <TikTokIcon /> },
+      { id: "facebook" as const, label: "Facebook", href: usableHref(s.facebook) || usableHref(SITE_CONTACT.facebook), icon: <FacebookIcon /> },
+      { id: "tripadvisor" as const, label: "TripAdvisor", href: usableHref(s.tripadvisor) || usableHref(SITE_CONTACT.tripadvisor), icon: <TripAdvisorIcon /> },
+      { id: "twitter" as const, label: "Twitter", href: usableHref(s.x) || usableHref(SITE_CONTACT.x), icon: <XIcon /> },
+    ].filter((item) => dock[item.id] && item.href);
   }, [cms.site]);
 
-  const wa =
-    contact.whatsapp?.trim() ||
-    `https://wa.me/${contact.phone.replace(/\D/g, "")}` ||
-    SITE_CONTACT.whatsapp;
+  const wa = usableHref(contact.whatsapp);
+  const line = usableHref(contact.line);
 
   const asks = [
-    { href: wa, label: copy.floatWhatsapp, ext: true },
-    { href: contact.line || SITE_CONTACT.line, label: copy.floatLine, ext: true },
-    { href: contact.tel, label: copy.floatCall, ext: false },
-    { href: contact.mailto, label: copy.floatMail, ext: false },
-  ];
+    wa ? { href: wa, label: copy.floatWhatsapp, ext: true } : null,
+    line ? { href: line, label: copy.floatLine, ext: true } : null,
+    contact.tel ? { href: contact.tel, label: copy.floatCall, ext: false } : null,
+    contact.mailto ? { href: contact.mailto, label: copy.floatMail, ext: false } : null,
+  ].filter((item): item is { href: string; label: string; ext: boolean } => Boolean(item));
 
   if (!mounted) return null;
 
   return createPortal(
     <>
+      {socials.length ? (
       <aside className="ok-social-dock" aria-label={copy.floatSocialTitle}>
         <p className="ok-social-dock-kicker">{copy.floatSocialTitle}</p>
         {socials.map((item) => (
@@ -80,6 +79,7 @@ export function HomeFloat({ locale }: { locale: string }) {
           </a>
         ))}
       </aside>
+      ) : null}
 
       <aside className={open ? "ok-action-dock is-open" : "ok-action-dock"} aria-label={copy.floatDock}>
         <button
@@ -98,9 +98,11 @@ export function HomeFloat({ locale }: { locale: string }) {
           <button type="button" className="ok-action-btn is-ask" onClick={() => setPop("ask")}>
             {copy.floatAsk}
           </button>
+          {socials.length ? (
           <button type="button" className="ok-action-btn is-social" onClick={() => setPop("social")}>
             {copy.floatSocial}
           </button>
+          ) : null}
         </div>
       </aside>
 

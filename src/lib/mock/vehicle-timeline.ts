@@ -1,4 +1,4 @@
-import { BOOKING_SLOTS, todayIsoDate } from "@/lib/booking/slots";
+import { BOOKING_SLOTS, maxBookIsoDate, todayIsoDate } from "@/lib/booking/slots";
 import { eachIso, monthEndIso, monthStartIso, addMonthsIso } from "@/lib/calendar";
 import { MOCK_ORDERS, type MockOrder } from "@/lib/mock/orders";
 import { MOCK_VEHICLES, type MockVehicle } from "@/lib/mock/vehicles";
@@ -80,7 +80,7 @@ function capacityFor(vehicle: MockVehicle, vehicleIndex: number) {
 export function timelineSpan(today = todayIsoDate()) {
   return {
     from: monthStartIso(addMonthsIso(today, -1)),
-    to: monthEndIso(addMonthsIso(today, 1)),
+    to: monthEndIso(maxBookIsoDate()),
   };
 }
 

@@ -32,7 +32,7 @@ const STEP_COPY: Record<Screen, "stepDate" | "stepInfo"> = {
   date: "stepDate",
   info: "stepInfo",
 };
-const MAX_PARTY = 8;
+const FALLBACK_PARTY = 4;
 
 function useMobileBook() {
   const [mobile, setMobile] = useState(false);
@@ -169,7 +169,8 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
 
   const planSlug = hydrated ? store.planSlug || initialPlan || plans[0]?.slug : initialPlan;
   const plan = plans.find((item) => item.slug === planSlug) ?? catalogPlan;
-  const riders = Math.max(1, hydrated ? store.riders : 1);
+  const partyCap = Math.max(1, plan?.max_participants || FALLBACK_PARTY);
+  const riders = Math.min(partyCap, Math.max(1, hydrated ? store.riders : 1));
 
   useEffect(() => {
     if (!hydrated || !store.date) return;
@@ -196,7 +197,7 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
   }, [hydrated, store.date, store.time, riders, screen]);
 
   function setParty(next: number) {
-    const count = Math.min(MAX_PARTY, Math.max(1, next));
+    const count = Math.min(partyCap, Math.max(1, next));
     const date = store.date;
     const time = store.time;
     if (!date) {
@@ -382,7 +383,7 @@ export function BookingForm({ plans: seedPlans, addons: seedAddons, locale, init
             −
           </button>
           <strong>{riders}</strong>
-          <button type="button" aria-label="+" disabled={riders >= MAX_PARTY} onClick={() => setParty(riders + 1)}>
+          <button type="button" aria-label="+" disabled={riders >= partyCap} onClick={() => setParty(riders + 1)}>
             +
           </button>
         </div>
